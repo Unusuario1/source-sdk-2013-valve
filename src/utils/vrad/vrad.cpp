@@ -19,6 +19,7 @@
 #include "tools_minidump.h"
 #include "loadcmdline.h"
 #include "byteswap.h"
+#include "cubemapbuilder.h"
 
 #define ALLOWDEBUGOPTIONS (0 || _DEBUG)
 
@@ -119,6 +120,9 @@ bool		g_bStaticPropLighting = false;
 bool        g_bStaticPropPolys = false;
 bool        g_bTextureShadows = false;
 bool        g_bDisablePropSelfShadowing = false;
+bool		g_bBuildOnlyCubemaps = false;
+bool		g_bBuildHdrCubemaps = false;
+bool		g_bBuildLdrCubemaps = false;
 
 
 CUtlVector<byte> g_FacesVisibleToLights;
@@ -2255,7 +2259,7 @@ void VRAD_LoadBSP( char const *pFilename )
 	//
 	// TODO: change the maxes to the amount from the bsp!!
 	//
-//	g_Patches.EnsureCapacity( MAX_PATCHES );
+	//	g_Patches.EnsureCapacity( MAX_PATCHES );
 
 	g_FacePatches.SetSize( MAX_MAP_FACES );
 	faceParents.SetSize( MAX_MAP_FACES );
@@ -2324,7 +2328,9 @@ void VRAD_ComputeOtherLighting()
 	}
 }
 
+
 extern void CloseDispLuxels();
+
 
 void VRAD_Finish()
 {
@@ -2361,9 +2367,18 @@ void VRAD_Finish()
 	
 	char str[512];
 	GetHourMinuteSecondsString( (int)( end - g_flStartTime ), str, sizeof( str ) );
-	Msg( "%s elapsed\n", str );
+	Msg( "--> Bake lighting complete in %s.\n\n", str );
 
 	ReleasePakFileLumps();
+
+	if(g_bBuildHdrCubemaps && g_bHDR)
+	{
+		BuildCubemaps(g_bHDR);
+	}	
+	if(g_bBuildLdrCubemaps && !g_bHDR)
+	{
+		BuildCubemaps(g_bHDR);
+	}
 }
 
 
@@ -2629,6 +2644,23 @@ int ParseCommandLine( int argc, char **argv, bool *onlydetail )
 		{
 			SetHDRMode( false );
 		}
+		else if (!Q_stricmp(argv[i], "-BuildOnlyCubemaps"))
+		{
+			g_bBuildOnlyCubemaps = true;
+		}
+		else if (!Q_stricmp(argv[i], "-BuildLdrCubemaps"))
+		{
+			g_bBuildLdrCubemaps = true;
+		}
+		else if (!Q_stricmp(argv[i], "-BuildHdrCubemaps"))
+		{
+			g_bBuildHdrCubemaps = true;
+		}	
+		else if (!Q_stricmp(argv[i], "-BuildBothCubemaps"))
+		{
+			g_bBuildHdrCubemaps = true;
+			g_bBuildLdrCubemaps = true;
+		}
 		else if (!Q_stricmp(argv[i],"-maxchop"))
 		{
 			if ( ++i < argc )
@@ -2823,6 +2855,12 @@ void PrintUsage( int argc, char **argv )
 		"  -final          : High quality processing. equivalent to -extrasky 16.\n"
 		"  -extrasky n     : trace N times as many rays for indirect light and sky ambient.\n"
 		"  -low            : Run as an idle-priority process.\n"
+		"  -BuildOnlyCubemaps : Only builds cubemaps, skips vrad compilation.\n"
+		"  -BuildLdrCubemaps : Run the game to build cubemaps in LDR mode.\n"
+		"  -BuildHdrCubemaps : Run the game to build cubemaps in HDR mode. -hdr or -both needs to be enabled in order to work.\n"
+		"  -BuildBothCubemaps : Run the game to build cubemaps in both LDR and HDR modes.\n"
+		"						equivalent to -BuildLdrCubemaps -BuildHdrCubemaps.\n"		
+
 #ifdef MPI
 		"  -mpi            : Use VMPI to distribute computations.\n"
 #endif
@@ -2932,18 +2970,31 @@ int RunVRAD( int argc, char **argv )
 	Q_StripExtension( argv[ i ], source, sizeof( source ) );
 	CmdLib_InitFileSystem( argv[ i ] );
 	Q_FileBase( source, source, sizeof( source ) );
+	
+	VRAD_LoadBSP(argv[i]);
 
-	VRAD_LoadBSP( argv[i] );
-
-	if ( (! onlydetail) && (! g_bOnlyStaticProps ) )
+	if (!g_bBuildOnlyCubemaps)
 	{
-		RadWorld_Go();
+		if ((!onlydetail) && (!g_bOnlyStaticProps))
+		{
+			RadWorld_Go();
+		}
+
+		VRAD_ComputeOtherLighting();
+
+		VRAD_Finish();
 	}
-
-	VRAD_ComputeOtherLighting();
-
-	VRAD_Finish();
-
+	else
+	{
+		if (g_bBuildHdrCubemaps && g_bHDR)
+		{
+			BuildCubemaps(g_bHDR);
+		}
+		if (g_bBuildLdrCubemaps && !g_bHDR)
+		{
+			BuildCubemaps(g_bHDR);
+		}
+	}
 #ifdef MPI
 	VMPI_SetCurrentStage( "master done" );
 #endif
@@ -2981,8 +3032,3 @@ int VRAD_Main(int argc, char **argv)
 	
 	return RunVRAD( argc, argv );
 }
-
-
-
-
-
