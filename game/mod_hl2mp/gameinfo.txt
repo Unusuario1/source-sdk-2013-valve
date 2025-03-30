@@ -92,4 +92,65 @@
 			game+download	mod_hl2mp/download
 		}
 	}
+
+
+	ContentBuilder
+	{
+		MaterialBuilder
+		{
+			//By default we start vtex.exe with -nopause -deducepath -crcvalidate
+		}
+
+		ModelBuilder
+		{
+		
+		}
+
+		SoundBuilder
+		{
+		
+		}
+
+		SceneBuilder
+		{
+		
+		}
+
+		CaptionBuilder
+		{
+
+		}
+
+		MapBuilder
+		{
+			Vbsp
+			{
+		
+			}
+
+			Vvis
+			{
+		
+			}
+
+			Vrad
+			{
+		
+			}
+
+			BspZipMapPacking
+			{
+
+			}
+
+			CubemapBuilder 1
+			NavBuilder 1
+			NodeGraphBuilder 1
+		}
+
+		VpkBuilder
+		{
+		
+		}
+	}
 }

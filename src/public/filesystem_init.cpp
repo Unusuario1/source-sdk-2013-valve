@@ -1404,6 +1404,37 @@ void FileSystem_SetErrorMode( FSErrorMode_t errorMode )
 	g_FileSystemErrorMode = errorMode;
 }
 
+//-----------------------------------------------------------------------------
+// Returns a string where the app dir is instaled 
+//-----------------------------------------------------------------------------
+void FileSystem_GetAppInstallDir(char* string, size_t bufferSize) 
+{
+	if (!SteamAPI_Init()) 
+	{
+		Error("SteamAPI_Init() failed! Possible causes:\n"
+			"  - Steam is not open.\n"
+			"  - Could not find steam_appid.txt\n"
+#ifdef PLATFORM_64BITS
+			"  - Could not find steam_api64.dll\n"
+#else
+			"  - Could not find steam_api.dll\n"
+#endif
+		);
+	}
+
+	AppId_t appID = SteamUtils()->GetAppID();
+	if (appID == 0) 
+	{
+		Error("Failed to get AppID!");
+	}
+
+	uint32 result = SteamApps()->GetAppInstallDir(appID, string, bufferSize);
+	if (result == 0) 
+	{
+		Error("Failed to get App Install Directory!");
+	}
+}
+
 void FileSystem_ClearSteamEnvVars()
 {
 	CSteamEnvVars envVars;

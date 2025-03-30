@@ -26,7 +26,7 @@
 class CSceneImage : public ISceneImage
 {
 public:
-	virtual bool CreateSceneImageFile( CUtlBuffer &targetBuffer, char const *pchModPath, bool bLittleEndian, bool bQuiet, ISceneCompileStatus *Status );
+	virtual bool CreateSceneImageFile(CUtlBuffer& targetBuffer, char const* pchModPath, bool bLittleEndian, bool bQuiet, ISceneCompileStatus* Status);
 };
 
 static CSceneImage g_SceneImage;
@@ -322,7 +322,7 @@ bool CSceneImage::CreateSceneImageFile( CUtlBuffer &targetBuffer, char const *pc
 
 	// iterate and convert all the VCD files
 	bool bGameIsTF = V_stristr( pchModPath, "\\tf" ) != NULL;
-	for ( int i=0; i<vcdFileList.Count(); i++ )
+	for ( int i=0; i< vcdFileList.Count(); i++ )
 	{
 		const char *pFilename = vcdFileList[i].fileName.String();
 		const char *pSceneName = V_stristr( pFilename, "scenes\\" );
@@ -342,15 +342,15 @@ bool CSceneImage::CreateSceneImageFile( CUtlBuffer &targetBuffer, char const *pc
 		if ( symbol == UTL_INVAL_SYMBOL )
 		{
 			vcdSymbolTable.AddString( pSceneName );
-
-			pStatus->UpdateStatus( pFilename, bQuiet, i, vcdFileList.Count() );
-
+#ifdef VCDGEN
+			Msg("Scene : Compiling scene %d\n", i);
+#else
+			pStatus->UpdateStatus(pFilename, bQuiet, i, vcdFileList.Count());
+#endif
 			if ( !CreateTargetFile_VCD( pFilename, "", false, bLittleEndian ) )
 			{
 				Error( "CreateSceneImageFile: Failed on '%s' conversion!\n", pFilename );
 			}
-
-
 		}
 	}
 

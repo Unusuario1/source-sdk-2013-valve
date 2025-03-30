@@ -145,3 +145,13 @@ $Project "vvis_launcher"
 	"utils\vvis_launcher\vvis_launcher.vpc" [$WINDOWS]
 }
 
+$Project "contentbuilder"
+{
+	"utils\contentbuilder\contentbuilder.vpc" [$WINDOWS]
+}
+
+$Project "vcdgen"
+{
+	"utils\vcdgen\vcdgen.vpc" [$WINDOWS]
+}
+
