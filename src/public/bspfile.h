@@ -96,7 +96,8 @@
 #define MAX_MAP_WATEROVERLAYS			16384
 #define MAX_MAP_TEXDATA_STRING_DATA		256000
 #define MAX_MAP_TEXDATA_STRING_TABLE	65536
-#define MAX_MAP_DETAIL_PROPS			65536
+#define MAX_MAP_DETAIL_PROPS			65536	// The object lump is variable-sized, so there's no strict limit.  
+												// The MAX_MAP_DETAIL_PROPS limit is just a warning for the user.
 // this is stuff for trilist/tristrips, etc.
 #define MAX_MAP_PRIMITIVES				32768
 #define MAX_MAP_PRIMVERTS				65536
