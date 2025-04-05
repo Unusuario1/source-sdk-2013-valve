@@ -26,8 +26,7 @@ void HitKeyToContinue()
 {
     if (g_pause)
     {
-        Msg("Hit a key to continue\n");
-        scanf("%s");
+        system("pause");
     }
 }
 

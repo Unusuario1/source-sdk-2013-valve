@@ -20,7 +20,7 @@ namespace SceneBuilder
 
 	void SceneCompile(const char* gamebin, std::size_t bufferSize, std::size_t &complete, std::size_t &error)
 	{
-		//We need to read the keyvalues of audioprocess
+		//We need to read the keyvalues of SceneBuilder
 		Shared::StartExe(gamebin, bufferSize, "Scenes", NAME_SCENE_TOOL, "", complete, error);
 	}
 }
