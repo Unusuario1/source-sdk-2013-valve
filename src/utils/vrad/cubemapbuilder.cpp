@@ -212,9 +212,10 @@ void BuildCubemaps(bool bHdrMode)
 	LoadGameInfoConvar(GameInfoPath, KVconvars, sizeof(GameInfoPath), bHdrMode);
 
 	V_snprintf(buildcubemapscommandline, sizeof(buildcubemapscommandline), 
-	" -sw -w %d -h %d -dev -novid -insecure -console -buildcubemaps -game \"%s\" +map %s %s ",
+	" -sw -w %d -h %d -dev -novid -insecure -console -buildcubemaps %d -game \"%s\" +map %s %s ",
 			GetSystemMetrics(SM_CXSCREEN), 
-			GetSystemMetrics(SM_CYSCREEN),  
+			GetSystemMetrics(SM_CYSCREEN), 
+			bHdrMode ? g_iBuildHdrCubemapPasses : g_iBuildLdrCubemapPasses,
 			_gamedir,
 			level_name,
 			KVconvars
