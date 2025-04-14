@@ -1,6 +1,9 @@
 #include <cstddef>
+#include <windows.h>
+#include "filesystem_init.h"
 
 #include "soundbuilder.h"
+#include "colorscheme.h"
 #include "shared.h"
 
 /*
@@ -27,6 +30,12 @@ namespace SoundBuilder
 
 	void SoundCompile(const char* gamebin, std::size_t bufferSize, std::size_t &complete, std::size_t &error)
 	{
+		Shared::PrintHeaderCompileType("Sounds");
+
+		// TODO: make this work!
+
+		//audioprocess.exe
+
 		//We need to read the keyvalues of audioprocess
 		Shared::StartExe(gamebin, bufferSize, "Sounds", NAME_SOUND_TOOL, "", complete, error, false);
 	}

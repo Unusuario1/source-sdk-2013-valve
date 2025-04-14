@@ -746,7 +746,7 @@ FSReturnCode_t FileSystem_LoadSearchPaths( CFSSearchPathsInit &initInfo )
 			}
 			pszBaseDir = szAppInstallDir;
 #else
-			Error( "Appid based mounting is not supported on non-engine DLL projects." );
+			Warning( "Appid based mounting is not supported on non-engine DLL projects." );
 #endif
 		}
 		else if ( Q_stristr( pLocation, GAMEINFOPATH_TOKEN ) == pLocation )

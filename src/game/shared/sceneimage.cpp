@@ -298,7 +298,15 @@ bool CSceneImage::CreateSceneImageFile( CUtlBuffer &targetBuffer, char const *pc
 
 	// get all the VCD files according to the seacrh paths
 	char searchPaths[512];
-	g_pFullFileSystem->GetSearchPath( "GAME", false, searchPaths, sizeof( searchPaths ) );
+
+	// In sceneimagebuilder.exe, we allow mods to reside outside the main game directory
+	// so we use the 'MOD' to get all search paths propely
+#if defined(SCENEIMAGEBUILDER)
+	g_pFullFileSystem->GetSearchPath("MOD", false, searchPaths, sizeof(searchPaths));
+#else
+	g_pFullFileSystem->GetSearchPath("GAME", false, searchPaths, sizeof(searchPaths));
+#endif
+
 	char *pPath = strtok( searchPaths, ";" );
 	while ( pPath )
 	{
@@ -343,18 +351,21 @@ bool CSceneImage::CreateSceneImageFile( CUtlBuffer &targetBuffer, char const *pc
 		if ( symbol == UTL_INVAL_SYMBOL )
 		{
 			vcdSymbolTable.AddString( pSceneName );
-#ifdef VCDGEN
-			Msg("\tCompute scene (*.vcd) %d/%d... ", i, vcdFiles);
+		
+			// we dont use the status bar for sceneimagebuilder.exe
+#if defined(SCENEIMAGEBUILDER)
+			Msg("\tCompute scene (*.vcd) %d/%d... ", i + 1, vcdFiles);
 #else
 			pStatus->UpdateStatus(pFilename, bQuiet, i, vcdFileList.Count());
 #endif
+
 			if ( !CreateTargetFile_VCD( pFilename, "", false, bLittleEndian ) )
 			{
 				Error( "CreateSceneImageFile: Failed on '%s' conversion!\n", pFilename );
 			}
 		}
-#ifdef VCDGEN
-		Msg("Done\n");
+#if defined(SCENEIMAGEBUILDER)
+		Msg("done\n");
 #endif
 	}
 

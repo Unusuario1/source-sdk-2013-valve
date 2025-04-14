@@ -7,7 +7,7 @@
 #include "../game/shared/sceneimage.cpp"
 
 
-class CVcdGenApp : public CTier3SteamApp, public ISceneImage
+class CSceneImageBuilderApp : public CTier3SteamApp, public ISceneImage
 {
 private:
 	CSceneImage sceneImage;

@@ -1,7 +1,9 @@
 #include <io.h>
+#include <stdio.h>
 #include <windows.h>
 #include <shlobj.h>
 #include <cwchar>
+#include <wchar.h>
 
 #include "filesystem_init.h"
 #include "KeyValues.h"
@@ -9,13 +11,14 @@
 #include "cmdlib.h"
 
 #include "contentbuilder.h"
+#include "colorscheme.h"
 #include "shared.h"
 
 
 namespace Shared
 {
     //-----------------------------------------------------------------------------
-    // Purpose:   Ignore errors (no terminating call) if they -ignoreerros is enabled
+    // Purpose:   Ignore errors (no terminating call) if g_ignoreerrors = true
     //-----------------------------------------------------------------------------
     void qError(const char* format, ...)
     {
@@ -38,10 +41,78 @@ namespace Shared
         va_end(argptr);
     }
 
+
+    bool CreateDirectoryRecursive(const char* path) 
+    {
+        char temp[MAX_PATH];
+
+        V_strncpy(temp, path, MAX_PATH);
+        V_StripTrailingSlash(temp);
+
+        for (char* p = temp + 3; *p; p++) 
+        {
+            if (*p == '\\') 
+            {
+                *p = '\0';
+                CreateDirectoryA(temp, NULL); // ignore errors
+                *p = '\\';
+            }
+        }
+
+        return CreateDirectoryA(temp, NULL) || GetLastError() == ERROR_ALREADY_EXISTS;
+    }
+
+
+    bool CopyDirectoryContents(const char* srcPath, const char* dstPath, const char *extension)
+    {
+        char srcSearch[MAX_PATH];
+        V_snprintf(srcSearch, MAX_PATH, "%s\\*%s", srcPath, extension);
+
+        WIN32_FIND_DATAA findData;
+        HANDLE hFind = FindFirstFileA(srcSearch, &findData);
+
+        if (hFind == INVALID_HANDLE_VALUE) 
+        {
+            Shared::qError("AssetSystem -> Failed to open source directory: %s\n", srcPath);
+            return false;
+        }
+
+        // Create the destination directory if it doesn't exist
+        CreateDirectoryA(dstPath, NULL);
+
+        do {
+            // Skip "." and ".."
+            if (V_strcmp(findData.cFileName, ".") == 0 || V_strcmp(findData.cFileName, "..") == 0)
+                continue;
+
+            char fullSrc[MAX_PATH];
+            char fullDst[MAX_PATH];
+            V_snprintf(fullSrc, MAX_PATH, "%s\\%s", srcPath, findData.cFileName);
+            V_snprintf(fullDst, MAX_PATH, "%s\\%s", dstPath, findData.cFileName);
+
+            if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) 
+            {
+                // Recursively copy subdirectories
+                CopyDirectoryContents(fullSrc, fullDst, extension);
+            }
+            else {
+                // Copy the file
+                if (!CopyFileA(fullSrc, fullDst, FALSE)) 
+                {
+                    Shared::qError("AssetSystem -> Failed to copy file: %s to %s (Error: %lu)\n", fullSrc, fullDst, GetLastError());
+                }
+            }
+        } while (FindNextFileA(hFind, &findData));
+
+        FindClose(hFind);
+        return true;
+    }
+
+
     //-----------------------------------------------------------------------------
     // Purpose:   Given a outdir, srcdir and a extension it will copy all the files of srcdir to outdir 
     //-----------------------------------------------------------------------------
-    void CopyFilesRecursively(const char* srcDir, const char* outDir, const char* extension) 
+    void CopyFilesRecursivelyGame(const char* srcDir, const char* srcfolder, const char* gamefolder, const char* extension) 
     {
         WIN32_FIND_DATAA findFileData;
         HANDLE hFind;
@@ -53,55 +124,130 @@ namespace Shared
 
         if (hFind == INVALID_HANDLE_VALUE) 
         {
-            Shared::qError("Error: Cannot open directory: \"%s\"\n", srcDir);
-            return;
+            Error("Error: Cannot open directory: \"%s\"\n", srcDir);
         }
 
         do 
         {
+            char fullPath[MAX_PATH] = "", *outPath;
             const char* fileName = findFileData.cFileName;
 
             // Skip "." and ".."
-            if (strcmp(fileName, ".") == 0 || strcmp(fileName, "..") == 0) 
+            if (V_strcmp(fileName, ".") == 0 || V_strcmp(fileName, "..") == 0) 
             {
                 continue;
             }
 
-            char fullPath[MAX_PATH];
-            char outPath[MAX_PATH];
-
             V_snprintf(fullPath, sizeof(fullPath), "%s\\%s", srcDir, fileName);
-            V_snprintf(outPath, sizeof(outPath), "%s\\%s", outDir, fileName);
+            outPath = Shared::ReplaceSubstring(fullPath, srcfolder, gamefolder);
 
             if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) 
             {
                 // Recursively process subdirectories
-                CopyFilesRecursively(fullPath, outDir, extension);
+                free(outPath);
+                CopyFilesRecursivelyGame(fullPath, srcfolder, gamefolder, extension);
             }
             else 
             {
-                // Get file extension
-                const char* fileExt = strrchr(fileName, '.');
-                if (fileExt && strcmp(fileExt, extension) == 0) 
+                const char* fileExt = V_strrchr(fileName, '.');
+                if (fileExt && V_strcmp(fileExt, extension) == 0) 
                 {
+                    char* createDir = Shared::ReplaceSubstring(srcDir, srcfolder, gamefolder);
+                    CreateDirectory(createDir, NULL);
+                    free(createDir);
 
-                    // Ensure the output directory exists
-                    CreateDirectoryA(outDir, NULL);
-
-                    // Copy file to outDir
                     if (!CopyFileA(fullPath, outPath, FALSE)) 
                     {
                         Shared::qError("Failed to copy: %s to %s\n", fullPath, outPath);
+                        free(outPath);
                     }
                     else 
                     {
-                        qprintf("Copied: %s -> %s\n", fullPath, outPath);
+                        qprintf("\nCopied: %s -> %s\n", fullPath, outPath);
+                        free(outPath);
                     }
                 }
             }
         } while (FindNextFileA(hFind, &findFileData));
 
         FindClose(hFind);
+    }
+
+
+    void DeleteFolderWithContents(const char* folderPath) 
+    {
+        char path[MAX_PATH];
+        V_snprintf(path, sizeof(path), "%s\\", folderPath); // trailing slash required
+        path[V_strlen(path) + 1] = '\0'; // double null-terminated string
+
+        SHFILEOPSTRUCTA fileOp = { 0 };
+        fileOp.wFunc = FO_DELETE;
+        fileOp.pFrom = path;
+        fileOp.fFlags = FOF_NO_UI; // No confirmation dialogs
+
+        int result = SHFileOperationA(&fileOp);
+        if (result != 0) 
+        {
+            Warning("AssetSystem -> Failed to delete: \"%s\". SHFileOperation error: %d\n", path, result);
+        }
+    }
+
+
+    //-----------------------------------------------------------------------------
+    // Purpose: This is only used for tools that support batch compile!
+    //-----------------------------------------------------------------------------
+    void AssetInfoBuild(const char* folder, const char* extension)
+    {
+        char searchPath[MAX_PATH];
+        V_snprintf(searchPath, sizeof(searchPath), "%s\\*", folder);
+
+        WIN32_FIND_DATAA findData;
+        HANDLE hFind = FindFirstFileA(searchPath, &findData);
+        if (hFind == INVALID_HANDLE_VALUE)
+            return;
+
+        do 
+        {
+            const char* name = findData.cFileName;
+
+            if (V_strcmp(name, ".") == 0 || V_strcmp(name, "..") == 0)
+                continue;
+
+            char fullPath[MAX_PATH];
+            V_snprintf(fullPath, MAX_PATH, "%s\\%s", folder, name);
+
+            if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) 
+            {
+                AssetInfoBuild(fullPath, extension); // Recurse into subdirectory
+            }
+            else 
+            {
+                const char* dot = V_strrchr(name, '.');
+                if (dot && V_stricmp(dot, extension) == 0)
+                {
+                    if (g_spewallcommands) 
+                    {
+                        ColorSpewMessage(SPEW_MESSAGE, &sucesfullprocess_color, "OK");
+                        Msg(" - %s - ", Shared::TimeStamp());
+                        ColorSpewMessage(SPEW_MESSAGE, &path_color, "%s\n", fullPath);
+                    }
+                }
+            }
+
+        } while (FindNextFileA(hFind, &findData));
+
+        FindClose(hFind);
+    }
+
+
+    //-----------------------------------------------------------------------------
+    // Purpose: Print asset time stamp
+    //-----------------------------------------------------------------------------
+    void AssetInfoBuild(WIN32_FIND_DATAA findData)
+    {
+        ColorSpewMessage(SPEW_MESSAGE, &sucesfullprocess_color, "OK");
+        Msg(" - %s - ", Shared::TimeStamp());
+        ColorSpewMessage(SPEW_MESSAGE, &path_color, "%s\n", findData.cFileName);
     }
 
 
@@ -112,7 +258,7 @@ namespace Shared
     {
         char searchPath[MAX_PATH];
         int count = 0;
-        size_t extLen = strlen(asset_type);
+        size_t extLen = V_strlen(asset_type);
 
         V_snprintf(searchPath, MAX_PATH, "%s\\*", directory); // Search for all files and folders
 
@@ -121,18 +267,18 @@ namespace Shared
 
         if (hFind == INVALID_HANDLE_VALUE) 
         {
-            Shared::qError("\tAssetSystem -> Failed to open directory: %s\n", directory);
+            Warning("\tAssetSystem -> Failed to open directory: \"%s\"\n", directory);
         }
 
         do
         {
-            if (strcmp(findData.cFileName, ".") == 0 || strcmp(findData.cFileName, "..") == 0) 
+            if (V_strcmp(findData.cFileName, ".") == 0 || V_strcmp(findData.cFileName, "..") == 0) 
             { 
                 continue; // Skip special entries
             } 
 
             char fullPath[MAX_PATH];
-            snprintf(fullPath, MAX_PATH, "%s\\%s", directory, findData.cFileName);
+            V_snprintf(fullPath, MAX_PATH, "%s\\%s", directory, findData.cFileName);
 
             if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) 
             {
@@ -142,8 +288,8 @@ namespace Shared
             else 
             {
                 // Check if the file ends with asset_type
-                size_t len = strlen(findData.cFileName);
-                if (len > extLen && strcmp(findData.cFileName + len - extLen, asset_type) == 0)
+                size_t len = V_strlen(findData.cFileName);
+                if (len > extLen && V_strcmp(findData.cFileName + len - extLen, asset_type) == 0)
                 {
                     count++;
                 }
@@ -152,6 +298,52 @@ namespace Shared
 
         FindClose(hFind);
         return count;
+    }
+
+
+    //-----------------------------------------------------------------------------
+    // Purpose: Given a string, sub-string, and string to replace it replaces the 
+    //          sub-string with the string to replace
+    // NOTE: remeber to free the memory! (e.g: free(foo);)
+    //-----------------------------------------------------------------------------
+    char* ReplaceSubstring(const char* str, const char* old_sub, const char* new_sub) 
+    {
+        if (!str || !old_sub || !new_sub) 
+            return NULL;
+
+        size_t str_len = V_strlen(str);
+        size_t old_len = V_strlen(old_sub);
+        size_t new_len = V_strlen(new_sub);
+
+        // First count how many times old_sub appears
+        int count = 0;
+        const char* tmp = str;
+        while ((tmp = V_strstr(tmp, old_sub))) 
+        {
+            count++;
+            tmp += old_len;
+        }
+
+        // Allocate memory for the new string
+        size_t new_str_len = str_len + count * (new_len - old_len) + 1;
+        char* result = (char*)malloc(new_str_len);
+        if (!result) return NULL;
+
+        char* dst = result;
+        const char* src = str;
+
+        while ((tmp = V_strstr(src, old_sub))) 
+        {
+            size_t bytes_to_copy = tmp - src;
+            memcpy(dst, src, bytes_to_copy);
+            dst += bytes_to_copy;
+            memcpy(dst, new_sub, new_len);
+            dst += new_len;
+            src = tmp + old_len;
+        }
+        V_strcpy(dst, src); // Copy the rest
+
+        return result;
     }
 
 
@@ -165,11 +357,19 @@ namespace Shared
 
         if (SHCreateDirectoryEx(NULL, _temp, NULL) == ERROR_SUCCESS)
         {
-            Msg("\tAssetSystem -> Creating directory: \"%s\"\n", _temp);
+            if (g_spewallcommands) 
+            {
+                Msg("\tAssetSystem -> Creating directory: ");   ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\"\n", _temp);
+            }
         }
         else if (GetLastError() == ERROR_ALREADY_EXISTS)
         {
-            Msg("\tAssetSystem -> Directory: \"%s\", already exists!\n", _temp);
+            if (g_spewallcommands)
+            {
+                Msg("\tAssetSystem -> Directory:");
+                ColorSpewMessage(SPEW_MESSAGE, &path_color, " \"%s\" ", _temp);
+                Msg(", already exists!\n");
+            }
         }
         else
         {
@@ -181,7 +381,162 @@ namespace Shared
     }
 
 
-    bool DirectoryExists(const char* path) 
+    const char* TimeStamp()
+    {
+        float actualTime = Plat_FloatTime();
+        float deltaTime = actualTime - g_timer;
+
+        if (deltaTime < 0) deltaTime = 0;
+
+        std::size_t mins = static_cast<std::size_t>(deltaTime) / 60;
+        std::size_t secs = static_cast<std::size_t>(deltaTime) % 60;
+
+        static char szTime[128];
+        V_snprintf(szTime, sizeof(szTime), "%.2llum:%.2llus", mins, secs);
+
+        return szTime;
+    }
+
+
+    //-----------------------------------------------------------------------------
+    // Purpose: does the string have the extension? "foo.bsp" ".bsp" -> true
+    //-----------------------------------------------------------------------------
+    bool HasExtension(const char* filename, const char* extension)
+    {
+        const char* dot = V_strrchr(filename, '.');
+        return (dot && V_stricmp(dot, extension) == 0);
+    }
+
+
+    void PrintHeaderCompileType(const char* compile_type)
+    {
+        ColorSpewMessage(SPEW_MESSAGE, &header_color, "\n====== %s %s ======\n", g_buildcontent ? "Building" : "Printing", compile_type);
+    }
+
+
+    //-----------------------------------------------------------------------------
+    // Purpose:     If g_buildoutofdatecontent = true, we check if the compiled
+    //              asset is out of date in comparasion to the src, if it is
+    //              return true, if not false
+    //-----------------------------------------------------------------------------
+    bool PartialBuildAsset(const char* asset_path, const char* asset_src_folder, const char* asset_folder)
+    {
+        if (!g_buildoutofdatecontent)
+            return true;
+        
+        char* szAssetSrcPath = V_strdup(asset_path);
+        char* szAssetPath = ReplaceSubstring(szAssetSrcPath, asset_src_folder, asset_folder);
+
+        // Convert char* to wchar_t*
+        wchar_t wCompiled[MAX_PATH];
+        wchar_t wSource[MAX_PATH];
+        MultiByteToWideChar(CP_UTF8, 0, szAssetSrcPath, -1, wSource, MAX_PATH);
+        MultiByteToWideChar(CP_UTF8, 0, szAssetPath, -1, wCompiled, MAX_PATH);
+
+        FILETIME ftCompiled, ftSource;
+
+        // Open both files
+        HANDLE hCompiled = CreateFileW(wCompiled, GENERIC_READ,
+            FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        HANDLE hSource = CreateFileW(wSource, GENERIC_READ,
+            FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+        if (hCompiled == INVALID_HANDLE_VALUE || hSource == INVALID_HANDLE_VALUE) {
+            // If compiled asset doesn't exist, it's definitely out of date
+            if (hCompiled == INVALID_HANDLE_VALUE) {
+                if (hSource != INVALID_HANDLE_VALUE) CloseHandle(hSource);
+                return true;
+            }
+            // Otherwise, something else failed
+            if (hCompiled != INVALID_HANDLE_VALUE) CloseHandle(hCompiled);
+            if (hSource != INVALID_HANDLE_VALUE) CloseHandle(hSource);
+            Warning("AssetSystem -> Failed to open files.\n");
+            return false;
+        }
+
+        // Get last write times
+        GetFileTime(hCompiled, NULL, NULL, &ftCompiled);
+        GetFileTime(hSource, NULL, NULL, &ftSource);
+
+        CloseHandle(hCompiled);
+        CloseHandle(hSource);
+
+        free(szAssetSrcPath);
+        free(szAssetPath);
+
+        // Compare timestamps
+        return CompareFileTime(&ftSource, &ftCompiled) > 0;
+    }
+
+
+    //-----------------------------------------------------------------------------
+    // Purpose:
+    //-----------------------------------------------------------------------------
+    bool FindFileRecursive(const char* baseDir, const char* extension)
+    {
+        char searchPath[MAX_PATH];
+        V_snprintf(searchPath, MAX_PATH, "%s\\*", baseDir);
+
+        WIN32_FIND_DATAA findFileData;
+        HANDLE hFind = FindFirstFileA(searchPath, &findFileData);
+        if (hFind == INVALID_HANDLE_VALUE)
+            return false;
+
+        do
+        {
+            if (V_strcmp(findFileData.cFileName, ".") == 0 || V_strcmp(findFileData.cFileName, "..") == 0)
+                continue;
+
+            char fullPath[MAX_PATH];
+            V_snprintf(fullPath, MAX_PATH, "%s\\%s", baseDir, findFileData.cFileName);
+
+            if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+            {
+                if (FindFileRecursive(fullPath, extension))
+                {
+                    FindClose(hFind);
+                    return true;
+                }
+            }
+            else
+            {
+                if (HasExtension(findFileData.cFileName, extension))
+                {
+                    FindClose(hFind);
+                    return true;
+                }
+            }
+
+        } while (FindNextFileA(hFind, &findFileData));
+
+        FindClose(hFind);
+        return false;
+    }
+
+
+    //-----------------------------------------------------------------------------
+    // Purpose: Checks a if a dir has at least ONE asset type
+    //-----------------------------------------------------------------------------
+    bool DirectoryAssetTypeExist(const char* directoryPath, const char* extension, const char* asset_type)
+    {
+        if (FindFileRecursive(directoryPath, extension))
+        {
+            return true;
+        }
+        else 
+        {
+            Warning("AssetsSystem -> No files with extension \"%s\" found in \"%s\"\n"
+                    "AssetsSystem -> Skipping %s (%s) compile!\n",
+                    extension, directoryPath, asset_type, extension);
+            return false;
+        }
+    }
+
+
+    //-----------------------------------------------------------------------------
+    // Purpose: Does a dir exist? 
+    //-----------------------------------------------------------------------------
+    bool DirectoryExists(const char* path)
     {
         DWORD attr = GetFileAttributesA(path);
         return (attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY));
@@ -194,14 +549,18 @@ namespace Shared
     void AssetToolCheck(const char* gamebin, const char* tool_name, const char* sub_system)
     {
         char tool_path[MAX_PATH];
-        V_snprintf(tool_path, sizeof(tool_path), " %s\\%s ", gamebin, tool_name);
 
-        Msg("\t%s: \"%s\"\n", sub_system, tool_path);
+        V_snprintf(tool_path, sizeof(tool_path), "%s\\%s", gamebin, tool_name);
 
-        if (Shared::CheckIfFileExist(tool_path))
+        if (g_spewallcommands)
         {
-            Shared::qError("%s doesnt not exist in %s !\n", tool_name, gamebin);
-            exit(-1);
+            Msg("\t%s: ", sub_system);
+            ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\"\n", tool_path);
+        }
+
+        if (!Shared::CheckIfFileExist(tool_path))
+        {
+            Shared::qError("\t\n%s doesnt not exist in %s !\n", tool_name, gamebin);
         }
     }
 
@@ -212,21 +571,14 @@ namespace Shared
     void StartExe(const char* gamebin, std::size_t bufferSize, const char* type_asset, const char* tool_name, 
                             const char* Keyvalues, std::size_t &complete, std::size_t &error, bool quietmode = false)
     {
-        char _gametoolpath[MAX_PATH];
-        float start, end;
-
-        start = Plat_FloatTime();
-
-        if (!quietmode) 
-        {
-            Msg("\n====== Building %s ======\n", type_asset);
-        }
+        char _gametoolpath[8192];
+        float start = Plat_FloatTime();
 
         V_snprintf(_gametoolpath, sizeof(_gametoolpath), "\"%s\\%s\" %s", gamebin, tool_name, Keyvalues);
 
         if (!quietmode)
         {
-            Msg("AssetTools -> Starting: %s\n\n", _gametoolpath);
+            Msg("AssetTools -> Starting: ");    ColorSpewMessage(SPEW_MESSAGE, &path_color, "%s\n\n", _gametoolpath);
         }
 
         STARTUPINFO si = { 0 };
@@ -254,27 +606,22 @@ namespace Shared
             }
             else
             {
-                if (!quietmode) 
-                {
-                    Msg("%s compile complete!\n", _gametoolpath);
-                }
                 complete++;
             }
         }
         else
         {
             Shared::qError("GetExitCodeProcess() failed!\n");
+            error++;
         }
 
         // Close process handles
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
-
-        end = Plat_FloatTime();
         
         if (!quietmode)
         {
-            Msg("\nAssetTools -> Done building %s in %f seconds.\n", type_asset, end - start);
+            ColorSpewMessage(SPEW_MESSAGE, &sucesfullprocess_color, "\nAssetTools -> Done building %s in %f seconds.\n\n", type_asset, Plat_FloatTime() - start);
         }
     }
 
@@ -299,24 +646,24 @@ namespace Shared
     //-----------------------------------------------------------------------------
     // Purpose:   Checks if file exist
     //-----------------------------------------------------------------------------
-    FORCEINLINE bool CheckIfFileExist(const char *path)
+    bool CheckIfFileExist(const char *path)
     {
         return (_access(path, 0) == 0);
     }
 
 
     //-----------------------------------------------------------------------------
-    // Purpose:   Do we target 32 or 64 bits tools?
+    // Purpose:   Do we target 32 or 64 bits tools? if true x64, false x86
     //-----------------------------------------------------------------------------
     bool TargetPlatform()
     {
-        bool _temp = PLATFORM_64BITS ? true : false;
+        bool _temp = PLATFORM_64BITS ? true : false; // Default value
         
         if (g_force32bits) 
         {
-            _temp = true;
+            _temp = false;
         }
-        if (g_force64bits)
+        else if (g_force64bits)
         {
             _temp = true;
         }
@@ -330,49 +677,59 @@ namespace Shared
     //-----------------------------------------------------------------------------
     void SetUpBinDir(char* string, size_t bufferSize)
     {
-        char temp[MAX_PATH];
+        char szTemp[MAX_PATH];
 
         if (!g_nosteam) 
         {
-            FileSystem_GetAppInstallDir(temp, sizeof(temp));
+            FileSystem_GetAppInstallDir(szTemp, sizeof(szTemp));
         }
         else
         {
-            V_snprintf(temp, sizeof(temp), "%s", g_steamdir);
+            V_snprintf(szTemp, sizeof(szTemp), "%s", g_steamdir);
         }
 
-        V_snprintf(string, bufferSize, "%s\\%s", temp, TargetPlatform() ? TOOLS_PATH_64BITS : TOOLS_PATH_32BITS);
+        V_snprintf(string, bufferSize, "%s\\%s", szTemp, TargetPlatform() ? TOOLS_PATH_64BITS : TOOLS_PATH_32BITS);
     }
+
 
     //-----------------------------------------------------------------------------
     // Purpose:     Loads specific tools KeyValues, we asume that we are inside ContentBuilder KV 
     //-----------------------------------------------------------------------------
-    void LoadGameInfoKv(const char* ToolKeyValue, char * output_argv, std::size_t bufferSize)
+    void LoadGameInfoKv(const char* ToolKeyValue, char* output_argv, std::size_t bufferSize)
     {
+        float start = Plat_FloatTime();
+
         KeyValues* GameInfoKVCubemap = ReadKeyValuesFile(g_gameinfodir);
-        
+
+        qprintf("Loading Keyvalues from: \'%s\'... ", ToolKeyValue);
+
         if (!GameInfoKVCubemap)
         {
-            Shared::qError("Could not get KeyValues from %s!\n", g_gameinfodir);
+            Shared::qError("Could not get KeyValues from \"%s\"!\n", g_gameinfodir);
         }
 
         KeyValues* ContentBuilderKV = GameInfoKVCubemap->FindKey(CONTENTBUILDER_KV, false);
 
         if (!ContentBuilderKV)
         {
-            Shared::qError("Could not get \'%s\' KeyValues from %s!\n", CONTENTBUILDER_KV, g_gameinfodir);
+            Shared::qError("Could not get \'%s\' KeyValues from \"%s\"!\n", CONTENTBUILDER_KV, g_gameinfodir);
         }
 
         KeyValues* ToolKV = ContentBuilderKV->FindKey(ToolKeyValue, false);
 
         if (!ToolKV)
         {
-            Shared::qError("Could not get \'%s\' KeyValues from %s!\n", ToolKeyValue, g_gameinfodir);
+            Shared::qError("Could not get \'%s\' KeyValues from \"%s\"!\n", ToolKeyValue, g_gameinfodir);
         }
-        
+
         for (KeyValues* subKey = ToolKV->GetFirstSubKey(); subKey; subKey = subKey->GetNextKey())
         {
             V_snprintf(output_argv, bufferSize, "%s %s %s", output_argv, subKey->GetName(), subKey->GetString());
+        }
+
+        if (verbose) 
+        { 
+            ColorSpewMessage(SPEW_MESSAGE, &done_color, "done(%.2f)\n", Plat_FloatTime() - start);
         }
     }
 }

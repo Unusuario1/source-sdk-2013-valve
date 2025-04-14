@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-//	VCDGEN.VPC
+//	SCENEIMAGEBUILDER.VPC
 //
 //	Project Script
 //-----------------------------------------------------------------------------
@@ -13,8 +13,8 @@ $Configuration
 {
 	$Compiler
 	{
-		$AdditionalIncludeDirectories		"$BASE,..\common"
-		$PreprocessorDefinitions			"$BASE;PROTECTED_THINGS_DISABLE;VCDGEN"
+		$AdditionalIncludeDirectories		"$BASE,..\common,$SRCDIR\game\shared"
+		$PreprocessorDefinitions			"$BASE;PROTECTED_THINGS_DISABLE;SCENEIMAGEBUILDER"
 	}
 
 	$Linker
@@ -24,11 +24,11 @@ $Configuration
 	}
 }
 
-$Project "VcdGen"
+$Project "sceneimagebuilder"
 {
 	$Folder	"Source Files"
 	{
-		$File "vcdgen.cpp"
+		$File "sceneimagebuilder.cpp"
 
 		$Folder	"Common Files"
 		{
@@ -37,6 +37,7 @@ $Project "VcdGen"
 			$File	"$SRCDIR\public\filesystem_init.cpp"
 			$File	"$SRCDIR\public\interpolatortypes.cpp"
 			$File	"..\common\filesystem_tools.cpp"
+			$File	"..\common\tools_minidump.cpp"
 			$File	"..\common\scriplib.cpp"
 			$File	"$SRCDIR\game\shared\choreoevent.cpp"
 			$File	"$SRCDIR\game\shared\choreoactor.cpp"
@@ -48,12 +49,13 @@ $Project "VcdGen"
 
 	$Folder	"Header Files"
 	{
-		$File "vcdgen.h"
+		$File "sceneimagebuilder.h"
 
 		$Folder	"Common header files"
 		{
 			$File	"..\common\scriplib.h"
 			$File	"..\common\cmdlib.h"
+			$File	"..\common\tools_minidump.h"
 			$File	"$SRCDIR\public\filesystem.h"
 			$File	"$SRCDIR\game\shared\sceneimage.h"
 			$File	"$SRCDIR\public\vstdlib\vstdlib.h"

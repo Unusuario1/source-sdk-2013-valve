@@ -30,6 +30,7 @@ $Project "Content builder"
 	$Folder	"Source Files"
 	{
 		$File "contentbuilder.cpp"
+		$File "colorscheme.cpp"
 		$File "captionbuilder.cpp"
 		$File "scenebuilder.cpp"
 		$File "mapbuilder.cpp"
@@ -47,12 +48,14 @@ $Project "Content builder"
 			$File	"..\common\filesystem_tools.cpp"
 			$File	"..\common\scriplib.cpp"
 			$File	"..\common\tools_minidump.cpp"
+			$File	"$SRCDIR\public\loadcmdline.cpp"
 		}
 	}
 
 	$Folder	"Header Files"
 	{
 		$File "contentbuilder.h"
+		$File "colorscheme.h"
 		$File "materialbuilder.h"
 		$File "modelbuilder.h"
 		$File "soundbuilder.h"
@@ -65,6 +68,10 @@ $Project "Content builder"
 		$Folder	"Common header files"
 		{
 			$File	"..\common\tools_minidump.h"
+			$File	"..\common\cmdlib.h"
+			$File	"$SRCDIR\public\filesystem_init.h"
+			$File	"..\common\filesystem_tools.h"
+			$File	"$SRCDIR\public\loadcmdline.h"
 		}
 	}
 

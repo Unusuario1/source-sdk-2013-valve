@@ -150,8 +150,8 @@ $Project "contentbuilder"
 	"utils\contentbuilder\contentbuilder.vpc" [$WINDOWS]
 }
 
-$Project "vcdgen"
+$Project "sceneimagebuilder"
 {
-	"utils\vcdgen\vcdgen.vpc" [$WINDOWS]
+	"utils\sceneimagebuilder\sceneimagebuilder.vpc" [$WINDOWS]
 }
 
