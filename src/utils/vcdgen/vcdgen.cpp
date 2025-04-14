@@ -163,7 +163,7 @@ void CVcdGenApp::SceneBuild()
     V_snprintf(_tempvargamedir, sizeof(_tempvargamedir), "%s\\%s", _tempvargamedir, SceneFile);
 
     qprintf("Game path: %s\n", gamedir);
-    qprintf("Scene source (.vcd): %s\\%s\\*.vcd\n", gamedir, "scene");
+    qprintf("Scene source (.vcd): %s\\%s\\*.vcd\n", gamedir, "scenes");
     qprintf("Scene compiled (.image): %s\n", _tempvargamedir);
 
     if (g_pSceneImage->CreateSceneImageFile(targetBuffer, gamedir, true, g_quiet, NULL))
@@ -196,8 +196,8 @@ int CVcdGenApp::Main()
     float start, end;
     start = Plat_FloatTime();
 
-    PrintHeader();
     InstallSpewFunction();
+    PrintHeader();
     ParseCommandline();
 
     SceneBuild();

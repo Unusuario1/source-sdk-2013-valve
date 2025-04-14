@@ -96,59 +96,73 @@
 
 	ContentBuilder
 	{
-		MaterialBuilder
+		MaterialBuilder 	//vtex.exe
 		{
 			//By default we start vtex.exe with -nopause -deducepath -crcvalidate
 		}
 
-		ModelBuilder
+		ModelBuilder	//studiomdl.exe
+		{
+			
+		}
+
+		SoundBuilder	//audioprocess.exe
 		{
 		
 		}
 
-		SoundBuilder
+		SceneBuilder	//vcdgen.exe
 		{
 		
 		}
 
-		SceneBuilder
-		{
-		
-		}
-
-		CaptionBuilder
+		CaptionBuilder	//captioncompiler.exe
 		{
 
 		}
 
-		MapBuilder
+		MapBuilder	
 		{
-			Vbsp
+			ExclusionPathVmf 
+			{
+				"instances\"
+				"prefab\"
+			}
+
+			Vbsp	//vbsp.exe
 			{
 		
 			}
 
-			Vvis
-			{
-		
-			}
-
-			Vrad
-			{
-		
-			}
-
-			BspZipMapPacking
+			Vvis	//vvis.exe
 			{
 
 			}
 
-			CubemapBuilder 1
+			Vrad	//vrad.exe
+			{
+				-both
+				-final
+				-BuildBothCubemaps 8
+				-extrasky 32
+				-bounce 1024
+			}
+
+			VbspInfo
+			{
+
+			}
+
+//			BspZipMapPacking
+//			{
+//
+//			}
+
 			NavBuilder 1
 			NodeGraphBuilder 1
 		}
 
-		VpkBuilder
+		VpkBuilder	//vpk.exe
 		{
 		
 		}

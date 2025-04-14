@@ -344,7 +344,7 @@ bool CSceneImage::CreateSceneImageFile( CUtlBuffer &targetBuffer, char const *pc
 		{
 			vcdSymbolTable.AddString( pSceneName );
 #ifdef VCDGEN
-			Msg("\tCompute scene (*.vcd) %d/%d... ", i, vcdFiles);
+			Msg("\tCompute scene (*.vcd) %d/%d... ", i + 1, vcdFiles);
 #else
 			pStatus->UpdateStatus(pFilename, bQuiet, i, vcdFileList.Count());
 #endif
@@ -354,7 +354,7 @@ bool CSceneImage::CreateSceneImageFile( CUtlBuffer &targetBuffer, char const *pc
 			}
 		}
 #ifdef VCDGEN
-		Msg("Done\n");
+		Msg("done\n");
 #endif
 	}
 

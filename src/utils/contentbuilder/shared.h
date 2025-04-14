@@ -104,11 +104,6 @@
 //              -FullMinidumps
 //			}
 //
-//          //Inside this KV the user passes the commandline args to bspzip.exe
-//			BspZipMapPacking
-//			{
-//
-//			}
 //          
 //          //After the bsp compile do we build nav meshes? if no set this value to 0 
 //			NavBuilder 1
@@ -152,13 +147,16 @@
 #define NAME_MAP_GEOMETRY_TOOL      "vbsp.exe"
 #define NAME_MAP_VISIBILITY_TOOL    "vvis.exe"
 #define NAME_MAP_RADIOSITY_TOOL     "vrad.exe"
+#define NAME_MAP_BPSINFO_TOOL       "vbspinfo.exe"
 #define NAME_MAP_ZIP_TOOL           "bspzip.exe"
 #define NAME_VALVEPAKFILE_TOOL      "vpk.exe"
 
 //Common extension
 #define MATERIALS_EXTENSION         ".vmt"
 #define TEXTURE_EXTENSION           ".vtf"
-#define TEXTURESRC_EXTENSION        ".tga"
+#define TEXTURESRC_EXTENSION1       ".tga"
+#define TEXTURESRC_EXTENSION2       ".pfm"
+#define TEXTURESRC_EXTENSION3       ".psd"
 #define MODELS_EXTENSION            ".mdl"
 #define MODELSRC_EXTENSION          ".qc"
 #define SOUNDS_EXTENSION            ".wav"
@@ -173,8 +171,8 @@
 
 //Common commandline var
 #define TOOL_VERBOSE_MODE           verbose ? "-v" : ""
-#define DEFAULT_TEXTURE_COMMANDLINE "-nopause -deducepath -crcvalidate"
-#define DEFAULT_MODEL_COMMANDLINE   ""
+#define DEFAULT_TEXTURE_COMMANDLINE "-nopause -deducepath -nop4"
+#define DEFAULT_MODEL_COMMANDLINE   "-nop4"
 #define DEFAULT_SOUND_COMMANDLINE   ""
 #define DEFAULT_SCENE_COMMANDLINE   "-nopause"
 #define DEFAULT_CAPTION_COMMANDLINE ""
@@ -194,9 +192,12 @@
 #define SCENEBUILDER_KV             "SceneBuilder"
 #define CAPTIONBUILDER_KV           "CaptionBuilder"
 #define MAPBUILDER_KV               "MapBuilder"
+#define MAP_GEOMETRY_KV             "Vbsp"
+#define MAP_VISIBILITY_KV           "Vvis"
+#define MAP_RADIOSITY_KV            "Vrad"
+#define MAP_BSPINFO_KV              "VbspInfo"
 #define VPKBUILDER_KV               "VpkBuilder"
-
-//Exclude folders, we by default exclude some folders as they are not intented to be compiled   
+#define EXCLUDEFOLDERS_KV           "Exclude"            //Exclude folders, we by default exclude some folders as they are not intented to be compiled   
 
 
 namespace Shared
@@ -208,12 +209,18 @@ namespace Shared
     void CreateAssetSystemGamePath(const char* gamedir, const char* asset_dir);
     void LoadGameInfoKv(const char* ToolKeyValue, char* output_argv, std::size_t bufferSize);
     void AssetToolCheck(const char* gamebin, const char* tool_name, const char* sub_system);
-    void CopyFilesRecursively(const char* srcDir, const char* outDir, const char* extension);
+    void CopyFilesRecursively(const char* srcDir, const char* srcfolder, const char* gamefolder, const char* extension);
     wchar_t* CtoWc(char* input, wchar_t* output, std::size_t size);
     bool TargetPlatform();
+    char* ReplaceSubstring(const char* str, const char* old_sub, const char* new_sub);
+    bool DirectoryAssetTypeExist(const char* directoryPath, const char* extension, const char* asset_type);
     bool CheckIfFileExist(const char* path);
     bool DirectoryExists(const char* path);
     void SetUpBinDir(char* string, size_t bufferSize);
+    const char* TimeStampAsset();
+    void AssetInfoBuild(const char* folder, const char* extension);
+    void AssetInfoBuild(WIN32_FIND_DATAA findData);
+    bool HasExtension(const char* filename, const char* extension);
 }
 
 

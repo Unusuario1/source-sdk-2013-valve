@@ -12,10 +12,9 @@ namespace VpkBuilder
 		Shared::AssetToolCheck(gamebin, NAME_VALVEPAKFILE_TOOL, "VpkBuilder");
 	}
 
-	void LoadGameInfoKv(const char* vtex_argv)
+	void LoadGameInfoKv(const char* tool_commands)
 	{
-		//by default we start vtex with: -mkdir -deducepath -crcvalidate
-
+		
 	}
 
 	void VpkCompile(const char* gamebin, std::size_t bufferSize, std::size_t &complete, std::size_t &error)
