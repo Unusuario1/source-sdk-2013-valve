@@ -230,8 +230,6 @@ void Init_AssetTools()
         }
     }
 
-    assert(gamedir == NULL ? Error("AssetSystem -> gamedir is NULL! Check \'-game\' command!\n") : NULL);
-
     Shared::SetUpBinDir(g_gamebin, sizeof(g_gamebin));
     V_snprintf(g_gameinfodir, sizeof(g_gameinfodir), "%s\\%s", gamedir, GAMEINFO);
 
