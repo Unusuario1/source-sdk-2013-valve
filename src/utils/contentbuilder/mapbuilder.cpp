@@ -187,10 +187,7 @@ namespace MapBuilder
 	//-----------------------------------------------------------------------------
 	// Purpose:	Compile all the assets found in the given directory
 	//-----------------------------------------------------------------------------
-	void MapProcessRec(	char * vbsp_command, char* vvis_command,char* vrad_command, 
-						char* vbspinfo_command, const char* gamebin, std::size_t bufferSize, 
-						const char* directory, std::size_t& complete,
-						std::size_t& error, const char* extension)
+	void MapProcessRec(	char * vbsp_command, char* vvis_command,char* vrad_command, char* vbspinfo_command, const char* directory, const char* extension)
 	{
 		char searchPath[MAX_PATH];
 		V_snprintf(searchPath, MAX_PATH, "%s\\*", directory);
@@ -214,8 +211,7 @@ namespace MapBuilder
 			if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 			{
 				MapProcessRec(	vbsp_command, vvis_command, vrad_command,
-								vbspinfo_command, gamebin, bufferSize,
-								fullPath, complete, error, extension);
+								vbspinfo_command, fullPath, extension);
 			}
 			else if (Shared::HasExtension(name, extension))
 			{
@@ -236,14 +232,14 @@ namespace MapBuilder
 				V_snprintf(_temp_vrad, 4096, "%s \"%s\"", vrad_command, bspPath);
 				V_snprintf(_temp_vbspinfo, 4096, "%s \"%s\"", vbspinfo_command, bspPath);
 
-				Shared::StartExe(gamebin, bufferSize, "Geometry", NAME_MAP_GEOMETRY_TOOL, _temp_vbsp, complete, error, false);		//vbsp
-				Shared::StartExe(gamebin, bufferSize, "Visibility", NAME_MAP_VISIBILITY_TOOL, _temp_vvis, complete, error, false);	//vvis
-				Shared::StartExe(gamebin, bufferSize, "Radiosity", NAME_MAP_RADIOSITY_TOOL, _temp_vrad, complete, error, false);		//vrad
+				Shared::StartExe("Geometry", NAME_MAP_GEOMETRY_TOOL, _temp_vbsp);		//vbsp
+				Shared::StartExe("Visibility", NAME_MAP_VISIBILITY_TOOL, _temp_vvis);	//vvis
+				Shared::StartExe("Radiosity", NAME_MAP_RADIOSITY_TOOL, _temp_vrad);		//vrad
 
 				// Extra .bsp info!
 				if (verbose)
 				{
-					Shared::StartExe(gamebin, bufferSize, "Bsp Info", NAME_MAP_BPSINFO_TOOL, _temp_vbspinfo, complete, error, false); //vbspinfo
+					Shared::StartExe("Bsp Info", NAME_MAP_BPSINFO_TOOL, _temp_vbspinfo); //vbspinfo
 				}
 
 				// Now that we have all the .bsp compiled we copy it to game/mod/mapsrc -> game/mod/maps 
@@ -286,7 +282,7 @@ namespace MapBuilder
 	//-----------------------------------------------------------------------------
 	// Purpose:	Build all the inside maps given a dir		
 	//-----------------------------------------------------------------------------
-	void MapCompile(const char* gamebin, std::size_t bufferSize, std::size_t& complete, std::size_t& error)
+	void MapCompile()
 	{
 		char vbsp_command[4096] = "", vvis_command[4096] = "", vrad_command[4096] = "", vbspinfo_command[4096] = "", mapSrcPath[MAX_PATH];
 		bool bContinueVmf = true, bContinueVmn = true;
@@ -311,15 +307,13 @@ namespace MapBuilder
 		// We do this because in case we have to compile both .vmf & .vmn files
 		if (bContinueVmf) 
 		{
-			MapProcessRec(vbsp_command, vvis_command, vrad_command,
-				vbspinfo_command, gamebin, bufferSize,
-				mapSrcPath, complete, error, MAPSRC_EXTENSION);
+			MapProcessRec(	vbsp_command, vvis_command, vrad_command,
+							vbspinfo_command, mapSrcPath, MAPSRC_EXTENSION);
 		}		
 		if (bContinueVmn)
 		{
-			MapProcessRec(vbsp_command, vvis_command, vrad_command,
-				vbspinfo_command, gamebin, bufferSize,
-				mapSrcPath, complete, error, MAPSRC_EXTENSION2);
+			MapProcessRec(	vbsp_command, vvis_command, vrad_command,
+							vbspinfo_command, mapSrcPath, MAPSRC_EXTENSION2);
 		}
 	}
 }

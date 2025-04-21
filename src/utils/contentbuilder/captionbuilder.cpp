@@ -37,8 +37,8 @@ namespace CaptionBuilder
 	//-----------------------------------------------------------------------------
 	// Purpose:	Compile all the assets found in the given directory
 	//-----------------------------------------------------------------------------
-	void CaptionProcessRec(const char* gamebin, std::size_t bufferSize, const char* directory,
-		const char* tool_commands, std::size_t& complete, std::size_t& error, const char* extension)
+	void CaptionProcessRec(const char* directory,
+		const char* tool_commands, const char* extension)
 	{
 		char searchPath[MAX_PATH];
 		V_snprintf(searchPath, MAX_PATH, "%s\\*", directory);
@@ -59,7 +59,7 @@ namespace CaptionBuilder
 
 			if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 			{
-				CaptionProcessRec(gamebin, bufferSize, fullPath, tool_commands, complete, error, extension);
+				CaptionProcessRec(fullPath, tool_commands, extension);
 			}
 			else if (Shared::HasExtension(name, extension))
 			{
@@ -69,7 +69,7 @@ namespace CaptionBuilder
 					continue;
 
 				V_snprintf(szTemp, sizeof(szTemp), "%s \"%s\"", tool_commands, fullPath);
-				Shared::StartExe(gamebin, bufferSize, "Captions", NAME_CAPTION_TOOL, szTemp, complete, error, false);
+				Shared::StartExe("Captions", NAME_CAPTION_TOOL, szTemp);
 			}
 		} while (FindNextFileA(hFind, &findFileData));
 
@@ -80,7 +80,7 @@ namespace CaptionBuilder
 	//-----------------------------------------------------------------------------
 	// Purpose:	Setup the enviroment for captioncompiler.exe to start & compile
 	//-----------------------------------------------------------------------------
-	void CaptionCompile(const char* gamebin, std::size_t bufferSize, std::size_t &complete, std::size_t &error)
+	void CaptionCompile()
 	{
 		char tool_commands[4096] = "", captionSrcPath[MAX_PATH] = "";
 		bool bContinue = true;
@@ -99,6 +99,6 @@ namespace CaptionBuilder
 			return;
 
 		CaptionBuilder::LoadGameInfoKv(tool_commands, sizeof(tool_commands));
-		CaptionProcessRec(gamebin, bufferSize, captionSrcPath, tool_commands, complete, error, CAPTIONSRC_EXTENSION);
+		CaptionProcessRec(captionSrcPath, tool_commands, CAPTIONSRC_EXTENSION);
 	}
 }

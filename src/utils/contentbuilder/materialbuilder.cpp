@@ -46,8 +46,7 @@ namespace MaterialBuilder
 	//-----------------------------------------------------------------------------
 	// Purpose:	Compile all the assets found in the given directory
 	//-----------------------------------------------------------------------------
-	void MaterialProcessRec(const char* gamebin, std::size_t bufferSize, const char* directory,
-		const char* tool_commands, std::size_t& complete, std::size_t& error, const char* extension)
+	void MaterialProcessRec(const char* directory, const char* tool_commands, const char* extension)
 	{
 		char searchPath[MAX_PATH];
 		V_snprintf(searchPath, MAX_PATH, "%s\\*", directory); 
@@ -68,7 +67,7 @@ namespace MaterialBuilder
 
 			if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 			{
-				MaterialProcessRec(gamebin, bufferSize, fullPath, tool_commands, complete, error, extension);
+				MaterialProcessRec(fullPath, tool_commands, extension);
 			}
 			else if (Shared::HasExtension(name, extension))
 			{
@@ -78,7 +77,7 @@ namespace MaterialBuilder
 					continue;
 
 				V_snprintf(szTemp, sizeof(szTemp), "%s \"%s\"", tool_commands, fullPath);
-				Shared::StartExe(gamebin, bufferSize, "Materials", NAME_MATERIAL_TOOL, szTemp, complete, error, false);
+				Shared::StartExe("Materials", NAME_MATERIAL_TOOL, szTemp);
 			}
 		} while (FindNextFileA(hFind, &findFileData));
 
@@ -89,7 +88,7 @@ namespace MaterialBuilder
 	//-----------------------------------------------------------------------------
 	// Purpose:	Setup the enviroment for vtex.exe to start & compile
 	//-----------------------------------------------------------------------------
-	void MaterialCompile(const char* gamebin, std::size_t bufferSize, std::size_t& complete, std::size_t& error)
+	void MaterialCompile()
 	{
 		char tool_commands[4096] = "", matsrcdir[MAX_PATH] = "", searchPath[MAX_PATH] = "";
 		bool bContinueTga = true, bContinuePfm = true, bContinuePsd = true, bContinueVmt = true;
@@ -132,15 +131,15 @@ namespace MaterialBuilder
 
 			if (bContinueTga)
 			{
-				MaterialProcessRec(gamebin, bufferSize, matsrcdir, tool_commands, complete, error, TEXTURESRC_EXTENSION1);
+				MaterialProcessRec(matsrcdir, tool_commands, TEXTURESRC_EXTENSION1);
 			}
 			if (bContinuePfm) 
 			{
-				MaterialProcessRec(gamebin, bufferSize, matsrcdir, tool_commands, complete, error, TEXTURESRC_EXTENSION2);
+				MaterialProcessRec(matsrcdir, tool_commands, TEXTURESRC_EXTENSION2);
 			}
 			if (bContinuePsd)
 			{
-				MaterialProcessRec(gamebin, bufferSize, matsrcdir, tool_commands, complete, error, TEXTURESRC_EXTENSION3);
+				MaterialProcessRec(matsrcdir, tool_commands, TEXTURESRC_EXTENSION3);
 			}
 		}
 	}

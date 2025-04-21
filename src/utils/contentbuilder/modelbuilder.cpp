@@ -36,8 +36,7 @@ namespace ModelBuilder
 	//-----------------------------------------------------------------------------
 	// Purpose:	Compile all the assets found in the given directory
 	//-----------------------------------------------------------------------------
-	void ModelProcessRec(const char* gamebin, std::size_t bufferSize, const char* directory,
-		const char* tool_commands, std::size_t& complete, std::size_t& error, const char* extension)
+	void ModelProcessRec(const char* directory, const char* tool_commands, const char* extension)
 	{
 		char searchPath[MAX_PATH];
 		V_snprintf(searchPath, sizeof(searchPath), "%s\\*", directory);
@@ -58,7 +57,7 @@ namespace ModelBuilder
 
 			if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 			{
-				ModelProcessRec(gamebin, bufferSize, fullPath, tool_commands, complete, error, extension);
+				ModelProcessRec(fullPath, tool_commands, extension);
 			}
 			else if (Shared::HasExtension(name, extension))
 			{
@@ -68,7 +67,7 @@ namespace ModelBuilder
 					continue;
 
 				V_snprintf(szTemp, sizeof(szTemp), "%s \"%s\"", tool_commands, fullPath);
-				Shared::StartExe(gamebin, bufferSize, "Models", NAME_MODEL_TOOL, szTemp, complete, error, false);
+				Shared::StartExe("Models", NAME_MODEL_TOOL, szTemp);
 			}
 		} while (FindNextFileA(hFind, &findFileData));
 
@@ -79,7 +78,7 @@ namespace ModelBuilder
 	//-----------------------------------------------------------------------------
 	// Purpose:	Setup the enviroment for studiomdl.exe to start & compile
 	//-----------------------------------------------------------------------------
-	void ModelCompile(const char* gamebin, std::size_t bufferSize, std::size_t &complete, std::size_t &error)
+	void ModelCompile()
 	{	
 		char tool_commands[4096] = "", modelSrcPath[MAX_PATH] = "";
 		bool bContinue = true;
@@ -98,6 +97,6 @@ namespace ModelBuilder
 			return;
 
 		ModelBuilder::LoadGameInfoKv(tool_commands, sizeof(tool_commands));
-		ModelProcessRec(gamebin, bufferSize, modelSrcPath, tool_commands, complete, error, MODELSRC_EXTENSION);
+		ModelProcessRec(modelSrcPath, tool_commands, MODELSRC_EXTENSION);
 	}
 }

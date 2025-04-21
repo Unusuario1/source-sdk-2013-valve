@@ -209,8 +209,7 @@
 namespace Shared
 {
     void qError(const char* format, ...);
-    void StartExe(const char* gamebin, std::size_t bufferSize, const char* type_asset, const char* tool_name,
-                    const char* Keyvalues, std::size_t& complete, std::size_t& error, bool quietmode);
+    void StartExe(const char* type_asset, const char* tool_name, const char* Keyvalues);
     std::size_t CountAssets(const char* directory, const char* asset_type);
     void CreateAssetSystemGamePath(const char* gamedir, const char* asset_dir);
     void LoadGameInfoKv(const char* ToolKeyValue, char* output_argv, std::size_t bufferSize);

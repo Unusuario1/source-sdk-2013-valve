@@ -6,7 +6,7 @@
 namespace MaterialBuilder
 {
 	void AssetToolCheck(const char* gamebin);
-	void MaterialCompile(const char* gamebin, std::size_t bufferSize, std::size_t &complete, std::size_t &error);
+	void MaterialCompile();
 }
 
 

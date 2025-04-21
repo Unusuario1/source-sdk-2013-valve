@@ -6,7 +6,7 @@
 namespace VpkBuilder
 {
 	void AssetToolCheck(const char* gamebin);
-	void VpkCompile(const char* gamebin, std::size_t bufferSize, std::size_t &complete, std::size_t &error);
+	void VpkCompile();
 }
 
 

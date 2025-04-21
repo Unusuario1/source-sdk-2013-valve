@@ -441,16 +441,37 @@ namespace Shared
         HANDLE hSource = CreateFileW(wSource, GENERIC_READ,
             FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
-        if (hCompiled == INVALID_HANDLE_VALUE || hSource == INVALID_HANDLE_VALUE) {
+        if (hCompiled == INVALID_HANDLE_VALUE || hSource == INVALID_HANDLE_VALUE) 
+        {
             // If compiled asset doesn't exist, it's definitely out of date
-            if (hCompiled == INVALID_HANDLE_VALUE) {
-                if (hSource != INVALID_HANDLE_VALUE) CloseHandle(hSource);
+            if (hCompiled == INVALID_HANDLE_VALUE) 
+            {
+                if (hSource != INVALID_HANDLE_VALUE) 
+                {
+                    CloseHandle(hSource);
+                }
+
+                // avoid memory leaks
+                free(szAssetSrcPath);
+                free(szAssetPath);
                 return true;
             }
+
             // Otherwise, something else failed
-            if (hCompiled != INVALID_HANDLE_VALUE) CloseHandle(hCompiled);
-            if (hSource != INVALID_HANDLE_VALUE) CloseHandle(hSource);
-            Warning("AssetSystem -> Failed to open files.\n");
+            if (hCompiled != INVALID_HANDLE_VALUE) 
+            {
+                CloseHandle(hCompiled);
+            }
+            if (hSource != INVALID_HANDLE_VALUE) 
+            {
+                CloseHandle(hSource);
+            }
+
+            Warning("AssetSystem -> Failed to open files. Force-build asset.\n");
+
+            // avoid memory leaks
+            free(szAssetSrcPath);
+            free(szAssetPath);
             return false;
         }
 
@@ -560,7 +581,7 @@ namespace Shared
 
         if (!Shared::CheckIfFileExist(tool_path))
         {
-            Shared::qError("\t\n%s doesnt not exist in %s !\n", tool_name, gamebin);
+            Shared::qError("\n\t%s doesnt not exist in %s !\n", tool_name, gamebin);
         }
     }
 
@@ -568,15 +589,14 @@ namespace Shared
     //----------------------------------------------------------------------------
     // Purpose: Starts .exe tools
     //----------------------------------------------------------------------------
-    void StartExe(const char* gamebin, std::size_t bufferSize, const char* type_asset, const char* tool_name, 
-                            const char* Keyvalues, std::size_t &complete, std::size_t &error, bool quietmode = false)
+    void StartExe( const char* type_asset, const char* tool_name, const char* Keyvalues)
     {
         char _gametoolpath[8192];
         float start = Plat_FloatTime();
 
-        V_snprintf(_gametoolpath, sizeof(_gametoolpath), "\"%s\\%s\" %s", gamebin, tool_name, Keyvalues);
+        V_snprintf(_gametoolpath, sizeof(_gametoolpath), "\"%s\\%s\" %s", g_gamebin, tool_name, Keyvalues);
 
-        if (!quietmode)
+        if (!g_quiet)
         {
             Msg("AssetTools -> Starting: ");    ColorSpewMessage(SPEW_MESSAGE, &path_color, "%s\n\n", _gametoolpath);
         }
@@ -589,7 +609,7 @@ namespace Shared
         if (!CreateProcess(NULL, _gametoolpath, NULL, NULL, false, 0, NULL, NULL, &si, &pi))
         {
             Shared::qError("%s could not start!\n", _gametoolpath);
-            error++;
+            g_process_error++;
         }
 
         // Wait until child process exits
@@ -602,24 +622,24 @@ namespace Shared
             if (exitCode > 0)
             {
                 Shared::qError("%s compile failed: %d!\n", _gametoolpath, exitCode);
-                error++;
+                g_process_error++;
             }
             else
             {
-                complete++;
+                g_process_completed++;
             }
         }
         else
         {
             Shared::qError("GetExitCodeProcess() failed!\n");
-            error++;
+            g_process_error++;
         }
 
         // Close process handles
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
         
-        if (!quietmode)
+        if (!g_quiet)
         {
             ColorSpewMessage(SPEW_MESSAGE, &sucesfullprocess_color, "\nAssetTools -> Done building %s in %f seconds.\n\n", type_asset, Plat_FloatTime() - start);
         }

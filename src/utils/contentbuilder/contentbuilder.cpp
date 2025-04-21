@@ -380,25 +380,6 @@ void PrintUsage(int argc, char* argv[])
     CmdLib_Exit(1);
 
     /*
-        Msg(" Building Options:\n");
-    Msg(
-        "  -b:                   build the content\n"
-        "  -checkup:             clean files (remove forcedirty) and perform content checkup.\n\n"
-        "  -contentcleanup       cleans up the game/mod from compile files!\n" 
-    );
-    Msg(" Spew Options:\n");
-    Msg(
-        "  -spewallcommands:     print the command line and working directory for each compile.\n"
-    );
-    Msg(" General Options:\n");
-    Msg(
-        "  -path <path>:          only build content in the specified path.\n"
-        "  -ignoreerrors:         Ignores errors and doesnt stop content build.\n"
-        "  -v:                    high level of verbosity\n"
-        "  -include <ext>:        consider only specific resources for the operation.\n"
-        "  -szExclude <ext>:        szExclude resources of a certain type, and their children\n"
-        "  -sharedrefsonly <ext>: restrict -lsr behavior to only consider references from the specified type.\n"
-    );
     Msg(" Lists (*.contentlist):\n");
     Msg(
         "  -greylist <file>:     failure to compile any of this content is a warning, not an error.\n"
@@ -503,6 +484,7 @@ void ParseCommandline(int argc, char* argv[])
             g_quiet = true;
             verbose = false;
             g_spewallcommands = false;
+            g_infocontent = false;
         }
         else if (!V_stricmp(argv[i], "-addonbuild"))
         {
@@ -605,35 +587,35 @@ int main(int argc, char* argv[])
     {
         if (g_buildmaterials)
         {
-            MaterialBuilder::MaterialCompile(g_gamebin, sizeof(g_gamebin), g_process_completed, g_process_error);
+            MaterialBuilder::MaterialCompile();
         }
         if (g_buildmodels)
         {
-            ModelBuilder::ModelCompile(g_gamebin, sizeof(g_gamebin), g_process_completed, g_process_error);
+            ModelBuilder::ModelCompile();
         }
         if (g_buildsounds)
         {
-            SoundBuilder::SoundCompile(g_gamebin, sizeof(g_gamebin), g_process_completed, g_process_error);
+            SoundBuilder::SoundCompile();
         }
         if (g_buildscene)
         {
-            SceneBuilder::SceneCompile(g_gamebin, sizeof(g_gamebin), g_process_completed, g_process_error);
+            SceneBuilder::SceneCompile();
         }
         if (g_buildcaption)
         {
-            CaptionBuilder::CaptionCompile(g_gamebin, sizeof(g_gamebin), g_process_completed, g_process_error);
+            CaptionBuilder::CaptionCompile();
         }
         if (g_buildmap)
         {
-            MapBuilder::MapCompile(g_gamebin, sizeof(g_gamebin), g_process_completed, g_process_error);
+            MapBuilder::MapCompile();
         }
         if (g_buildvpk)
         {
-            VpkBuilder::VpkCompile(g_gamebin, sizeof(g_gamebin), g_process_completed, g_process_error);
+            VpkBuilder::VpkCompile();
         }
 
         Msg("\n-------------------------------------------------------------------------------------------\n");
-        Msg("  AssetCompile -> Done in %s | ", Shared::TimeStamp());
+        Msg(" AssetCompile -> Done in %s | ", Shared::TimeStamp());
         ColorSpewMessage(SPEW_MESSAGE, &sucesfullprocess_color, "Completed: %llu,     ", g_process_completed);
         ColorSpewMessage(SPEW_MESSAGE, &red, "Error: %llu,     ", g_process_error);
         ColorSpewMessage(SPEW_MESSAGE, &yellow, "Skipped: %llu         ", GetSkippedAssets());

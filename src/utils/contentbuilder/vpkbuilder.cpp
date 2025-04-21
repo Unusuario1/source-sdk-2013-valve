@@ -36,7 +36,7 @@ namespace VpkBuilder
 	//-----------------------------------------------------------------------------
 	// Purpose:	Setup the enviroment for vpk.exe to start & compile
 	//-----------------------------------------------------------------------------
-	void VpkCompile(const char* gamebin, std::size_t bufferSize, std::size_t &complete, std::size_t &error)
+	void VpkCompile()
 	{
 		char tool_args[4096] = "", VpkTempPath[MAX_PATH] = "", modVpkTempPath[MAX_PATH] = "";
 
@@ -84,7 +84,7 @@ namespace VpkBuilder
 
 		LoadGameInfoKv(tool_args, modVpkTempPath, sizeof(tool_args));
 
-		Shared::StartExe(gamebin, bufferSize, "Valve Pack File (vpk)", NAME_VALVEPAKFILE_TOOL, tool_args, complete, error, false);
+		Shared::StartExe("Valve Pack File (vpk)", NAME_VALVEPAKFILE_TOOL, tool_args);
 
 		start = Plat_FloatTime();
 		Msg("AssetSystem -> Coping contents from temp dir... ");

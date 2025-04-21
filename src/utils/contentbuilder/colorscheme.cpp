@@ -22,6 +22,8 @@ Color dark_grey(0, 0, 0, 128);
 
 //Colors used by the strings. By default they will be on non-saturated mode. 
 Color header_color = cyan;					//Used by headers strings.
-Color path_color =	dark_yellow;			//Used by paths strings.
+// Note: dark yellow doesnt work... Stupid cmd legacy system
+//Color path_color =	dark_yellow;			
+Color path_color =	white;					//Used by paths strings.
 Color sucesfullprocess_color = green;		//Used to indicate .exe process ok
 Color done_color = dark_grey;				//Used by "done()"

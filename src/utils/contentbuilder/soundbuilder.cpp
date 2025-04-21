@@ -28,7 +28,7 @@ namespace SoundBuilder
 
 	}
 
-	void SoundCompile(const char* gamebin, std::size_t bufferSize, std::size_t &complete, std::size_t &error)
+	void SoundCompile()
 	{
 		Shared::PrintHeaderCompileType("Sounds");
 
@@ -37,6 +37,6 @@ namespace SoundBuilder
 		//audioprocess.exe
 
 		//We need to read the keyvalues of audioprocess
-		Shared::StartExe(gamebin, bufferSize, "Sounds", NAME_SOUND_TOOL, "", complete, error, false);
+		Shared::StartExe("Sounds", NAME_SOUND_TOOL, "");
 	}
 }

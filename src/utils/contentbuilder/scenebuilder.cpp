@@ -36,7 +36,7 @@ namespace SceneBuilder
 	//-----------------------------------------------------------------------------
 	// Purpose:	Setup the enviroment for sceneimagebuilder.exe to start & compile
 	//-----------------------------------------------------------------------------
-	void SceneCompile(const char* gamebin, std::size_t bufferSize, std::size_t &complete, std::size_t &error)
+	void SceneCompile()
 	{
 		char tool_commands[4096] = "", sceneSrcPath[MAX_PATH] = "";
 		bool bContinue = true;
@@ -58,6 +58,6 @@ namespace SceneBuilder
 		// we cannot control this in contentbuilder, but is not an issue becouse the compile is very fast
 
 		SceneBuilder::LoadGameInfoKv(tool_commands, sizeof(tool_commands));
-		Shared::StartExe(gamebin, bufferSize, "Scenes", NAME_SCENE_TOOL, tool_commands, complete, error, false);
+		Shared::StartExe("Scenes", NAME_SCENE_TOOL, tool_commands);
 	}
 }
