@@ -66,7 +66,7 @@ namespace Shared
     bool CopyDirectoryContents(const char* srcPath, const char* dstPath, const char *extension)
     {
         char srcSearch[MAX_PATH];
-        V_snprintf(srcSearch, MAX_PATH, "%s\\*%s", srcPath, extension);
+        V_snprintf(srcSearch, sizeof(srcSearch), "%s\\*%s", srcPath, extension);
 
         WIN32_FIND_DATAA findData;
         HANDLE hFind = FindFirstFileA(srcSearch, &findData);
@@ -80,22 +80,24 @@ namespace Shared
         // Create the destination directory if it doesn't exist
         CreateDirectoryA(dstPath, NULL);
 
-        do {
+        do 
+        {
             // Skip "." and ".."
             if (V_strcmp(findData.cFileName, ".") == 0 || V_strcmp(findData.cFileName, "..") == 0)
                 continue;
 
             char fullSrc[MAX_PATH];
             char fullDst[MAX_PATH];
-            V_snprintf(fullSrc, MAX_PATH, "%s\\%s", srcPath, findData.cFileName);
-            V_snprintf(fullDst, MAX_PATH, "%s\\%s", dstPath, findData.cFileName);
+            V_snprintf(fullSrc, sizeof(fullSrc), "%s\\%s", srcPath, findData.cFileName);
+            V_snprintf(fullDst, sizeof(fullDst), "%s\\%s", dstPath, findData.cFileName);
 
             if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) 
             {
                 // Recursively copy subdirectories
                 CopyDirectoryContents(fullSrc, fullDst, extension);
             }
-            else {
+            else 
+            {
                 // Copy the file
                 if (!CopyFileA(fullSrc, fullDst, FALSE)) 
                 {
@@ -199,6 +201,12 @@ namespace Shared
     void AssetInfoBuild(const char* folder, const char* extension)
     {
         char searchPath[MAX_PATH];
+
+        if(!g_spewallcommands)
+        {
+            return;
+        }
+
         V_snprintf(searchPath, sizeof(searchPath), "%s\\*", folder);
 
         WIN32_FIND_DATAA findData;
@@ -214,7 +222,7 @@ namespace Shared
                 continue;
 
             char fullPath[MAX_PATH];
-            V_snprintf(fullPath, MAX_PATH, "%s\\%s", folder, name);
+            V_snprintf(fullPath, sizeof(fullPath), "%s\\%s", folder, name);
 
             if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) 
             {
@@ -224,13 +232,10 @@ namespace Shared
             {
                 const char* dot = V_strrchr(name, '.');
                 if (dot && V_stricmp(dot, extension) == 0)
-                {
-                    if (g_spewallcommands) 
-                    {
-                        ColorSpewMessage(SPEW_MESSAGE, &sucesfullprocess_color, "OK");
-                        Msg(" - %s - ", Shared::TimeStamp());
-                        ColorSpewMessage(SPEW_MESSAGE, &path_color, "%s\n", fullPath);
-                    }
+                {     
+                    ColorSpewMessage(SPEW_MESSAGE, &sucesfullprocess_color, "OK");
+                    Msg(" - %s - ", Shared::TimeStamp());
+                    ColorSpewMessage(SPEW_MESSAGE, &path_color, "%s\n", fullPath);
                 }
             }
 
@@ -260,7 +265,7 @@ namespace Shared
         int count = 0;
         size_t extLen = V_strlen(asset_type);
 
-        V_snprintf(searchPath, MAX_PATH, "%s\\*", directory); // Search for all files and folders
+        V_snprintf(searchPath, sizeof(searchPath), "%s\\*", directory); // Search for all files and folders
 
         WIN32_FIND_DATA findData;
         HANDLE hFind = FindFirstFile(searchPath, &findData);
@@ -278,7 +283,7 @@ namespace Shared
             } 
 
             char fullPath[MAX_PATH];
-            V_snprintf(fullPath, MAX_PATH, "%s\\%s", directory, findData.cFileName);
+            V_snprintf(fullPath, sizeof(fullPath), "%s\\%s", directory, findData.cFileName);
 
             if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) 
             {
@@ -496,7 +501,7 @@ namespace Shared
     bool FindFileRecursive(const char* baseDir, const char* extension)
     {
         char searchPath[MAX_PATH];
-        V_snprintf(searchPath, MAX_PATH, "%s\\*", baseDir);
+        V_snprintf(searchPath, sizeof(searchPath), "%s\\*", baseDir);
 
         WIN32_FIND_DATAA findFileData;
         HANDLE hFind = FindFirstFileA(searchPath, &findFileData);
@@ -509,7 +514,7 @@ namespace Shared
                 continue;
 
             char fullPath[MAX_PATH];
-            V_snprintf(fullPath, MAX_PATH, "%s\\%s", baseDir, findFileData.cFileName);
+            V_snprintf(fullPath, sizeof(fullPath), "%s\\%s", baseDir, findFileData.cFileName);
 
             if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
             {

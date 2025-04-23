@@ -49,7 +49,7 @@ namespace MaterialBuilder
 	void MaterialProcessRec(const char* directory, const char* tool_commands, const char* extension)
 	{
 		char searchPath[MAX_PATH];
-		V_snprintf(searchPath, MAX_PATH, "%s\\*", directory); 
+		V_snprintf(searchPath, sizeof(searchPath), "%s\\*", directory);
 
 		WIN32_FIND_DATAA findFileData;
 		HANDLE hFind = FindFirstFileA(searchPath, &findFileData);
@@ -63,7 +63,7 @@ namespace MaterialBuilder
 				continue;
 
 			char fullPath[MAX_PATH];
-			V_snprintf(fullPath, MAX_PATH, "%s\\%s", directory, name);
+			V_snprintf(fullPath, sizeof(fullPath), "%s\\%s", directory, name);
 
 			if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 			{
@@ -105,7 +105,7 @@ namespace MaterialBuilder
 		if (!bContinueTga && !bContinuePfm && !bContinuePsd && !bContinueVmt)
 			return;
 
-		Msg("Asset report:\n");
+		Msg("%s", (g_quiet || !g_spewallcommands) ? "Asset report:\n" : "");
 
 		// Copy the vmt files from materialsrc to materials
 		if (bContinueVmt)

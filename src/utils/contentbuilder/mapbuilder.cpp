@@ -190,7 +190,7 @@ namespace MapBuilder
 	void MapProcessRec(	char * vbsp_command, char* vvis_command,char* vrad_command, char* vbspinfo_command, const char* directory, const char* extension)
 	{
 		char searchPath[MAX_PATH];
-		V_snprintf(searchPath, MAX_PATH, "%s\\*", directory);
+		V_snprintf(searchPath, sizeof(searchPath), "%s\\*", directory);
 
 		WIN32_FIND_DATAA findFileData;
 		HANDLE hFind = FindFirstFileA(searchPath, &findFileData);
@@ -206,7 +206,7 @@ namespace MapBuilder
 			}
 
 			char fullPath[MAX_PATH];
-			V_snprintf(fullPath, MAX_PATH, "%s\\%s", directory, name);
+			V_snprintf(fullPath, sizeof(fullPath), "%s\\%s", directory, name);
 
 			if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 			{
@@ -226,11 +226,11 @@ namespace MapBuilder
 				ReplaceVmfBspExten(bspPath);
 
 				// Now we get append the path of the .vmf file to vbsp
-				V_snprintf(_temp_vbsp, 4096, "%s \"%s\"", vbsp_command, vmfPath);
+				V_snprintf(_temp_vbsp, sizeof(_temp_vbsp), "%s \"%s\"", vbsp_command, vmfPath);
 				// Now we get append the path of the .bsp file to vvis, vrad & vbspinfo
-				V_snprintf(_temp_vvis, 4096, "%s \"%s\"", vvis_command, bspPath);
-				V_snprintf(_temp_vrad, 4096, "%s \"%s\"", vrad_command, bspPath);
-				V_snprintf(_temp_vbspinfo, 4096, "%s \"%s\"", vbspinfo_command, bspPath);
+				V_snprintf(_temp_vvis, sizeof(_temp_vvis), "%s \"%s\"", vvis_command, bspPath);
+				V_snprintf(_temp_vrad, sizeof(_temp_vrad), "%s \"%s\"", vrad_command, bspPath);
+				V_snprintf(_temp_vbspinfo, sizeof(_temp_vbspinfo), "%s \"%s\"", vbspinfo_command, bspPath);
 
 				Shared::StartExe("Geometry", NAME_MAP_GEOMETRY_TOOL, _temp_vbsp);		//vbsp
 				Shared::StartExe("Visibility", NAME_MAP_VISIBILITY_TOOL, _temp_vvis);	//vvis
@@ -296,7 +296,7 @@ namespace MapBuilder
 		if (!bContinueVmf && !bContinueVmn)
 			return;
 
-		Msg("Asset report:\n");
+		Msg("%s", (g_quiet || !g_spewallcommands) ? "Asset report:\n" : "");
 		Shared::AssetInfoBuild(mapSrcPath, MAPSRC_EXTENSION);
 		Shared::AssetInfoBuild(mapSrcPath, MAPSRC_EXTENSION2);
 		if (g_infocontent)

@@ -193,12 +193,13 @@ void SetUpLogFile()
     {
         SYSTEMTIME st;
         GetLocalTime(&st);
-    
+        
         V_snprintf(logFile, sizeof(logFile), "%s\\%s_build(%02d:%02d:%04d %02d:%02d:%02d).log",
             g_contentbuilderPath, g_addonbuild ? "addon" : "game",
             st.wMonth, st.wDay,
             st.wYear, st.wHour,
             st.wMinute, st.wSecond);
+
         SetSpewFunctionLogFile(logFile);
     }
 

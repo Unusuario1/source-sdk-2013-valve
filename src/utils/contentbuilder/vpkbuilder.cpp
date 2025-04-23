@@ -77,7 +77,7 @@ namespace VpkBuilder
 			}
 			else
 			{
-				Msg("AssetSystem -> Non existing path in gamedir: %s, excluding\n", folder);
+				Warning("AssetSystem -> Non existing path in gamedir: %s, excluding\n", folder);
 			}
 		}
 		ColorSpewMessage(SPEW_MESSAGE, &done_color, "done(%.2f)\n", Plat_FloatTime() - start);

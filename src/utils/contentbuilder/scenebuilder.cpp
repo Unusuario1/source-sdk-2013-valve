@@ -49,7 +49,7 @@ namespace SceneBuilder
 		if (!bContinue)
 			return;
 
-		Msg("Asset report:\n");
+		Msg("%s", (g_quiet || !g_spewallcommands) ? "Asset report:\n" : "");
 		Shared::AssetInfoBuild(sceneSrcPath, SCENESRC_EXTENSION);
 		if (g_infocontent)
 			return;

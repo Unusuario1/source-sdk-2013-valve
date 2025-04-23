@@ -91,7 +91,7 @@ namespace ModelBuilder
 		if (!bContinue)
 			return;
 
-		Msg("Asset report:\n");
+		Msg("%s", (g_quiet || !g_spewallcommands) ? "Asset report:\n" : "");
 		Shared::AssetInfoBuild(modelSrcPath, MODELSRC_EXTENSION);
 		if (g_infocontent)
 			return;

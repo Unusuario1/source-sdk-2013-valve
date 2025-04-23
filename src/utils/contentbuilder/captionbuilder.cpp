@@ -41,7 +41,7 @@ namespace CaptionBuilder
 		const char* tool_commands, const char* extension)
 	{
 		char searchPath[MAX_PATH];
-		V_snprintf(searchPath, MAX_PATH, "%s\\*", directory);
+		V_snprintf(searchPath, sizeof(searchPath), "%s\\*", directory);
 
 		WIN32_FIND_DATAA findFileData;
 		HANDLE hFind = FindFirstFileA(searchPath, &findFileData);
@@ -55,7 +55,7 @@ namespace CaptionBuilder
 				continue;
 
 			char fullPath[MAX_PATH];
-			V_snprintf(fullPath, MAX_PATH, "%s\\%s", directory, name);
+			V_snprintf(fullPath, sizeof(fullPath), "%s\\%s", directory, name);
 
 			if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 			{
@@ -93,7 +93,8 @@ namespace CaptionBuilder
 		if (!bContinue)
 			return;
 
-		Msg("Asset report:\n");
+		Msg("%s", (g_quiet || !g_spewallcommands) ? "Asset report:\n" : "");
+
 		Shared::AssetInfoBuild(captionSrcPath, CAPTIONSRC_EXTENSION);
 		if (g_infocontent)
 			return;
