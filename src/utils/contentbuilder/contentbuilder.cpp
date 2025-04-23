@@ -35,8 +35,8 @@ bool g_force64bits          = PLATFORM_64BITS ? true : false;
 bool g_cleanuptempcontent   = true;     //Do we cleanup temp content?
 bool g_infocontent          = false;    //Dont build only print assets
 bool g_nosteam              = false;    //No steam funtions
-bool g_addonbuild           = false;    //Build the -game dir as addon instead of a full game
-bool g_buildcontent         = false;    //Build content?
+bool g_addonbuild           = false;    //Build the -game dir as addon instead of a game
+bool g_buildcontent         = false;    
 bool g_buildoutofdatecontent = false;
 bool g_buildmaterials       = true;
 bool g_buildmodels          = true;
@@ -367,7 +367,9 @@ void PrintUsage(int argc, char* argv[])
         "   -spewallcommands:                     \n"
         "\n");
     ColorSpewMessage(SPEW_MESSAGE, &header_color, " Advanced Build Options:\n");
-    Msg("   -toolsforce32bits:     Force contentbuilder to use 32 bits tools.\n"
+    Msg(
+        //"   -proc <num>:           Max simultaneous compile subsystems (default: 5, max: 5).\n" 
+        "   -toolsforce32bits:     Force contentbuilder to use 32 bits tools.\n"
         "   -toolsforce64bits:     Force contentbuilder to use 64 bits tools.\n"
         "\n");
     ColorSpewMessage(SPEW_MESSAGE, &header_color, " Other Options:\n");
@@ -376,18 +378,6 @@ void PrintUsage(int argc, char* argv[])
 
     DeleteCmdLine(argc, argv);
     CmdLib_Exit(1);
-
-    /*
-    Msg(" Lists (*.contentlist):\n");
-    Msg(
-        "  -greylist <file>:     failure to compile any of this content is a warning, not an error.\n"
-        "  -includelist <file>:  add the assets in this file to the build list.\n"
-    );
-    Msg(" Advanced Build Options:\n");
-    Msg(
-        "  -proc <num>:          max simultaneous compile processes (default: 8). (Thread number) (this is disaled for maps and vpk)\n"
-    );
-    */
 }
 
 
@@ -580,7 +570,6 @@ int main(int argc, char* argv[])
 
     Init_AssetTools();
 
-    // TODO: add here multi thread bull shit for 4x compile! mat, mod, sound, sce, capt
     if (g_buildcontent || g_addonbuild)
     {
         if (g_buildmaterials)

@@ -76,6 +76,10 @@ namespace MaterialBuilder
 				if (!Shared::PartialBuildAsset(fullPath, MATERIALSRC_DIR, MATERIALS_DIR))
 					continue;
 
+				// Exclude folder!
+				if (Shared::ExcludeDirOrFile(fullPath, MAPBUILDER_KV))
+					continue;
+
 				V_snprintf(szTemp, sizeof(szTemp), "%s \"%s\"", tool_commands, fullPath);
 				Shared::StartExe("Materials", NAME_MATERIAL_TOOL, szTemp);
 			}

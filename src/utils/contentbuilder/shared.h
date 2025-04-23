@@ -75,7 +75,7 @@
 //		MapBuilder
 //		{
 //          //This is relative to mapsrc!
-//          ExcludeVmfPath
+//          Exclude
 //          {
 //              instances
 //              prefab
@@ -203,7 +203,7 @@
 #define MAP_RADIOSITY_KV            "Vrad"
 #define MAP_BSPINFO_KV              "VbspInfo"
 #define VPKBUILDER_KV               "VpkBuilder"
-#define EXCLUDEFOLDERS_KV           "Exclude"  // Exclude folders, we by default exclude some folders as they are not intented to be compiled   
+#define EXCLUDE_KV                  "Exclude"       // Exclude folder and files   
 
 
 namespace Shared
@@ -231,6 +231,7 @@ namespace Shared
     bool CopyDirectoryContents(const char* srcPath, const char* dstPath, const char* extension);
     void DeleteFolderWithContents(const char* folderPath);
     bool CreateDirectoryRecursive(const char* path);
+    bool ExcludeDirOrFile(const char* assetpath, const char* AssetSystem_KV);
 }
 
 

@@ -42,6 +42,66 @@ namespace Shared
     }
 
 
+    bool ExcludeDirOrFile(const char* assetpath, const char* AssetSystem_KV)
+    {
+        // We dont need to check if gameinfo, contenbuilder KVs exist
+        KeyValues* GameInfoKVCubemap = ReadKeyValuesFile(g_gameinfodir);
+        KeyValues* ContentBuilderKV = GameInfoKVCubemap->FindKey(CONTENTBUILDER_KV, false);
+        KeyValues* AssetSystemKV = ContentBuilderKV->FindKey(AssetSystem_KV, false);
+        
+        // Check if Exclude kv exists
+        KeyValues* ExcludeKV = AssetSystemKV->FindKey(EXCLUDE_KV);
+
+        if (ExcludeKV == NULL)
+        {
+            return false;
+        }
+
+        // Get how many paths are in Exclude KV
+        std::size_t numberExcludePath = 0;
+        for (KeyValues* subKey = ExcludeKV->GetFirstSubKey(); subKey; subKey = subKey->GetNextKey())
+        {
+            numberExcludePath++;
+        }
+
+        // terminate the list
+        std::size_t j = 0;
+        char** folderExcludeList = new char* [numberExcludePath];
+        for(KeyValues* subKey = ExcludeKV->GetFirstSubKey(); subKey; subKey = subKey->GetNextKey())
+        {
+            folderExcludeList[j] = new char[MAX_PATH];
+
+            V_snprintf(folderExcludeList[j],sizeof(folderExcludeList[j]), "%s%s", subKey->GetName(), subKey->GetString());
+            
+            j++;
+        }
+
+        for(std::size_t i = 0; i < numberExcludePath;i++)
+        {
+            if(strstr(assetpath, folderExcludeList[i]))
+            {
+                // free the memory
+                for (std::size_t i = 0; i < numberExcludePath; i++)
+                {
+                    delete[] folderExcludeList[i];
+                }
+                delete[] folderExcludeList;
+
+                return true;
+            }
+        }
+
+        // free the memory
+        for(std::size_t i = 0; i<numberExcludePath;i++)
+        {
+            delete[] folderExcludeList[i];
+        }
+        delete[] folderExcludeList;
+
+        return false;
+    }
+
+
     bool CreateDirectoryRecursive(const char* path) 
     {
         char temp[MAX_PATH];
@@ -318,7 +378,7 @@ namespace Shared
         // First count how many times old_sub appears
         int count = 0;
         const char* tmp = str;
-        while ((tmp = V_strstr(tmp, old_sub))) 
+        while ((tmp = strstr(tmp, old_sub))) 
         {
             count++;
             tmp += old_len;
@@ -332,7 +392,7 @@ namespace Shared
         char* dst = result;
         const char* src = str;
 
-        while ((tmp = V_strstr(src, old_sub))) 
+        while ((tmp = strstr(src, old_sub))) 
         {
             size_t bytes_to_copy = tmp - src;
             memcpy(dst, src, bytes_to_copy);
@@ -496,7 +556,7 @@ namespace Shared
     bool FindFileRecursive(const char* baseDir, const char* extension)
     {
         char searchPath[MAX_PATH];
-        V_snprintf(searchPath, MAX_PATH, "%s\\*", baseDir);
+        V_snprintf(searchPath, sizeof(searchPath), "%s\\*", baseDir);
 
         WIN32_FIND_DATAA findFileData;
         HANDLE hFind = FindFirstFileA(searchPath, &findFileData);

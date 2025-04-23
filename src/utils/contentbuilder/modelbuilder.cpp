@@ -66,6 +66,10 @@ namespace ModelBuilder
 				if (!Shared::PartialBuildAsset(fullPath, MODELSRC_DIR, MODELS_DIR))
 					continue;
 
+				// Exclude folder!
+				if (Shared::ExcludeDirOrFile(fullPath, MAPBUILDER_KV))
+					continue;
+
 				V_snprintf(szTemp, sizeof(szTemp), "%s \"%s\"", tool_commands, fullPath);
 				Shared::StartExe("Models", NAME_MODEL_TOOL, szTemp);
 			}

@@ -29,7 +29,6 @@ namespace CaptionBuilder
 
 		Shared::LoadGameInfoKv(CAPTIONBUILDER_KV, _argv2, sizeof(_argv2));
 
-		// Note we still need to add the closecaption.txt to the path! (we do this in CaptionCompile)
 		V_snprintf(tool_argv, bufferSize, " %s %s %s -game \"%s\"", DEFAULT_CAPTION_COMMANDLINE, TOOL_VERBOSE_MODE, _argv2, gamedir);
 	}
 
@@ -68,6 +67,10 @@ namespace CaptionBuilder
 				if (!Shared::PartialBuildAsset(fullPath, CAPTIONSRC_DIR, CAPTION_DIR))
 					continue;
 
+				// Exclude folder!
+				if (Shared::ExcludeDirOrFile(fullPath, MAPBUILDER_KV))
+					continue;
+
 				V_snprintf(szTemp, sizeof(szTemp), "%s \"%s\"", tool_commands, fullPath);
 				Shared::StartExe("Captions", NAME_CAPTION_TOOL, szTemp);
 			}
@@ -99,6 +102,7 @@ namespace CaptionBuilder
 			return;
 
 		CaptionBuilder::LoadGameInfoKv(tool_commands, sizeof(tool_commands));
+
 		CaptionProcessRec(captionSrcPath, tool_commands, CAPTIONSRC_EXTENSION);
 	}
 }

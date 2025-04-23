@@ -35,6 +35,11 @@ namespace SoundBuilder
 		// TODO: make this work!
 
 		//audioprocess.exe
+#if 0
+		// Exclude folder!
+		if (Shared::ExcludeDirOrFile(fullPath, MAPBUILDER_KV))
+			continue;
+#endif
 
 		//We need to read the keyvalues of audioprocess
 		Shared::StartExe("Sounds", NAME_SOUND_TOOL, "");
