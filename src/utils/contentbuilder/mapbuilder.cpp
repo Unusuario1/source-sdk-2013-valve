@@ -43,7 +43,6 @@ namespace MapBuilder
 	//-----------------------------------------------------------------------------
 	void AssetToolCheck(const char* gamebin)
 	{
-		//Do vbsp, vvis, vrad, vbspinfo exist??
 		Shared::AssetToolCheck(gamebin, NAME_MAP_GEOMETRY_TOOL, "MapBuiler");
 		Shared::AssetToolCheck(gamebin, NAME_MAP_VISIBILITY_TOOL, "MapBuiler");
 		Shared::AssetToolCheck(gamebin, NAME_MAP_RADIOSITY_TOOL, "MapBuiler");
@@ -61,21 +60,21 @@ namespace MapBuilder
 
 		if (!GameInfoKVCubemap)
 		{
-			Shared::qError("Could not get KeyValues from %s!\n", g_gameinfodir);
+			Shared::qError("Could not get KeyValues from \"%s\"!\n", g_gameinfodir);
 		}
 
 		KeyValues *ContentBuilderKV = GameInfoKVCubemap->FindKey(CONTENTBUILDER_KV, false);
 
 		if (!ContentBuilderKV)
 		{
-			Shared::qError("Could not get KeyValues from %s!\n", g_gameinfodir);
+			Shared::qError("Could not get KeyValues from \"%s\"!\n", g_gameinfodir);
 		}
 
 		KeyValues* MapBuilderKV = ContentBuilderKV->FindKey(MAPBUILDER_KV, false);
 
 		if (!MapBuilderKV)
 		{
-			Shared::qError("Could not get \'%s\' KeyValues from \'%s\'!\n", MAPBUILDER_KV, g_gameinfodir);
+			Shared::qError("Could not get \'%s\' KeyValues from \"%s\"!\n", MAPBUILDER_KV, g_gameinfodir);
 		}
 
 		KeyValues* VbspKv = MapBuilderKV->FindKey(MAP_GEOMETRY_KV, false);
@@ -85,7 +84,7 @@ namespace MapBuilder
 
 		if (!VbspKv || !VvisKv || !VradKv || !VbspinfoKv)
 		{
-			Shared::qError("Could not get %s or %s or %s or %s KeyValues from %s!\n", 
+			Shared::qError("Could not get \'%s\' or \'%s\' or \'%s\' or \'%s\' KeyValues from \'%s\'!\n", 
 				MAP_GEOMETRY_KV, MAP_VISIBILITY_KV, MAP_RADIOSITY_KV, MAP_BSPINFO_KV, MAPBUILDER_KV);
 		}
 
@@ -142,7 +141,7 @@ namespace MapBuilder
 			DWORD err = GetLastError();
 			if (err != ERROR_ALREADY_EXISTS)
 			{
-				Error("\nCould not create temporary directory at: \"%s\" (Error code: %lu)\n", mapgamedir, err);
+				Error("\nCould not create directory at: \"%s\" (Error code: %lu)\n", mapgamedir, err);
 			}
 		}
 
@@ -154,9 +153,7 @@ namespace MapBuilder
 		{
 			DWORD error = GetLastError();
 			Shared::qError("\nCould not copy to game directory %s\n"
-				"Error CopyFile() : %lu, %s\n",
-				mapgamedir_file, error,
-				error == ERROR_ACCESS_DENIED ? "Access denied! Check permissions and file attributes.\n" : "");
+							"Error CopyFile() : %lu, %s\n", mapgamedir_file, error);
 		}
 		else
 		{
@@ -170,7 +167,7 @@ namespace MapBuilder
 	//-----------------------------------------------------------------------------
 	void ReplaceVmfBspExten(char* szPath)
 	{
-		char* szBspPath = strdup(szPath);
+		char* szBspPath = V_strdup(szPath);
 
 		if(strlen(szPath) > 0 && (strstr(szPath, MAPSRC_EXTENSION) || strstr(szPath, MAPSRC_EXTENSION2)))
 		{
@@ -183,7 +180,6 @@ namespace MapBuilder
 	}
 
 
-	//TODO: Add here exclusion folders!! smth like ExclusionPathVmf { } K
 	//-----------------------------------------------------------------------------
 	// Purpose:	Compile all the assets found in the given directory
 	//-----------------------------------------------------------------------------
@@ -219,6 +215,10 @@ namespace MapBuilder
 				char _temp_vbsp[4096] = "", _temp_vvis[4096] = "", _temp_vrad[4096] = "", _temp_vbspinfo[4096] = "";
 
 				if (!Shared::PartialBuildAsset(fullPath, MAPSRC_DIR, MAPS_DIR))
+					continue;
+
+				// Exclude folder!
+				if (Shared::ExcludeDirOrFile(fullPath, MAPBUILDER_KV))
 					continue;
 
 				V_snprintf(vmfPath, sizeof(vmfPath), "%s", fullPath); // game/mod/mapsrc/vmfname.vmf
