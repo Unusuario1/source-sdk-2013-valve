@@ -1,3 +1,9 @@
+//========= --------------------------------------------------- ============//
+//
+// Purpose: MaterialBuilder – A ContentBuilder subsystem for texture batch compiling.
+//
+// $NoKeywords: $
+//=============================================================================//
 #include <cstddef>
 #include <windows.h>
 #include "filesystem_init.h"
@@ -10,20 +16,23 @@
 namespace MaterialBuilder 
 {
 	//-----------------------------------------------------------------------------
-	// Purpose: Copy all the .vmt of game/mod/materialsrc to game/mod/materials folder
+	// Purpose:	Check if vtex.exe exists
 	//-----------------------------------------------------------------------------
-	void CopySrcVmtToGameDir(const char* materialsrc_path)
+	void AssetToolCheck(const char* pGameBin)
 	{
-		float start = Plat_FloatTime();
-		Msg("AssetTools -> Materials: Starting copy of src (%s) files to gamedir... ", MATERIALS_EXTENSION);
-		Shared::CopyFilesRecursivelyGame(materialsrc_path, MATERIALSRC_DIR, MATERIALS_DIR, MATERIALS_EXTENSION);
-		ColorSpewMessage(SPEW_MESSAGE, &done_color, "done(%.2f)\n", Plat_FloatTime() - start);
+		Shared::AssetToolCheck(pGameBin, NAME_MATERIAL_TOOL, MATERIALBUILDER_KV);
 	}
 
 
-	void AssetToolCheck(const char* gamebin)
+	//-----------------------------------------------------------------------------
+	// Purpose: Copy all the .vmt of game/mod/materialsrc to game/mod/materials folder
+	//-----------------------------------------------------------------------------
+	static void CopySrcVmtToGameDir(const char* pMaterialSrcPath)
 	{
-		Shared::AssetToolCheck(gamebin, NAME_MATERIAL_TOOL, "MaterialBuilder");
+		float start = Plat_FloatTime();
+		Msg("AssetTools -> Materials: Starting copy of src (%s) files to gamedir... ", MATERIALS_EXTENSION);
+		Shared::CopyFilesRecursivelyGame(pMaterialSrcPath, MATERIALSRC_DIR, MATERIALS_DIR, MATERIALS_EXTENSION);
+		ColorSpewMessage(SPEW_MESSAGE, &done_color, "done(%.2f)\n", Plat_FloatTime() - start);
 	}
 	
 
@@ -32,55 +41,55 @@ namespace MaterialBuilder
 	//          section of the GameInfo KeyValues file, and constructs the full
 	//          command line for the tool (e.g -v -game "C:\Half Life 2\hl2")
 	//-----------------------------------------------------------------------------
-	void LoadGameInfoKv(char *tool_argv, std::size_t bufferSize)
+	static void LoadGameInfoKv(char *pToolArgv, std::size_t uiBufferSize)
 	{
-		char _argv2[2048] = "";
+		char szArgv2[2048] = "";
 
-		Shared::LoadGameInfoKv(MATERIALBUILDER_KV, _argv2, sizeof(_argv2));
+		Shared::LoadGameInfoKv(MATERIALBUILDER_KV, szArgv2, sizeof(szArgv2));
 
 		// Note: vtex.exe does not support -verbose or -v 
-		V_snprintf(tool_argv, bufferSize, " %s %s %s -game \"%s\"", DEFAULT_TEXTURE_COMMANDLINE, g_quiet ? "-quiet" : "", _argv2, gamedir);
+		V_snprintf(pToolArgv, uiBufferSize, " %s %s %s -game \"%s\"", DEFAULT_TEXTURE_COMMANDLINE, g_quiet ? "-quiet" : "", szArgv2, gamedir);
 	}
 
 
 	//-----------------------------------------------------------------------------
 	// Purpose:	Compile all the assets found in the given directory
 	//-----------------------------------------------------------------------------
-	void MaterialProcessRec(const char* directory, const char* tool_commands, const char* extension)
+	static void MaterialProcessRec(const char* pDirectory, const char* szToolCommand, const char* pExtension)
 	{
-		char searchPath[MAX_PATH];
-		V_snprintf(searchPath, sizeof(searchPath), "%s\\*", directory);
+		char szSearchPath[MAX_PATH];
+		V_snprintf(szSearchPath, sizeof(szSearchPath), "%s\\*", pDirectory);
 
 		WIN32_FIND_DATAA findFileData;
-		HANDLE hFind = FindFirstFileA(searchPath, &findFileData);
+		HANDLE hFind = FindFirstFileA(szSearchPath, &findFileData);
 		if (hFind == INVALID_HANDLE_VALUE)
 			return;
 
 		do
 		{
-			const char* name = findFileData.cFileName;
-			if (V_strcmp(name, ".") == 0 || V_strcmp(name, "..") == 0)
+			const char* pName = findFileData.cFileName;
+			if (V_strcmp(pName, ".") == 0 || V_strcmp(pName, "..") == 0)
 				continue;
 
-			char fullPath[MAX_PATH];
-			V_snprintf(fullPath, sizeof(fullPath), "%s\\%s", directory, name);
+			char szFullPath[MAX_PATH];
+			V_snprintf(szFullPath, sizeof(szFullPath), "%s\\%s", pDirectory, pName);
 
 			if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 			{
-				MaterialProcessRec(fullPath, tool_commands, extension);
+				MaterialProcessRec(szFullPath, szToolCommand, pExtension);
 			}
-			else if (Shared::HasExtension(name, extension))
+			else if (Shared::HasExtension(pName, pExtension))
 			{
 				char szTemp[4096];
 
-				if (!Shared::PartialBuildAsset(fullPath, MATERIALSRC_DIR, MATERIALS_DIR))
+				if (!Shared::PartialBuildAsset(szFullPath, MATERIALSRC_DIR, MATERIALS_DIR))
 					continue;
 
 				// Exclude folder!
-				if (Shared::ExcludeDirOrFile(fullPath, MAPBUILDER_KV))
+				if (Shared::ExcludeDirOrFile(szFullPath))
 					continue;
 
-				V_snprintf(szTemp, sizeof(szTemp), "%s \"%s\"", tool_commands, fullPath);
+				V_snprintf(szTemp, sizeof(szTemp), "%s \"%s\"", szToolCommand, szFullPath);
 				Shared::StartExe("Materials", NAME_MATERIAL_TOOL, szTemp);
 			}
 		} while (FindNextFileA(hFind, &findFileData));
@@ -94,57 +103,69 @@ namespace MaterialBuilder
 	//-----------------------------------------------------------------------------
 	void MaterialCompile()
 	{
-		char tool_commands[4096] = "", matsrcdir[MAX_PATH] = "", searchPath[MAX_PATH] = "";
+		char szToolCommand[4096] = "", szMaterialSrcPath[MAX_PATH] = "";
 		bool bContinueTga = true, bContinuePfm = true, bContinuePsd = true, bContinueVmt = true;
 
 		Shared::PrintHeaderCompileType("Materials");
 
 		// Check if there is any file to compile!
-		V_snprintf(matsrcdir, sizeof(matsrcdir), "%s\\%s", gamedir, MATERIALSRC_DIR);
-		bContinueTga = Shared::DirectoryAssetTypeExist(matsrcdir, TEXTURESRC_EXTENSION1, "texure");
-		bContinuePfm = Shared::DirectoryAssetTypeExist(matsrcdir, TEXTURESRC_EXTENSION2, "texure");
-		bContinuePsd = Shared::DirectoryAssetTypeExist(matsrcdir, TEXTURESRC_EXTENSION3, "texure");
-		bContinueVmt = Shared::DirectoryAssetTypeExist(matsrcdir, MATERIALS_EXTENSION, "materials");
+		V_snprintf(szMaterialSrcPath, sizeof(szMaterialSrcPath), "%s\\%s", gamedir, MATERIALSRC_DIR);
+		bContinueTga = Shared::DirectoryAssetTypeExist(szMaterialSrcPath, TEXTURESRC_EXTENSION1, "texure");
+		bContinuePfm = Shared::DirectoryAssetTypeExist(szMaterialSrcPath, TEXTURESRC_EXTENSION2, "texure");
+		bContinuePsd = Shared::DirectoryAssetTypeExist(szMaterialSrcPath, TEXTURESRC_EXTENSION3, "texure");
+		bContinueVmt = Shared::DirectoryAssetTypeExist(szMaterialSrcPath, MATERIALS_EXTENSION, "materials");
 
 		if (!bContinueTga && !bContinuePfm && !bContinuePsd && !bContinueVmt)
 			return;
 
-		Msg("%s", (g_quiet || !g_spewallcommands) ? "Asset report:\n" : "");
+		Msg("%s", (g_spewallcommands) ? "Asset report:\n" : "");
 
-		// Copy the vmt files from materialsrc to materials
 		if (bContinueVmt)
 		{
-			Shared::AssetInfoBuild(matsrcdir, MATERIALS_EXTENSION);
-			if (!g_infocontent) 
-			{
-				MaterialBuilder::CopySrcVmtToGameDir(matsrcdir);
-				Msg("\n");
-			}
+			Shared::AssetInfoBuild(szMaterialSrcPath, MATERIALS_EXTENSION);
+			Msg("\n");
 		}
 
 		if (bContinueTga || bContinuePfm || bContinuePsd)
 		{
-			bContinueTga ? Shared::AssetInfoBuild(matsrcdir, TEXTURESRC_EXTENSION1) : void();
-			bContinuePfm ? Shared::AssetInfoBuild(matsrcdir, TEXTURESRC_EXTENSION2) : void();
-			bContinuePsd ? Shared::AssetInfoBuild(matsrcdir, TEXTURESRC_EXTENSION3) : void();
+			if (bContinueTga)	
+			{ 
+				Shared::AssetInfoBuild(szMaterialSrcPath, TEXTURESRC_EXTENSION1); 
+			}
+			if (bContinuePfm)	
+			{ 
+				Shared::AssetInfoBuild(szMaterialSrcPath, TEXTURESRC_EXTENSION2); 
+			}
+			if (bContinuePsd)	
+			{ 
+				Shared::AssetInfoBuild(szMaterialSrcPath, TEXTURESRC_EXTENSION3); 
+			}
 
 			if (g_infocontent)
+			{
 				return;
+			}
 
-			MaterialBuilder::LoadGameInfoKv(tool_commands, sizeof(tool_commands));
+			MaterialBuilder::LoadGameInfoKv(szToolCommand, sizeof(szToolCommand));
 
 			if (bContinueTga)
 			{
-				MaterialProcessRec(matsrcdir, tool_commands, TEXTURESRC_EXTENSION1);
+				MaterialProcessRec(szMaterialSrcPath, szToolCommand, TEXTURESRC_EXTENSION1);
 			}
 			if (bContinuePfm) 
 			{
-				MaterialProcessRec(matsrcdir, tool_commands, TEXTURESRC_EXTENSION2);
+				MaterialProcessRec(szMaterialSrcPath, szToolCommand, TEXTURESRC_EXTENSION2);
 			}
 			if (bContinuePsd)
 			{
-				MaterialProcessRec(matsrcdir, tool_commands, TEXTURESRC_EXTENSION3);
+				MaterialProcessRec(szMaterialSrcPath, szToolCommand, TEXTURESRC_EXTENSION3);
 			}
+		}
+
+		// Copy the vmt files from materialsrc to materials
+		if (!g_infocontent)
+		{
+			MaterialBuilder::CopySrcVmtToGameDir(szMaterialSrcPath);
 		}
 	}
 }

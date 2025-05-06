@@ -1,3 +1,9 @@
+//========= --------------------------------------------------- ============//
+//
+// Purpose: 
+//
+// $NoKeywords: $
+//=============================================================================//
 #ifndef CONTENTBUILDER_H
 #define CONTENTBUILDER_H
 #include <cstddef>
@@ -22,5 +28,6 @@ extern char g_contentbuilderPath[MAX_PATH];
 extern char g_gameinfodir[MAX_PATH];
 extern char gamedir[1024];
 extern char g_steamdir[MAX_PATH];
+extern char g_contentbuilderdir[MAX_PATH];
 
 #endif // CONTENTBUILDER_H

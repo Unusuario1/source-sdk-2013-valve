@@ -1,3 +1,8 @@
+//========= --------------------------------------------------- ============//
+//
+// Purpose: 
+//
+//=====================================================================================//
 #include "appframework/AppFramework.h"
 #include "tier1/strtools.h"
 #include "tier0/icommandline.h"
@@ -18,15 +23,15 @@
 //-----------------------------------------------------------------------------
 // Purpose: Global vars 
 //-----------------------------------------------------------------------------
-bool g_builvcd  = false;
-bool g_pause    = true;
-bool g_quiet    = false;
-bool g_log      = false;
+bool g_bBuilvcd  = false;
+bool g_bPause    = true;
+bool g_bQuiet    = false;
+bool g_bLog      = false;
 
 
 void HitKeyToContinue()
 {
-    if (g_pause)
+    if (g_bPause)
     {
         system("pause");
     }
@@ -35,17 +40,19 @@ void HitKeyToContinue()
 
 void PrintHeader()
 {
-    Msg("sceneimagebuilder.exe (Build: %s %s)\n", __DATE__, __TIME__);
+    //Msg("Valve Software - sceneimagebuilder.exe (Build: %s %s)\n", __DATE__, __TIME__);
+    Msg("-------------- - sceneimagebuilder.exe (Build: %s %s)\n", __DATE__, __TIME__);
 }
 
 
 void PrintUsage()
 {
-    Msg("Usage: sceneimagebuilder.exe [options] -game <path>\n"
-        "   -game <paht>:    Path of the game folder to \'gameinfo.txt\'. (e.g: C:\\Half Life 2\\hl2)\n"
+    Msg("\n"
+        "Usage: sceneimagebuilder.exe [options] -game <path>\n"
+        "   -game <path>:    Path of the game folder to \'gameinfo.txt\'. (e.g: C:\\Half Life 2\\hl2)\n"
         "   -? or -help:     Prints help.\n"
         "   -v or -verbose:  Turn on verbose output.\n"
-        "   -l:              log to file log.txt\n"
+        "   -l:              log to file sceneimagebuilder.log\n"
         "   -nopause:        Dont pause at end of processing.\n"
         "   -quiet:          Prints only escensial messagues.\n"
         "\n"
@@ -60,61 +67,61 @@ void ParseCommandline()
     int i;
     for (i = 1; i < CommandLine()->ParmCount(); ++i)
     {
-        const char* parm = CommandLine()->GetParm(i);
+        const char* pParm = CommandLine()->GetParm(i);
 
-        if (parm[0] == '-')
+        if (pParm[0] == '-')
         {
-            switch (parm[1])
+            switch (pParm[1])
             {
             case 'h' || '?': // -help
                 PrintUsage();
                 break;
 
             case 'v': // -v or -verbose
-                if (!Q_stricmp(parm, "-v") || !Q_stricmp(parm, "-verbose"))
+                if (!Q_stricmp(pParm, "-v") || !Q_stricmp(pParm, "-verbose"))
                 {
                     qprintf("Verbose mode enabled\n");
                     verbose = true;
-                    g_quiet = false;
+                    g_bQuiet = false;
                 }
                 break;
 
             case 'n': // -nopause
-                if (!Q_stricmp(parm, "-nopause"))
+                if (!Q_stricmp(pParm, "-nopause"))
                 {
                     qprintf("No pause enabled.\n");
-                    g_pause = false;
+                    g_bPause = false;
                 }
                 break;
             case 'l':
-                if (!Q_stricmp(parm, "-l"))
+                if (!Q_stricmp(pParm, "-l"))
                 {
                     qprintf("log mode enabled.\n");
-                    g_log = true;
+                    g_bLog = true;
                 }
             case 'q': // -quiet
-                if (!Q_stricmp(parm, "-quiet"))
+                if (!Q_stricmp(pParm, "-quiet"))
                 {
                     qprintf("Quiet mode enabled.\n");
                     verbose = false;
-                    g_quiet = true;
+                    g_bQuiet = true;
                 }
                 break;
 
             case 'g': // -game
-                if (!Q_stricmp(parm, "-game"))
+                if (!Q_stricmp(pParm, "-game"))
                 {
                     ++i;
                     if (i < CommandLine()->ParmCount())
                     {
-                        const char* gamePath = CommandLine()->GetParm(i);
-                        if (gamePath[0] == '-')
+                        const char* pGamePath = CommandLine()->GetParm(i);
+                        if (pGamePath[0] == '-')
                         {
                             Error("Error: -game requires a valid path argument.\n");
                         }
                         else
                         {
-                            V_strcpy(gamedir, gamePath);
+                            V_strcpy(gamedir, pGamePath);
                         }
                     }
                     else
@@ -125,13 +132,13 @@ void ParseCommandline()
                 break;
 
             default:
-                Warning("Warning: Unknown option '%s'\n", parm);
+                Warning("Warning: Unknown option '%s'\n", pParm);
                 PrintUsage();
             }
         }
         else
         {
-            Warning("Warning: Unknown non-option argument '%s'\n", parm);
+            Warning("Warning: Unknown non-option argument '%s'\n", pParm);
             PrintUsage();
         }
     }
@@ -143,9 +150,6 @@ void ParseCommandline()
 }
 
 
-//-----------------------------------------------------------------------------
-// Purpose: Sets up the game path
-//-----------------------------------------------------------------------------
 bool CSceneImageBuilderApp::SetupSearchPaths()
 {
     if (!BaseClass::SetupSearchPaths(NULL, false, true))
@@ -158,9 +162,6 @@ bool CSceneImageBuilderApp::SetupSearchPaths()
 }
 
 
-//-----------------------------------------------------------------------------
-// Purpose: Contructor
-//-----------------------------------------------------------------------------
 bool CSceneImageBuilderApp::Create()
 {
     AppSystemInfo_t appSystems[] =
@@ -172,9 +173,6 @@ bool CSceneImageBuilderApp::Create()
 }
 
 
-//-----------------------------------------------------------------------------
-// Purpose: Destructor
-//-----------------------------------------------------------------------------
 void CSceneImageBuilderApp::Destroy()
 {
 }
@@ -196,7 +194,17 @@ bool CSceneImageBuilderApp::PreInit()
 
     // Add paths...
     if (!SetupSearchPaths())
+    {
         return false;
+    }
+    
+    if(g_bLog)
+    {
+        char logFile[512];
+        V_snprintf(logFile, sizeof(logFile), "%s\%s\\%s.log", gamedir, "scenes", "sceneimagebuilder");
+        remove(logFile);
+        SetSpewFunctionLogFile(logFile);
+    }
 
     return true;
 }
@@ -219,23 +227,23 @@ bool CSceneImageBuilderApp::CreateSceneImageFile(CUtlBuffer& targetBuffer, char 
 void CSceneImageBuilderApp::SceneBuild()
 {
     CUtlBuffer	targetBuffer;
-    char sceneCompiledPath[MAX_PATH], _gamedir[1024]; //gamedir without the blackslash
+    char szSceneCompiledPath[MAX_PATH], szGameDir[1024]; //gamedir without the blackslash
     const char* SceneFile = "scenes\\scenes.image";
 
-    V_strcpy(_gamedir, gamedir);
-    V_StripTrailingSlash(_gamedir);
+    V_strcpy(szGameDir, gamedir);
+    V_StripTrailingSlash(szGameDir);
 
-    V_snprintf(sceneCompiledPath, sizeof(sceneCompiledPath), "%s\\%s", _gamedir, SceneFile);
+    V_snprintf(szSceneCompiledPath, sizeof(szSceneCompiledPath), "%s\\%s", szGameDir, SceneFile);
 
-    qprintf("Game path: %s\n", _gamedir);
-    qprintf("Scene source (.vcd): %s\\%s\\*.vcd\n", _gamedir, "scenes");
-    qprintf("Scene compiled (.image): %s\n", sceneCompiledPath);
+    qprintf("Game path: %s\n", szGameDir);
+    qprintf("Scene source (.vcd): %s\\%s\\*.vcd\n", szGameDir, "scenes");
+    qprintf("Scene compiled (.image): %s\n", szSceneCompiledPath);
 
-    if (g_pSceneImage->CreateSceneImageFile(targetBuffer, _gamedir, true, g_quiet, NULL))
+    if (g_pSceneImage->CreateSceneImageFile(targetBuffer, szGameDir, true, g_bQuiet, NULL))
     {
-        Msg("Writting compiled Scene file: %s... ", sceneCompiledPath);
+        Msg("Writting compiled Scene file: %s... ", szSceneCompiledPath);
 
-        if (scriptlib->WriteBufferToFile(sceneCompiledPath, targetBuffer, WRITE_TO_DISK_ALWAYS))
+        if (scriptlib->WriteBufferToFile(szSceneCompiledPath, targetBuffer, WRITE_TO_DISK_ALWAYS))
         {
             Msg("done\n");
         }
@@ -258,12 +266,10 @@ int CSceneImageBuilderApp::Main()
 {
     float start = Plat_FloatTime();
 
-    SetupDefaultToolsMinidumpHandler();
     InstallSpewFunction();
+    SetupDefaultToolsMinidumpHandler();
     PrintHeader();
-
     ParseCommandline();
-
     Create();
     PreInit();
 

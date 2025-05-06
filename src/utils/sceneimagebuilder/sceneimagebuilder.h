@@ -1,10 +1,15 @@
-#ifndef VCDGEN_H
-#define VCDGEN_H
+//========= --------------------------------------------------- ============//
+//
+// Purpose: 
+//
+//=====================================================================================//
+#ifndef SCENEIMAGEBUILDER_H
+#define SCENEIMAGEBUILDER_H
 
 #include "appframework/tier3app.h"
-#include "../game/shared/sceneimage.h"
-#include "../game/shared/choreoevent.h"
-#include "../game/shared/sceneimage.cpp"
+#include "sceneimage.h"
+#include "choreoevent.h"
+#include "sceneimage.cpp"
 
 
 class CSceneImageBuilderApp : public CTier3SteamApp, public ISceneImage
@@ -24,4 +29,5 @@ public:
     virtual void SceneBuild();
 };
 
-#endif //VCDGEN_H
+
+#endif // SCENEIMAGEBUILDER_H

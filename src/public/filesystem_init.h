@@ -21,6 +21,19 @@
 #define	GAMEDIR_TOKEN		"VProject"
 
 
+#if !defined( _X360 )
+#define GAMEINFO_FILENAME			"gameinfo.txt"
+#else
+// The .xtx file is a TCR requirement, as .txt files cannot live on the DVD.
+// The .xtx file only exists outside the zips (same as .txt and is made during the image build) and is read to setup the search paths.
+// So all other code should be able to safely expect gameinfo.txt after the zip is mounted as the .txt file exists inside the zips.
+// The .xtx concept is private and should only have to occurr here. As a safety measure, if the .xtx file is not found
+// a retry is made with the original .txt name
+#define GAMEINFO_FILENAME			"gameinfo.xtx"
+#endif
+#define GAMEINFO_FILENAME_ALTERNATE	"gameinfo.txt"
+
+
 #if defined( _WIN32 ) || defined( WIN32 )
 #define PATHSEPARATOR(c) ((c) == '\\' || (c) == '/')
 #else	//_WIN32

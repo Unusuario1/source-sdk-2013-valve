@@ -1,3 +1,9 @@
+//========= --------------------------------------------------- ============//
+//
+// Purpose: ModelBuilder – A ContentBuilder subsystem for model batch compiling.
+//
+// $NoKeywords: $
+//=============================================================================//
 #include <cstddef>
 #include <windows.h>
 #include "filesystem_init.h"
@@ -12,9 +18,9 @@ namespace ModelBuilder
 	//-----------------------------------------------------------------------------
 	// Purpose:	Check if studiomdl.exe exists
 	//-----------------------------------------------------------------------------
-	void AssetToolCheck(const char* gamebin)
+	void AssetToolCheck(const char* pGameBin)
 	{
-		Shared::AssetToolCheck(gamebin, NAME_MODEL_TOOL, "ModelBuilder");
+		Shared::AssetToolCheck(pGameBin, NAME_MODEL_TOOL, MODELBUILDER_KV);
 	}
 
 
@@ -23,54 +29,54 @@ namespace ModelBuilder
 	//          section of the GameInfo KeyValues file, and constructs the full
 	//          command line for the tool (e.g -v -game "C:\Half Life 2\hl2")
 	//-----------------------------------------------------------------------------
-	void LoadGameInfoKv(char* tool_argv, std::size_t bufferSize)
+	static void LoadGameInfoKv(char* pToolArgv, std::size_t uiBufferSize)
 	{
-		char _argv2[2048] = "";
+		char szKvToolArgv[2048] = "";
 
-		Shared::LoadGameInfoKv(MODELBUILDER_KV, _argv2, sizeof(_argv2));
+		Shared::LoadGameInfoKv(MODELBUILDER_KV, szKvToolArgv, sizeof(szKvToolArgv));
 
-		V_snprintf(tool_argv, bufferSize, " %s %s %s -game \"%s\"", DEFAULT_MODEL_COMMANDLINE, TOOL_VERBOSE_OR_QUIET_MODE, _argv2, gamedir);
+		V_snprintf(pToolArgv, uiBufferSize, " %s %s %s -game \"%s\"", DEFAULT_MODEL_COMMANDLINE, TOOL_VERBOSE_OR_QUIET_MODE, szKvToolArgv, gamedir);
 	}
 
 
 	//-----------------------------------------------------------------------------
 	// Purpose:	Compile all the assets found in the given directory
 	//-----------------------------------------------------------------------------
-	void ModelProcessRec(const char* directory, const char* tool_commands, const char* extension)
+	static void ModelProcessRec(const char* pDirectory, const char* szToolCommand, const char* pExtension)
 	{
-		char searchPath[MAX_PATH];
-		V_snprintf(searchPath, sizeof(searchPath), "%s\\*", directory);
+		char szSearchPath[MAX_PATH];
+		V_snprintf(szSearchPath, sizeof(szSearchPath), "%s\\*", pDirectory);
 
 		WIN32_FIND_DATAA findFileData;
-		HANDLE hFind = FindFirstFileA(searchPath, &findFileData);
+		HANDLE hFind = FindFirstFileA(szSearchPath, &findFileData);
 		if (hFind == INVALID_HANDLE_VALUE)
 			return;
 
 		do
 		{
-			const char* name = findFileData.cFileName;
-			if (V_strcmp(name, ".") == 0 || V_strcmp(name, "..") == 0)
+			const char* pName = findFileData.cFileName;
+			if (V_strcmp(pName, ".") == 0 || V_strcmp(pName, "..") == 0)
 				continue;
 
-			char fullPath[MAX_PATH];
-			V_snprintf(fullPath, sizeof(fullPath), "%s\\%s", directory, name);
+			char szFullPath[MAX_PATH];
+			V_snprintf(szFullPath, sizeof(szFullPath), "%s\\%s", pDirectory, pName);
 
 			if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 			{
-				ModelProcessRec(fullPath, tool_commands, extension);
+				ModelProcessRec(szFullPath, szToolCommand, pExtension);
 			}
-			else if (Shared::HasExtension(name, extension))
+			else if (Shared::HasExtension(pName, pExtension))
 			{
 				char szTemp[4096];
 
-				if (!Shared::PartialBuildAsset(fullPath, MODELSRC_DIR, MODELS_DIR))
+				if (!Shared::PartialBuildAsset(szFullPath, MODELSRC_DIR, MODELS_DIR))
 					continue;
 
 				// Exclude folder!
-				if (Shared::ExcludeDirOrFile(fullPath, MAPBUILDER_KV))
+				if (Shared::ExcludeDirOrFile(szFullPath))
 					continue;
 
-				V_snprintf(szTemp, sizeof(szTemp), "%s \"%s\"", tool_commands, fullPath);
+				V_snprintf(szTemp, sizeof(szTemp), "%s \"%s\"", szToolCommand, szFullPath);
 				Shared::StartExe("Models", NAME_MODEL_TOOL, szTemp);
 			}
 		} while (FindNextFileA(hFind, &findFileData));
@@ -84,23 +90,23 @@ namespace ModelBuilder
 	//-----------------------------------------------------------------------------
 	void ModelCompile()
 	{	
-		char tool_commands[4096] = "", modelSrcPath[MAX_PATH] = "";
+		char szToolCommand[4096] = "", szModelSrcPath[MAX_PATH] = "";
 		bool bContinue = true;
 
 		Shared::PrintHeaderCompileType("Models");
 
-		V_snprintf(modelSrcPath, sizeof(modelSrcPath), "%s\\%s", gamedir, MODELSRC_DIR); // (e.g: "C:\Half Life 2\hl2\modelsrc")
+		V_snprintf(szModelSrcPath, sizeof(szModelSrcPath), "%s\\%s", gamedir, MODELSRC_DIR); // (e.g: "C:\Half Life 2\hl2\modelsrc")
 
-		bContinue = Shared::DirectoryAssetTypeExist(modelSrcPath, MODELSRC_EXTENSION, "models");
+		bContinue = Shared::DirectoryAssetTypeExist(szModelSrcPath, MODELSRC_EXTENSION, "models");
 		if (!bContinue)
 			return;
 
-		Msg("%s", (g_quiet || !g_spewallcommands) ? "Asset report:\n" : "");
-		Shared::AssetInfoBuild(modelSrcPath, MODELSRC_EXTENSION);
+		Msg("%s", (g_spewallcommands) ? "Asset report:\n" : "");
+		Shared::AssetInfoBuild(szModelSrcPath, MODELSRC_EXTENSION);
 		if (g_infocontent)
 			return;
 
-		ModelBuilder::LoadGameInfoKv(tool_commands, sizeof(tool_commands));
-		ModelProcessRec(modelSrcPath, tool_commands, MODELSRC_EXTENSION);
+		ModelBuilder::LoadGameInfoKv(szToolCommand, sizeof(szToolCommand));
+		ModelProcessRec(szModelSrcPath, szToolCommand, MODELSRC_EXTENSION);
 	}
 }

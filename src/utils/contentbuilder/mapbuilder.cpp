@@ -1,3 +1,9 @@
+//========= --------------------------------------------------- ============//
+//
+// Purpose: MapBuilder – A ContentBuilder subsystem for map batch compiling.
+//
+// $NoKeywords: $
+//=============================================================================//
 #include <cstddef>
 #include <windows.h>
 #include "filesystem_init.h"
@@ -41,12 +47,12 @@ namespace MapBuilder
 	//-----------------------------------------------------------------------------
 	// Purpose:	Check if vbsp, vvis, vrad & vbspinfo exists
 	//-----------------------------------------------------------------------------
-	void AssetToolCheck(const char* gamebin)
+	void AssetToolCheck(const char* pGameBin)
 	{
-		Shared::AssetToolCheck(gamebin, NAME_MAP_GEOMETRY_TOOL, "MapBuiler");
-		Shared::AssetToolCheck(gamebin, NAME_MAP_VISIBILITY_TOOL, "MapBuiler");
-		Shared::AssetToolCheck(gamebin, NAME_MAP_RADIOSITY_TOOL, "MapBuiler");
-		Shared::AssetToolCheck(gamebin, NAME_MAP_BPSINFO_TOOL, "MapBuiler");
+		Shared::AssetToolCheck(pGameBin, NAME_MAP_GEOMETRY_TOOL, MAPBUILDER_KV);
+		Shared::AssetToolCheck(pGameBin, NAME_MAP_VISIBILITY_TOOL, MAPBUILDER_KV);
+		Shared::AssetToolCheck(pGameBin, NAME_MAP_RADIOSITY_TOOL, MAPBUILDER_KV);
+		Shared::AssetToolCheck(pGameBin, NAME_MAP_BPSINFO_TOOL, MAPBUILDER_KV);
 	}
 
 
@@ -54,27 +60,36 @@ namespace MapBuilder
 	// Purpose: This returns the command line strings of vbsp, vvis , vrad & vbspinfo,
 	//			since maps have a complex compile we use a custom version of Shared::LoadGameInfoKv
 	//-----------------------------------------------------------------------------
-	void LoadGameInfoKv(char* vbsp_command, char* vvis_command, char* vrad_command, char* vbspinfo_command, std::size_t bufferSize)
+	static void LoadGameInfoKv(char* vbsp_command, char* vvis_command, char* vrad_command, char* vbspinfo_command, std::size_t uiBufferSize)
 	{
-		KeyValues* GameInfoKVCubemap = ReadKeyValuesFile(g_gameinfodir);
+		KeyValues* GameInfoKVCubemap = ReadKeyValuesFile(g_contentbuilderdir);
 
 		if (!GameInfoKVCubemap)
 		{
-			Shared::qError("Could not get KeyValues from \"%s\"!\n", g_gameinfodir);
+			Shared::qWarning("AssetSystem -> Could not get KeyValues from \"%s\"!\n"
+					"AssetSystem -> Using default values for map compile, this might not be ideal!\n", 
+					g_contentbuilderdir);
+			return;
 		}
 
 		KeyValues *ContentBuilderKV = GameInfoKVCubemap->FindKey(CONTENTBUILDER_KV, false);
 
 		if (!ContentBuilderKV)
 		{
-			Shared::qError("Could not get KeyValues from \"%s\"!\n", g_gameinfodir);
+			Shared::qWarning("AssetSystem -> Could not get KeyValues from \"%s\"!\n"
+					"AssetSystem -> Using default values for map compile, this might not be ideal!\n", 
+					g_contentbuilderdir);
+			return;
 		}
 
 		KeyValues* MapBuilderKV = ContentBuilderKV->FindKey(MAPBUILDER_KV, false);
 
 		if (!MapBuilderKV)
 		{
-			Shared::qError("Could not get \'%s\' KeyValues from \"%s\"!\n", MAPBUILDER_KV, g_gameinfodir);
+			Shared::qWarning("AssetSystem -> Could not get \'%s\' KeyValues from \"%s\"!\n"
+					"AssetSystem -> Using default values for map compile, this might not be ideal!\n",
+					MAPBUILDER_KV, g_contentbuilderdir);
+			return;
 		}
 
 		KeyValues* VbspKv = MapBuilderKV->FindKey(MAP_GEOMETRY_KV, false);
@@ -84,64 +99,75 @@ namespace MapBuilder
 
 		if (!VbspKv || !VvisKv || !VradKv || !VbspinfoKv)
 		{
-			Shared::qError("Could not get \'%s\' or \'%s\' or \'%s\' or \'%s\' KeyValues from \'%s\'!\n", 
-				MAP_GEOMETRY_KV, MAP_VISIBILITY_KV, MAP_RADIOSITY_KV, MAP_BSPINFO_KV, MAPBUILDER_KV);
+			Shared::qWarning("AssetSystem -> Could not get \'%s\' or \'%s\' or \'%s\' or \'%s\' KeyValues from \'%s\'!\n"
+					"AssetSystem -> Using default values for map compile, this might not be ideal!\n", 
+					MAP_GEOMETRY_KV, MAP_VISIBILITY_KV, MAP_RADIOSITY_KV, MAP_BSPINFO_KV, MAPBUILDER_KV);
+			return;
 		}
 
 		for (KeyValues* subKey = VbspKv->GetFirstSubKey(); subKey; subKey = subKey->GetNextKey())
 		{
-			V_snprintf(vbsp_command, bufferSize, "%s %s", subKey->GetName(), subKey->GetString());
+			V_snprintf(vbsp_command, uiBufferSize, " %s ", subKey->GetString(BUILDPARAM, NULL));
 		}
 
 		for (KeyValues* subKey = VvisKv->GetFirstSubKey(); subKey; subKey = subKey->GetNextKey())
 		{
-			V_snprintf(vvis_command, bufferSize, "%s %s", subKey->GetName(), subKey->GetString());
+			V_snprintf(vvis_command, uiBufferSize, " %s ", subKey->GetString(BUILDPARAM, NULL));
 		}		
 		
 		for (KeyValues* subKey = VradKv->GetFirstSubKey(); subKey; subKey = subKey->GetNextKey())
 		{
-			V_snprintf(vrad_command, bufferSize, "%s %s", subKey->GetName(), subKey->GetString());
+			V_snprintf(vrad_command, uiBufferSize, " %s ", subKey->GetString(BUILDPARAM, NULL));
 		}		
 		
 		for (KeyValues* subKey = VbspinfoKv->GetFirstSubKey(); subKey; subKey = subKey->GetNextKey())
 		{
-			V_snprintf(vbspinfo_command, bufferSize, "%s %s", subKey->GetName(), subKey->GetString());
+			V_snprintf(vbspinfo_command, uiBufferSize, " %s ",subKey->GetString(BUILDPARAM, NULL));
 		}
 		
 		// Note: we dont mount the .vmf file here, we do it in MapCompile since there it scans mapsrc!!
-		V_snprintf(vbsp_command, bufferSize, " %s %s %s -game \"%s\"  ", "", TOOL_VERBOSE_MODE, vbsp_command, gamedir);
-		V_snprintf(vvis_command, bufferSize, " %s %s %s -game \"%s\"  ", "", TOOL_VERBOSE_MODE, vvis_command, gamedir);
-		V_snprintf(vrad_command, bufferSize, " %s %s %s -game \"%s\"  ", "", TOOL_VERBOSE_MODE, vrad_command, gamedir);
-		V_snprintf(vbspinfo_command, bufferSize, " %s %s %s -game \"%s\"  ", "", TOOL_VERBOSE_MODE, vbspinfo_command, gamedir); //Check vbspinfo command line!!
+		V_snprintf(vbsp_command, uiBufferSize, " %s %s %s -game \"%s\"  ", "", TOOL_VERBOSE_MODE, vbsp_command, gamedir);
+		V_snprintf(vvis_command, uiBufferSize, " %s %s %s -game \"%s\"  ", "", TOOL_VERBOSE_MODE, vvis_command, gamedir);
+		V_snprintf(vrad_command, uiBufferSize, " %s %s %s -game \"%s\"  ", "", TOOL_VERBOSE_MODE, vrad_command, gamedir);
+		V_snprintf(vbspinfo_command, uiBufferSize, " %s %s %s -game \"%s\"  ", "", TOOL_VERBOSE_MODE, vbspinfo_command, gamedir); //Check vbspinfo command line!!
 	}
 
 
 	//-----------------------------------------------------------------------------
 	// Purpose:	We copy the .bsp to the game dir (e.g: mapsrc -> maps)
 	//-----------------------------------------------------------------------------
-	void CopyBspToGameDir(const char* mapsrc, const char* level_name)
+	static void CopyBspToGameDir(const char* mapsrc, const char* level_name)
 	{
 		char mapdir[MAX_PATH], mapgamedir[MAX_PATH], mapgamedir_file[MAX_PATH];
 		float start = Plat_FloatTime();
 
+		// Sanity check
+		if(!Shared::CheckIfPathOrFileExist(mapsrc))
+		{
+			Shared::qWarning("AssetSystem -> NO map found in: \"%s\"\n"
+					"AssetSystem -> Most likely \'%s\' build failed!\n",
+					mapsrc, level_name);
+			return;
+		}
+
 		V_snprintf(mapdir, sizeof(mapdir), "%s", mapsrc);							// (e.g: "C:\Half Life 2\hl2\mapsrc\test.bsp")
 		V_snprintf(mapgamedir, sizeof(mapgamedir), "%s\\%s", gamedir, MAPS_DIR);	// (e.g: "C:\Half Life 2\hl2\maps")
 		V_snprintf(mapgamedir_file, sizeof(mapgamedir_file), "%s",					/*This causes a memory leak!*/
-				Shared::ReplaceSubstring(mapsrc, MATERIALSRC_DIR, MATERIALS_DIR));	// (e.g: "C:\Half Life 2\hl2\maps\test.bsp")
+				Shared::ReplaceSubstring(mapsrc, MAPSRC_DIR, MAPS_DIR));	// (e.g: "C:\Half Life 2\hl2\maps\test.bsp")
 
-		Msg("Map original directory: ");	ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\"\n", mapdir);
-		Msg("Map game folder:		 ");	ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\"\n", mapgamedir);
-		Msg("Map game directory:     ");	ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\"\n", mapgamedir_file);
+		Msg("Map source directory:	");	ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\"\n", mapdir);
+		Msg("Map game folder:		");	ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\"\n", mapgamedir);
+		Msg("Map game directory:    ");	ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\"\n", mapgamedir_file);
 
 		Msg("Copying source .bsp to game directory... ");
 
 		// Ensure the "maps" directory exists before copying
-		if (!CreateDirectory(mapgamedir, NULL))
+		if (!CreateDirectoryA(mapgamedir, NULL))
 		{
 			DWORD err = GetLastError();
 			if (err != ERROR_ALREADY_EXISTS)
 			{
-				Error("\nCould not create directory at: \"%s\" (Error code: %lu)\n", mapgamedir, err);
+				Shared::qError("\nCould not create directory at: \"%s\" (Error code: %lu)\n", mapgamedir, err);
 			}
 		}
 
@@ -165,13 +191,13 @@ namespace MapBuilder
 	//-----------------------------------------------------------------------------
 	// Purpose:	given a string we replace the .vmf or .vmn to .bsp
 	//-----------------------------------------------------------------------------
-	void ReplaceVmfBspExten(char* szPath)
+	static void ReplaceVmfBspExten(char* szPath)
 	{
 		char* szBspPath = V_strdup(szPath);
 
-		if(strlen(szPath) > 0 && (strstr(szPath, MAPSRC_EXTENSION) || strstr(szPath, MAPSRC_EXTENSION2)))
+		if(V_strlen(szPath) > 0 && (V_strstr(szPath, MAPSRC_EXTENSION1) || V_strlen(szPath) > 0 && V_strstr(szPath, MAPSRC_EXTENSION2)))
 		{
-			szBspPath[strlen(szPath) - strlen(MAPSRC_EXTENSION)] = '\0';
+			szBspPath[V_strlen(szPath) - V_strlen(MAPSRC_EXTENSION1)] = '\0';
 			
 			V_snprintf(szPath, MAX_PATH, "%s%s", szBspPath, MAPS_EXTENSION);
 		}
@@ -183,13 +209,13 @@ namespace MapBuilder
 	//-----------------------------------------------------------------------------
 	// Purpose:	Compile all the assets found in the given directory
 	//-----------------------------------------------------------------------------
-	void MapProcessRec(	char * vbsp_command, char* vvis_command,char* vrad_command, char* vbspinfo_command, const char* directory, const char* extension)
+	static void MapProcessRec(	char * vbsp_command, char* vvis_command,char* vrad_command, char* vbspinfo_command, const char* directory, const char* pExtension)
 	{
-		char searchPath[MAX_PATH];
-		V_snprintf(searchPath, sizeof(searchPath), "%s\\*", directory);
+		char szSearchPath[MAX_PATH];
+		V_snprintf(szSearchPath, sizeof(szSearchPath), "%s\\*", directory);
 
 		WIN32_FIND_DATAA findFileData;
-		HANDLE hFind = FindFirstFileA(searchPath, &findFileData);
+		HANDLE hFind = FindFirstFileA(szSearchPath, &findFileData);
 		if (hFind == INVALID_HANDLE_VALUE)
 			return;
 
@@ -201,28 +227,28 @@ namespace MapBuilder
 				continue;
 			}
 
-			char fullPath[MAX_PATH];
-			V_snprintf(fullPath, sizeof(fullPath), "%s\\%s", directory, name);
+			char szFullPath[MAX_PATH];
+			V_snprintf(szFullPath, sizeof(szFullPath), "%s\\%s", directory, name);
 
 			if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 			{
 				MapProcessRec(	vbsp_command, vvis_command, vrad_command,
-								vbspinfo_command, fullPath, extension);
+								vbspinfo_command, szFullPath, pExtension);
 			}
-			else if (Shared::HasExtension(name, extension))
+			else if (Shared::HasExtension(name, pExtension))
 			{
 				char vmfPath[MAX_PATH] = "", bspPath[MAX_PATH] = "";
 				char _temp_vbsp[4096] = "", _temp_vvis[4096] = "", _temp_vrad[4096] = "", _temp_vbspinfo[4096] = "";
 
-				if (!Shared::PartialBuildAsset(fullPath, MAPSRC_DIR, MAPS_DIR))
+				if (!Shared::PartialBuildAsset(szFullPath, MAPSRC_DIR, MAPS_DIR))
 					continue;
 
 				// Exclude folder!
-				if (Shared::ExcludeDirOrFile(fullPath, MAPBUILDER_KV))
-					continue;
+				if (Shared::ExcludeDirOrFile(szFullPath))
+					continue; // TODO: RECALL THE FUNTION!!!! and set the file to next!!
 
-				V_snprintf(vmfPath, sizeof(vmfPath), "%s", fullPath); // game/mod/mapsrc/vmfname.vmf
-				V_snprintf(bspPath, sizeof(bspPath), "%s", fullPath); // game/mod/mapsrc/vmfname.bsp
+				V_snprintf(vmfPath, sizeof(vmfPath), "%s", szFullPath); // game/mod/mapsrc/vmfname.vmf
+				V_snprintf(bspPath, sizeof(bspPath), "%s", szFullPath); // game/mod/mapsrc/vmfname.bsp
 				ReplaceVmfBspExten(bspPath);
 
 				// Now we get append the path of the .vmf file to vbsp
@@ -242,7 +268,7 @@ namespace MapBuilder
 					Shared::StartExe("Bsp Info", NAME_MAP_BPSINFO_TOOL, _temp_vbspinfo); //vbspinfo
 				}
 
-				// Now that we have all the .bsp compiled we copy it to game/mod/mapsrc -> game/mod/maps 
+				// Now that we have the .bsp fully compiled, we copy it from game/mod/mapsrc -> game/mod/maps 
 				CopyBspToGameDir(bspPath, findFileData.cFileName);
 
 				// We cleanup the temp files generated by vbsp, vvis, vrad
@@ -261,7 +287,7 @@ namespace MapBuilder
 					{
 						if (remove(file) != 0)
 						{
-							Warning("Could not delete \"%s\" file!\n", file);
+							Shared::qWarning("\nAssetSystem -> Could not delete temp \"%s\" file!\n", file);
 						}
 					}
 
@@ -291,13 +317,13 @@ namespace MapBuilder
 
 		V_snprintf(mapSrcPath, sizeof(mapSrcPath), "%s\\%s", gamedir, MAPSRC_DIR); // (e.g: "C:\Half Life 2\hl2\mapsrc")
 			
-		bContinueVmf = Shared::DirectoryAssetTypeExist(mapSrcPath, MAPSRC_EXTENSION, "maps");
+		bContinueVmf = Shared::DirectoryAssetTypeExist(mapSrcPath, MAPSRC_EXTENSION1, "maps");
 		bContinueVmn = Shared::DirectoryAssetTypeExist(mapSrcPath, MAPSRC_EXTENSION2, "maps");
 		if (!bContinueVmf && !bContinueVmn)
 			return;
 
-		Msg("%s", (g_quiet || !g_spewallcommands) ? "Asset report:\n" : "");
-		Shared::AssetInfoBuild(mapSrcPath, MAPSRC_EXTENSION);
+		Msg("%s", (g_spewallcommands) ? "Asset report:\n" : "");
+		Shared::AssetInfoBuild(mapSrcPath, MAPSRC_EXTENSION1);
 		Shared::AssetInfoBuild(mapSrcPath, MAPSRC_EXTENSION2);
 		if (g_infocontent)
 			return;
@@ -307,13 +333,11 @@ namespace MapBuilder
 		// We do this because in case we have to compile both .vmf & .vmn files
 		if (bContinueVmf) 
 		{
-			MapProcessRec(	vbsp_command, vvis_command, vrad_command,
-							vbspinfo_command, mapSrcPath, MAPSRC_EXTENSION);
+			MapProcessRec(vbsp_command, vvis_command, vrad_command, vbspinfo_command, mapSrcPath, MAPSRC_EXTENSION1);
 		}		
 		if (bContinueVmn)
 		{
-			MapProcessRec(	vbsp_command, vvis_command, vrad_command,
-							vbspinfo_command, mapSrcPath, MAPSRC_EXTENSION2);
+			MapProcessRec(vbsp_command, vvis_command, vrad_command, vbspinfo_command, mapSrcPath, MAPSRC_EXTENSION2);
 		}
 	}
 }

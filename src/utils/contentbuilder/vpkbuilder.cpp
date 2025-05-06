@@ -1,3 +1,9 @@
+//========= --------------------------------------------------- ============//
+//
+// Purpose: VpkBuilder – A ContentBuilder subsystem for vpk creation.
+//
+// $NoKeywords: $
+//=============================================================================//
 #include <cstddef>
 #include <windows.h>
 #include "filesystem_init.h"
@@ -12,9 +18,9 @@ namespace VpkBuilder
 	//-----------------------------------------------------------------------------
 	// Purpose:	Check if vpk.exe exists
 	//-----------------------------------------------------------------------------
-	void AssetToolCheck(const char* gamebin)
+	void AssetToolCheck(const char* pGameBin)
 	{
-		Shared::AssetToolCheck(gamebin, NAME_VALVEPAKFILE_TOOL, "VpkBuilder");
+		Shared::AssetToolCheck(pGameBin, NAME_VALVEPAKFILE_TOOL, VPKBUILDER_KV);
 	}
 
 
@@ -23,13 +29,13 @@ namespace VpkBuilder
 	//          section of the GameInfo KeyValues file, and constructs the full
 	//          command line for the tool (e.g -v -game "C:\Half Life 2\hl2")
 	//-----------------------------------------------------------------------------
-	void LoadGameInfoKv(char* tool_command, const char* vpktemp, std::size_t bufferSize)
+	static void LoadGameInfoKv(char* tool_command, const char* vpktemp, std::size_t uiBufferSize)
 	{
-		char _argv2[2048];
+		char szKvToolArgv[2048];
 
-		Shared::LoadGameInfoKv(VPKBUILDER_KV, _argv2, sizeof(_argv2));
+		Shared::LoadGameInfoKv(VPKBUILDER_KV, szKvToolArgv, sizeof(szKvToolArgv));
 
-		V_snprintf(tool_command, bufferSize, " %s %s \"%s\"", DEFAULT_VALVEPAKFILE_COMMANDLINE, TOOL_VERBOSE_MODE, vpktemp);
+		V_snprintf(tool_command, uiBufferSize, " %s %s \"%s\"", DEFAULT_VALVEPAKFILE_COMMANDLINE, TOOL_VERBOSE_MODE, vpktemp);
 	}
 
 
@@ -38,59 +44,61 @@ namespace VpkBuilder
 	//-----------------------------------------------------------------------------
 	void VpkCompile()
 	{
-		char tool_args[4096] = "", VpkTempPath[MAX_PATH] = "", modVpkTempPath[MAX_PATH] = "";
+		char szToolArgv[4096] = "", szVpkTempPath[MAX_PATH] = "", szModVpkTempPath[MAX_PATH] = "";
 
 		Shared::PrintHeaderCompileType("Valve Pack File (vpk)");
 
 		// get the mod name, and set up the temp dir
-		char *modname = V_strrchr(gamedir, '\\');
-		modname++; // skip the first '\'
+		char *pModName = V_strrchr(gamedir, '\\');
+		pModName++; // skip the first '\'
 
-		V_snprintf(VpkTempPath, sizeof(VpkTempPath), "%s\\_tempvpk", g_contentbuilderPath);
-		V_snprintf(modVpkTempPath, sizeof(modVpkTempPath), "%s\\%s", VpkTempPath, modname);
+		V_snprintf(szVpkTempPath, sizeof(szVpkTempPath), "%s\\%s", g_contentbuilderPath, TEMP_VPK_DIR);
+		V_snprintf(szModVpkTempPath, sizeof(szModVpkTempPath), "%s\\%s", szVpkTempPath, pModName);
 
-		if (!Shared::CreateDirectoryRecursive(modVpkTempPath))
+		if (!Shared::CreateDirectoryRecursive(szModVpkTempPath))
 		{
 			DWORD err = GetLastError();
 			if (err != ERROR_ALREADY_EXISTS) 
 			{
-				Shared::qError("AssetSystem -> Could not create temporary directory at: \"%s\" (Error code: %lu)\n", modVpkTempPath, err);
+				Shared::qError("AssetSystem -> Could not create temporary directory at: \"%s\" (Error code: %lu)\n", szModVpkTempPath, err);
+				g_process_error++;
+				return;
 			}
 		}
 
-		// For building vpks files we COPY the the folders into _build/_tempvpk/modname
+		// For building vpks files we COPY the the folders into _build/_tempvpk/modmane
 		// We copy the next dirs: expressions, materials, models, particles, scenes, sounds, shaders
 		float start = Plat_FloatTime();
 		Msg("AssetSystem -> Creating temp files for vpk build (this may take a while)... ");
 		
-		const char* folderlist[] = { "expressions", MATERIALS_DIR, MODELS_DIR, "particles", SCENE_DIR, SOUNDS_DIR, "shaders" };
-		for (const char* folder : folderlist) 
+		const char* rgszFolderlist[] = { "expressions", MATERIALS_DIR, MODELS_DIR, "particles", SCENE_DIR, SOUNDS_DIR, "shaders" };
+		for (const char* pFolder : rgszFolderlist)
 		{
 			char srcCopyDir[MAX_PATH] = "", outCopyDir[MAX_PATH] = "";
 
-			V_snprintf(srcCopyDir, sizeof(srcCopyDir), "%s\\%s", gamedir, folder);
-			V_snprintf(outCopyDir, sizeof(outCopyDir), "%s\\%s", modVpkTempPath, folder);
+			V_snprintf(srcCopyDir, sizeof(srcCopyDir), "%s\\%s", gamedir, pFolder);
+			V_snprintf(outCopyDir, sizeof(outCopyDir), "%s\\%s", szModVpkTempPath, pFolder);
 
-			if (Shared::CheckIfFileExist(srcCopyDir)) 
+			if (Shared::CheckIfPathOrFileExist(srcCopyDir)) 
 			{
-				Shared::CopyDirectoryContents(srcCopyDir, outCopyDir, folder == SCENE_DIR ? ".image" : "");
+				Shared::CopyDirectoryContents(srcCopyDir, outCopyDir, pFolder == SCENE_DIR ? ".image" : "");
 			}
 			else
 			{
-				Warning("AssetSystem -> Non existing path in gamedir: %s, excluding\n", folder);
+				Shared::qWarning("AssetSystem -> Non existing path in gamedir: %s, excluding\n", pFolder);
 			}
 		}
 		ColorSpewMessage(SPEW_MESSAGE, &done_color, "done(%.2f)\n", Plat_FloatTime() - start);
 
-		LoadGameInfoKv(tool_args, modVpkTempPath, sizeof(tool_args));
+		LoadGameInfoKv(szToolArgv, szModVpkTempPath, sizeof(szToolArgv));
 
-		Shared::StartExe("Valve Pack File (vpk)", NAME_VALVEPAKFILE_TOOL, tool_args);
+		Shared::StartExe("Valve Pack File (vpk)", NAME_VALVEPAKFILE_TOOL, szToolArgv);
 
 		start = Plat_FloatTime();
 		Msg("AssetSystem -> Coping contents from temp dir... ");
 
 		// After the build we copy the generated pack file and delete the temp file
-		if (!Shared::CopyDirectoryContents(VpkTempPath, gamedir, VALVEPAKFILE_EXTENSION))
+		if (!Shared::CopyDirectoryContents(szVpkTempPath, gamedir, VALVEPAKFILE_EXTENSION))
 		{
 			return;
 		}
@@ -99,7 +107,7 @@ namespace VpkBuilder
 		// detele _build/_tempvpk folder
 		if (g_cleanuptempcontent) 
 		{
-			Shared::DeleteFolderWithContents(VpkTempPath);
+			Shared::DeleteFolderWithContents(szVpkTempPath);
 		}
 	}
 }

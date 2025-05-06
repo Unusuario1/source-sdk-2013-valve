@@ -1,3 +1,9 @@
+//========= --------------------------------------------------- ============//
+//
+// Purpose: 
+//
+// $NoKeywords: $
+//=============================================================================//
 #ifndef SHARED_H
 #define SHARED_H
 #include <stdio.h>
@@ -6,6 +12,7 @@
 #include "basetypes.h"
 
 #include "contentbuilder.h"
+#include "filesystem_init.h"
 
 //Here is a quick explanation of the KeyValues system in contentbuilder.exe: 
 //  contentbuilder.exe builds all of the posible types of assets in the engine.
@@ -119,10 +126,10 @@
 //	}
 // 
 
-// TODO: change this to enum!
 
 //content builder stuff
-#define CONTENTBUILDER_OUTPATH      "_build"
+#define GAMEINFO                    "gameinfo.txt"
+#define CONTENTBUILDER              "contentbuilder.txt"
 
 //Common paths
 #define MATERIALS_DIR               "materials"
@@ -137,6 +144,11 @@
 #define CAPTIONSRC_DIR              "resource"
 #define MAPS_DIR                    "maps" 
 #define MAPSRC_DIR                  "mapsrc"
+
+// temp dir
+#define CONTENTBUILDER_OUTPATH      "_build"
+#define TEMP_VPK_DIR                 "_temp_vpk"
+#define TEMP_BSPZIP_DIR              "_temp_bspzip"
 
 //Bin tools paths
 #define TOOLS_PATH_64BITS           "bin\\x64"
@@ -155,7 +167,7 @@
 #define NAME_MAP_ZIP_TOOL           "bspzip.exe"
 #define NAME_VALVEPAKFILE_TOOL      "vpk.exe"
 
-//Common extension
+//Common pExtension
 #define MATERIALS_EXTENSION         ".vmt"
 #define TEXTURE_EXTENSION           ".vtf"
 #define TEXTURESRC_EXTENSION1       ".tga"
@@ -170,7 +182,7 @@
 #define CAPTION_EXTENSION           ".dat"
 #define CAPTIONSRC_EXTENSION        ".txt"
 #define MAPS_EXTENSION              ".bsp"
-#define MAPSRC_EXTENSION            ".vmf"      
+#define MAPSRC_EXTENSION1            ".vmf"      
 #define MAPSRC_EXTENSION2           ".vmn" 
 #define VALVEPAKFILE_EXTENSION      ".vpk"
 
@@ -185,53 +197,66 @@
 #define DEFAULT_GEOMETRY_COMMANDLINE        ""
 #define DEFAULT_VISIBILITY_COMMANDLINE      ""
 #define DEFAULT_RADIOSITY_COMMANDLINE       ""
-#define DEFAULT_ZIP_COMMANDLINE             ""
+#define DEFAULT_ZIP_COMMANDLINE             g_buildoutofdatecontent ? "-addorupdatelist" : "-addlist"
 #define DEFAULT_VALVEPAKFILE_COMMANDLINE    "-M"
 
-//Extras
-#define GAMEINFO                    "gameinfo.txt"
-#define ADDONINFO                   "addoninfo.txt"
+//KeyValues
 #define CONTENTBUILDER_KV           "ContentBuilder"
 #define MATERIALBUILDER_KV          "MaterialBuilder"
 #define MODELBUILDER_KV             "ModelBuilder"
 #define SOUNDBUILDER_KV             "SoundBuilder"
 #define SCENEBUILDER_KV             "SceneBuilder"
 #define CAPTIONBUILDER_KV           "CaptionBuilder"
+// Map Builder  - start
 #define MAPBUILDER_KV               "MapBuilder"
 #define MAP_GEOMETRY_KV             "Vbsp"
 #define MAP_VISIBILITY_KV           "Vvis"
 #define MAP_RADIOSITY_KV            "Vrad"
 #define MAP_BSPINFO_KV              "VbspInfo"
+// Map Builder  - end
 #define VPKBUILDER_KV               "VpkBuilder"
-#define EXCLUDE_KV                  "Exclude"       // Exclude folder and files   
+#define VPKBUILDER_CONTENT          "VpkFolder"
+#define VPKBUILDER_ADDCONTENT       "AddFileOrFolder"
+// Addon builer - start
+#define ADDONBUILDER_KV             "AddonBuilder"
+#define ADDONBUILDER_MPLEVEL_KV     "LevelToPack"
+#define ADDONPACKING_KV             "BspZip"
+#define ADDONEXCLUDEPACK_KV         "ExcludeBspPacking"
+// Addon builer - end
+#define EXCLUDE_KV                  "Exclude"              
+#define EXCLUDESTRING_KV            "ExcludeFileOrFolder"       
+#define BUILDPARAM                  "BuildParams"
 
 
 namespace Shared
 {
     void qError(const char* format, ...);
+    void qWarning(const char* format, ...);
     void StartExe(const char* type_asset, const char* tool_name, const char* Keyvalues);
     std::size_t CountAssets(const char* directory, const char* asset_type);
     void CreateAssetSystemGamePath(const char* gamedir, const char* asset_dir);
-    void LoadGameInfoKv(const char* ToolKeyValue, char* output_argv, std::size_t bufferSize);
-    void AssetToolCheck(const char* gamebin, const char* tool_name, const char* sub_system);
-    void CopyFilesRecursivelyGame(const char* srcDir, const char* srcfolder, const char* gamefolder, const char* extension);
+    void LoadGameInfoKv(const char* ToolKeyValue, char* output_argv, std::size_t uiBufferSize);
+    void AssetToolCheck(const char* pGameBin, const char* tool_name, const char* sub_system);
+    void CopyFilesRecursivelyGame(const char* srcDir, const char* srcfolder, const char* gamefolder, const char* pExtension);
     wchar_t* CtoWc(char* input, wchar_t* output, std::size_t size);
     bool TargetPlatform();
     char* ReplaceSubstring(const char* str, const char* old_sub, const char* new_sub);
-    bool DirectoryAssetTypeExist(const char* directoryPath, const char* extension, const char* asset_type);
-    bool CheckIfFileExist(const char* path);
+    bool DirectoryAssetTypeExist(const char* directoryPath, const char* pExtension, const char* asset_type);
+    bool CheckIfPathOrFileExist(const char* path);
     bool DirectoryExists(const char* path);
-    void SetUpBinDir(char* string, size_t bufferSize);
+    void SetUpBinDir(char* string, size_t uiBufferSize);
     const char* TimeStamp();
-    void AssetInfoBuild(const char* folder, const char* extension);
+    void AssetInfoBuild(const char* folder, const char* pExtension);
     void AssetInfoBuild(WIN32_FIND_DATAA findData);
-    bool HasExtension(const char* filename, const char* extension);
+    bool HasExtension(const char* filename, const char* pExtension);
     void PrintHeaderCompileType(const char* compile_type);
     bool PartialBuildAsset(const char* asset_path, const char* asset_src_folder, const char* asset_folder);
-    bool CopyDirectoryContents(const char* srcPath, const char* dstPath, const char* extension);
+    bool CopyDirectoryContents(const char* srcPath, const char* dstPath, const char* pExtension);
     void DeleteFolderWithContents(const char* folderPath);
     bool CreateDirectoryRecursive(const char* path);
-    bool ExcludeDirOrFile(const char* assetpath, const char* AssetSystem_KV);
+    bool ScanFolderSaveContents(const char* asset_folder, const char* outputfile, const char* subsystem, const char* pExtension = "");
+    bool ExcludeDirOrFile(const char* assetpath);
+    char* MergeString(const char* string, const char* sub1);
 }
 
 

@@ -29,6 +29,8 @@ $Project "Content builder"
 {
 	$Folder	"Source Files"
 	{
+		-$File	"$SRCDIR\public\tier0\memoverride.cpp"
+
 		$File "contentbuilder.cpp"
 		$File "colorscheme.cpp"
 		$File "captionbuilder.cpp"
@@ -38,6 +40,7 @@ $Project "Content builder"
 		$File "modelbuilder.cpp"
 		$File "soundbuilder.cpp"
 		$File "vpkbuilder.cpp"
+		$File "addonbuilder.cpp"
 		$File "shared.cpp"
 
 		$Folder	"Common Files"
@@ -63,6 +66,7 @@ $Project "Content builder"
 		$File "captionbuilder.h"
 		$File "mapbuilder.h"
 		$File "vpkbuilder.h"
+		$File "addonbuilder.h"
 		$File "shared.h"
 
 		$Folder	"Common header files"

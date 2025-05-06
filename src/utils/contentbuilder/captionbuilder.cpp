@@ -1,3 +1,10 @@
+//========= --------------------------------------------------- ============//
+//
+// Purpose: CaptionBuilder – A ContentBuilder subsystem for batch compiling 
+//          and processing closed captions.
+//
+// $NoKeywords: $
+//=============================================================================//
 #include <cstddef>
 #include <windows.h>
 #include "filesystem_init.h"
@@ -12,9 +19,9 @@ namespace CaptionBuilder
 	//-----------------------------------------------------------------------------
 	// Purpose:	Check if captioncompiler.exe exists
 	//-----------------------------------------------------------------------------
-	void AssetToolCheck(const char* gamebin)
+	void AssetToolCheck(const char* pGameBin)
 	{
-		Shared::AssetToolCheck(gamebin, NAME_CAPTION_TOOL, "CaptionBuilder");
+		Shared::AssetToolCheck(pGameBin, NAME_CAPTION_TOOL, CAPTIONBUILDER_KV);
 	}
 
 
@@ -23,27 +30,26 @@ namespace CaptionBuilder
 	//          section of the GameInfo KeyValues file, and constructs the full
 	//          command line for the tool (e.g -v -game "C:\Half Life 2\hl2")
 	//-----------------------------------------------------------------------------
-	void LoadGameInfoKv(char* tool_argv, std::size_t bufferSize)
+	static void LoadGameInfoKv(char* pToolArgv, std::size_t uiBufferSize)
 	{
-		char _argv2[2048] = "";
+		char szKvToolArgv[2048] = "";
 
-		Shared::LoadGameInfoKv(CAPTIONBUILDER_KV, _argv2, sizeof(_argv2));
+		Shared::LoadGameInfoKv(CAPTIONBUILDER_KV, szKvToolArgv, sizeof(szKvToolArgv));
 
-		V_snprintf(tool_argv, bufferSize, " %s %s %s -game \"%s\"", DEFAULT_CAPTION_COMMANDLINE, TOOL_VERBOSE_MODE, _argv2, gamedir);
+		V_snprintf(pToolArgv, uiBufferSize, " %s %s %s -game \"%s\"", DEFAULT_CAPTION_COMMANDLINE, TOOL_VERBOSE_MODE, szKvToolArgv, gamedir);
 	}
 
 
 	//-----------------------------------------------------------------------------
 	// Purpose:	Compile all the assets found in the given directory
 	//-----------------------------------------------------------------------------
-	void CaptionProcessRec(const char* directory,
-		const char* tool_commands, const char* extension)
+	static void CaptionProcessRec(const char* pDirectory, const char* szToolCommand, const char* pExtension)
 	{
-		char searchPath[MAX_PATH];
-		V_snprintf(searchPath, sizeof(searchPath), "%s\\*", directory);
+		char szSearchPath[MAX_PATH];
+		V_snprintf(szSearchPath, sizeof(szSearchPath), "%s\\*", pDirectory);
 
 		WIN32_FIND_DATAA findFileData;
-		HANDLE hFind = FindFirstFileA(searchPath, &findFileData);
+		HANDLE hFind = FindFirstFileA(szSearchPath, &findFileData);
 		if (hFind == INVALID_HANDLE_VALUE)
 			return;
 
@@ -53,25 +59,25 @@ namespace CaptionBuilder
 			if (V_strcmp(name, ".") == 0 || V_strcmp(name, "..") == 0)
 				continue;
 
-			char fullPath[MAX_PATH];
-			V_snprintf(fullPath, sizeof(fullPath), "%s\\%s", directory, name);
+			char szFullPath[MAX_PATH];
+			V_snprintf(szFullPath, sizeof(szFullPath), "%s\\%s", pDirectory, name);
 
 			if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 			{
-				CaptionProcessRec(fullPath, tool_commands, extension);
+				CaptionProcessRec(szFullPath, szToolCommand, pExtension);
 			}
-			else if (Shared::HasExtension(name, extension))
+			else if (Shared::HasExtension(name, pExtension))
 			{
 				char szTemp[4096];
 
-				if (!Shared::PartialBuildAsset(fullPath, CAPTIONSRC_DIR, CAPTION_DIR))
+				if (!Shared::PartialBuildAsset(szFullPath, CAPTIONSRC_DIR, CAPTION_DIR))
 					continue;
 
 				// Exclude folder!
-				if (Shared::ExcludeDirOrFile(fullPath, MAPBUILDER_KV))
+				if (Shared::ExcludeDirOrFile(szFullPath))
 					continue;
 
-				V_snprintf(szTemp, sizeof(szTemp), "%s \"%s\"", tool_commands, fullPath);
+				V_snprintf(szTemp, sizeof(szTemp), "%s \"%s\"", szToolCommand, szFullPath);
 				Shared::StartExe("Captions", NAME_CAPTION_TOOL, szTemp);
 			}
 		} while (FindNextFileA(hFind, &findFileData));
@@ -85,25 +91,25 @@ namespace CaptionBuilder
 	//-----------------------------------------------------------------------------
 	void CaptionCompile()
 	{
-		char tool_commands[4096] = "", captionSrcPath[MAX_PATH] = "";
+		char szToolCommand[4096] = "", szCaptionSrcPath[MAX_PATH] = "";
 		bool bContinue = true;
 
 		Shared::PrintHeaderCompileType("Captions");
 
-		V_snprintf(captionSrcPath, sizeof(captionSrcPath), "%s\\%s", gamedir, CAPTIONSRC_DIR); // (e.g: "C:\Half Life 2\hl2\resource")
+		V_snprintf(szCaptionSrcPath, sizeof(szCaptionSrcPath), "%s\\%s", gamedir, CAPTIONSRC_DIR); // (e.g: "C:\Half Life 2\hl2\resource")
 
-		bContinue = Shared::DirectoryAssetTypeExist(captionSrcPath, CAPTIONSRC_EXTENSION, "captions");
+		bContinue = Shared::DirectoryAssetTypeExist(szCaptionSrcPath, CAPTIONSRC_EXTENSION, "captions");
 		if (!bContinue)
 			return;
 
-		Msg("%s", (g_quiet || !g_spewallcommands) ? "Asset report:\n" : "");
+		Msg("%s", (g_spewallcommands) ? "Asset report:\n" : "");
 
-		Shared::AssetInfoBuild(captionSrcPath, CAPTIONSRC_EXTENSION);
+		Shared::AssetInfoBuild(szCaptionSrcPath, CAPTIONSRC_EXTENSION);
 		if (g_infocontent)
 			return;
 
-		CaptionBuilder::LoadGameInfoKv(tool_commands, sizeof(tool_commands));
+		CaptionBuilder::LoadGameInfoKv(szToolCommand, sizeof(szToolCommand));
 
-		CaptionProcessRec(captionSrcPath, tool_commands, CAPTIONSRC_EXTENSION);
+		CaptionProcessRec(szCaptionSrcPath, szToolCommand, CAPTIONSRC_EXTENSION);
 	}
 }
