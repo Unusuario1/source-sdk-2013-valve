@@ -37,7 +37,7 @@ namespace SoundBuilder
 		//audioprocess.exe
 #if 0
 		// Exclude folder!
-		if (Shared::ExcludeDirOrFile(fullPath, MAPBUILDER_KV))
+		if (Shared::ExcludeDirOrFile(szFullPath, MAPBUILDER_KV))
 			continue;
 #endif
 

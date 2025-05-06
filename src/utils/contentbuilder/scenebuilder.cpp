@@ -49,14 +49,13 @@ namespace SceneBuilder
 		if (!bContinue)
 			return;
 
-		Msg("%s", (g_quiet || !g_spewallcommands) ? "Asset report:\n" : "");
+		Msg("%s", (g_spewallcommands) ? "Asset report:\n" : "");
 		Shared::AssetInfoBuild(sceneSrcPath, SCENESRC_EXTENSION);
 		if (g_infocontent)
 			return;
 
 		// Note: scenebuilder indepently if -lb is enabled, always is going to make a full build, 
 		// we cannot control this in contentbuilder, but is not an issue becouse the compile is very fast
-
 		SceneBuilder::LoadGameInfoKv(tool_commands, sizeof(tool_commands));
 		Shared::StartExe("Scenes", NAME_SCENE_TOOL, tool_commands);
 	}

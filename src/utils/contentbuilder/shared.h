@@ -190,7 +190,7 @@
 
 //Extras
 #define GAMEINFO                    "gameinfo.txt"
-#define ADDONINFO                   "addoninfo.txt"
+#define CONTENTBUILDER              "contentbuilder.txt"
 #define CONTENTBUILDER_KV           "ContentBuilder"
 #define MATERIALBUILDER_KV          "MaterialBuilder"
 #define MODELBUILDER_KV             "ModelBuilder"
@@ -203,7 +203,8 @@
 #define MAP_RADIOSITY_KV            "Vrad"
 #define MAP_BSPINFO_KV              "VbspInfo"
 #define VPKBUILDER_KV               "VpkBuilder"
-#define EXCLUDE_KV                  "Exclude"       // Exclude folder and files   
+#define EXCLUDE_KV                  "Exclude"       // Exclude folder and files  
+#define BUILDPARAM                  "BuildParams"
 
 
 namespace Shared
@@ -219,7 +220,7 @@ namespace Shared
     bool TargetPlatform();
     char* ReplaceSubstring(const char* str, const char* old_sub, const char* new_sub);
     bool DirectoryAssetTypeExist(const char* directoryPath, const char* extension, const char* asset_type);
-    bool CheckIfFileExist(const char* path);
+    bool CheckIfPathOrFileExist(const char* path);
     bool DirectoryExists(const char* path);
     void SetUpBinDir(char* string, size_t bufferSize);
     const char* TimeStamp();
@@ -231,7 +232,7 @@ namespace Shared
     bool CopyDirectoryContents(const char* srcPath, const char* dstPath, const char* extension);
     void DeleteFolderWithContents(const char* folderPath);
     bool CreateDirectoryRecursive(const char* path);
-    bool ExcludeDirOrFile(const char* assetpath, const char* AssetSystem_KV);
+    bool ExcludeDirOrFile(const char* assetpath);
 }
 
 

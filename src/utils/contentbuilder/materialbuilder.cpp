@@ -34,12 +34,12 @@ namespace MaterialBuilder
 	//-----------------------------------------------------------------------------
 	void LoadGameInfoKv(char *tool_argv, std::size_t bufferSize)
 	{
-		char _argv2[2048] = "";
+		char szArgv2[2048] = "";
 
-		Shared::LoadGameInfoKv(MATERIALBUILDER_KV, _argv2, sizeof(_argv2));
+		Shared::LoadGameInfoKv(MATERIALBUILDER_KV, szArgv2, sizeof(szArgv2));
 
 		// Note: vtex.exe does not support -verbose or -v 
-		V_snprintf(tool_argv, bufferSize, " %s %s %s -game \"%s\"", DEFAULT_TEXTURE_COMMANDLINE, g_quiet ? "-quiet" : "", _argv2, gamedir);
+		V_snprintf(tool_argv, bufferSize, " %s %s %s -game \"%s\"", DEFAULT_TEXTURE_COMMANDLINE, g_quiet ? "-quiet" : "", szArgv2, gamedir);
 	}
 
 
@@ -48,11 +48,11 @@ namespace MaterialBuilder
 	//-----------------------------------------------------------------------------
 	void MaterialProcessRec(const char* directory, const char* tool_commands, const char* extension)
 	{
-		char searchPath[MAX_PATH];
-		V_snprintf(searchPath, sizeof(searchPath), "%s\\*", directory);
+		char szSearchPath[MAX_PATH];
+		V_snprintf(szSearchPath, sizeof(szSearchPath), "%s\\*", directory);
 
 		WIN32_FIND_DATAA findFileData;
-		HANDLE hFind = FindFirstFileA(searchPath, &findFileData);
+		HANDLE hFind = FindFirstFileA(szSearchPath, &findFileData);
 		if (hFind == INVALID_HANDLE_VALUE)
 			return;
 
@@ -62,25 +62,25 @@ namespace MaterialBuilder
 			if (V_strcmp(name, ".") == 0 || V_strcmp(name, "..") == 0)
 				continue;
 
-			char fullPath[MAX_PATH];
-			V_snprintf(fullPath, sizeof(fullPath), "%s\\%s", directory, name);
+			char szFullPath[MAX_PATH];
+			V_snprintf(szFullPath, sizeof(szFullPath), "%s\\%s", directory, name);
 
 			if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 			{
-				MaterialProcessRec(fullPath, tool_commands, extension);
+				MaterialProcessRec(szFullPath, tool_commands, extension);
 			}
 			else if (Shared::HasExtension(name, extension))
 			{
 				char szTemp[4096];
 
-				if (!Shared::PartialBuildAsset(fullPath, MATERIALSRC_DIR, MATERIALS_DIR))
+				if (!Shared::PartialBuildAsset(szFullPath, MATERIALSRC_DIR, MATERIALS_DIR))
 					continue;
 
 				// Exclude folder!
-				if (Shared::ExcludeDirOrFile(fullPath, MAPBUILDER_KV))
+				if (Shared::ExcludeDirOrFile(szFullPath))
 					continue;
 
-				V_snprintf(szTemp, sizeof(szTemp), "%s \"%s\"", tool_commands, fullPath);
+				V_snprintf(szTemp, sizeof(szTemp), "%s \"%s\"", tool_commands, szFullPath);
 				Shared::StartExe("Materials", NAME_MATERIAL_TOOL, szTemp);
 			}
 		} while (FindNextFileA(hFind, &findFileData));
@@ -109,27 +109,33 @@ namespace MaterialBuilder
 		if (!bContinueTga && !bContinuePfm && !bContinuePsd && !bContinueVmt)
 			return;
 
-		Msg("%s", (g_quiet || !g_spewallcommands) ? "Asset report:\n" : "");
+		Msg("%s", (g_spewallcommands) ? "Asset report:\n" : "");
 
-		// Copy the vmt files from materialsrc to materials
 		if (bContinueVmt)
 		{
 			Shared::AssetInfoBuild(matsrcdir, MATERIALS_EXTENSION);
-			if (!g_infocontent) 
-			{
-				MaterialBuilder::CopySrcVmtToGameDir(matsrcdir);
-				Msg("\n");
-			}
+			Msg("\n");
 		}
 
 		if (bContinueTga || bContinuePfm || bContinuePsd)
 		{
-			bContinueTga ? Shared::AssetInfoBuild(matsrcdir, TEXTURESRC_EXTENSION1) : void();
-			bContinuePfm ? Shared::AssetInfoBuild(matsrcdir, TEXTURESRC_EXTENSION2) : void();
-			bContinuePsd ? Shared::AssetInfoBuild(matsrcdir, TEXTURESRC_EXTENSION3) : void();
+			if (bContinueTga)	
+			{ 
+				Shared::AssetInfoBuild(matsrcdir, TEXTURESRC_EXTENSION1); 
+			}
+			if (bContinuePfm)	
+			{ 
+				Shared::AssetInfoBuild(matsrcdir, TEXTURESRC_EXTENSION2); 
+			}
+			if (bContinuePsd)	
+			{ 
+				Shared::AssetInfoBuild(matsrcdir, TEXTURESRC_EXTENSION3); 
+			}
 
 			if (g_infocontent)
+			{
 				return;
+			}
 
 			MaterialBuilder::LoadGameInfoKv(tool_commands, sizeof(tool_commands));
 
@@ -145,6 +151,12 @@ namespace MaterialBuilder
 			{
 				MaterialProcessRec(matsrcdir, tool_commands, TEXTURESRC_EXTENSION3);
 			}
+		}
+
+		// Copy the vmt files from materialsrc to materials
+		if (!g_infocontent)
+		{
+			MaterialBuilder::CopySrcVmtToGameDir(matsrcdir);
 		}
 	}
 }

@@ -71,7 +71,7 @@ namespace VpkBuilder
 			V_snprintf(srcCopyDir, sizeof(srcCopyDir), "%s\\%s", gamedir, folder);
 			V_snprintf(outCopyDir, sizeof(outCopyDir), "%s\\%s", modVpkTempPath, folder);
 
-			if (Shared::CheckIfFileExist(srcCopyDir)) 
+			if (Shared::CheckIfPathOrFileExist(srcCopyDir)) 
 			{
 				Shared::CopyDirectoryContents(srcCopyDir, outCopyDir, folder == SCENE_DIR ? ".image" : "");
 			}

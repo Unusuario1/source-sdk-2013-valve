@@ -53,25 +53,25 @@ namespace CaptionBuilder
 			if (V_strcmp(name, ".") == 0 || V_strcmp(name, "..") == 0)
 				continue;
 
-			char fullPath[MAX_PATH];
-			V_snprintf(fullPath, sizeof(fullPath), "%s\\%s", directory, name);
+			char szFullPath[MAX_PATH];
+			V_snprintf(szFullPath, sizeof(szFullPath), "%s\\%s", directory, name);
 
 			if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 			{
-				CaptionProcessRec(fullPath, tool_commands, extension);
+				CaptionProcessRec(szFullPath, tool_commands, extension);
 			}
 			else if (Shared::HasExtension(name, extension))
 			{
 				char szTemp[4096];
 
-				if (!Shared::PartialBuildAsset(fullPath, CAPTIONSRC_DIR, CAPTION_DIR))
+				if (!Shared::PartialBuildAsset(szFullPath, CAPTIONSRC_DIR, CAPTION_DIR))
 					continue;
 
 				// Exclude folder!
-				if (Shared::ExcludeDirOrFile(fullPath, MAPBUILDER_KV))
+				if (Shared::ExcludeDirOrFile(szFullPath))
 					continue;
 
-				V_snprintf(szTemp, sizeof(szTemp), "%s \"%s\"", tool_commands, fullPath);
+				V_snprintf(szTemp, sizeof(szTemp), "%s \"%s\"", tool_commands, szFullPath);
 				Shared::StartExe("Captions", NAME_CAPTION_TOOL, szTemp);
 			}
 		} while (FindNextFileA(hFind, &findFileData));
@@ -96,7 +96,7 @@ namespace CaptionBuilder
 		if (!bContinue)
 			return;
 
-		Msg("%s", (g_quiet || !g_spewallcommands) ? "Asset report:\n" : "");
+		Msg("%s", (g_spewallcommands) ? "Asset report:\n" : "");
 
 		Shared::AssetInfoBuild(captionSrcPath, CAPTIONSRC_EXTENSION);
 		if (g_infocontent)

@@ -42,24 +42,23 @@ namespace Shared
     }
 
 
-    bool ExcludeDirOrFile(const char* assetpath, const char* AssetSystem_KV)
+    bool ExcludeDirOrFile(const char* assetpath)
     {
         // We dont need to check if gameinfo, contenbuilder KVs exist
-        KeyValues* GameInfoKVCubemap = ReadKeyValuesFile(g_gameinfodir);
+        KeyValues* GameInfoKVCubemap = new KeyValues(CONTENTBUILDER);
         KeyValues* ContentBuilderKV = GameInfoKVCubemap->FindKey(CONTENTBUILDER_KV, false);
-        KeyValues* AssetSystemKV = ContentBuilderKV->FindKey(AssetSystem_KV, false);
+        KeyValues* AssetSystemKV = ContentBuilderKV->FindKey(EXCLUDE_KV, false);
         
         // Check if Exclude kv exists
-        KeyValues* ExcludeKV = AssetSystemKV->FindKey(EXCLUDE_KV);
-
-        if (ExcludeKV == NULL)
+        if (AssetSystemKV == nullptr)
         {
+            GameInfoKVCubemap->deleteThis();
             return false;
         }
 
         // Get how many paths are in Exclude KV
         std::size_t numberExcludePath = 0;
-        for (KeyValues* subKey = ExcludeKV->GetFirstSubKey(); subKey; subKey = subKey->GetNextKey())
+        for (KeyValues* subKey = AssetSystemKV->GetFirstSubKey(); subKey; subKey = subKey->GetNextKey())
         {
             numberExcludePath++;
         }
@@ -67,7 +66,7 @@ namespace Shared
         // terminate the list
         std::size_t j = 0;
         char** folderExcludeList = new char* [numberExcludePath];
-        for(KeyValues* subKey = ExcludeKV->GetFirstSubKey(); subKey; subKey = subKey->GetNextKey())
+        for(KeyValues* subKey = AssetSystemKV->GetFirstSubKey(); subKey; subKey = subKey->GetNextKey())
         {
             folderExcludeList[j] = new char[MAX_PATH];
 
@@ -76,10 +75,12 @@ namespace Shared
             j++;
         }
 
+        //Check if the file or folder is in the path
         for(std::size_t i = 0; i < numberExcludePath;i++)
         {
-            if(strstr(assetpath, folderExcludeList[i]))
+            if(V_strstr(assetpath, folderExcludeList[i]))
             {
+                Msg("\n\n\n\t%s\n\n", folderExcludeList[i]);
                 // free the memory
                 for (std::size_t i = 0; i < numberExcludePath; i++)
                 {
@@ -87,6 +88,8 @@ namespace Shared
                 }
                 delete[] folderExcludeList;
 
+                GameInfoKVCubemap->deleteThis();
+                
                 return true;
             }
         }
@@ -98,38 +101,40 @@ namespace Shared
         }
         delete[] folderExcludeList;
 
+        GameInfoKVCubemap->deleteThis();
+
         return false;
     }
 
 
     bool CreateDirectoryRecursive(const char* path) 
     {
-        char temp[MAX_PATH];
+        char szTemp[MAX_PATH];
 
-        V_strncpy(temp, path, MAX_PATH);
-        V_StripTrailingSlash(temp);
+        V_strncpy(szTemp, path, MAX_PATH);
+        V_StripTrailingSlash(szTemp);
 
-        for (char* p = temp + 3; *p; p++) 
+        for (char* p = szTemp + 3; *p; p++)
         {
             if (*p == '\\') 
             {
                 *p = '\0';
-                CreateDirectoryA(temp, NULL); // ignore errors
+                CreateDirectoryA(szTemp, NULL); // ignore errors
                 *p = '\\';
             }
         }
 
-        return CreateDirectoryA(temp, NULL) || GetLastError() == ERROR_ALREADY_EXISTS;
+        return CreateDirectoryA(szTemp, NULL) || GetLastError() == ERROR_ALREADY_EXISTS;
     }
 
 
     bool CopyDirectoryContents(const char* srcPath, const char* dstPath, const char *extension)
     {
-        char srcSearch[MAX_PATH];
-        V_snprintf(srcSearch, sizeof(srcSearch), "%s\\*%s", srcPath, extension);
+        char szSrcSearch[MAX_PATH];
+        V_snprintf(szSrcSearch, sizeof(szSrcSearch), "%s\\*%s", srcPath, extension);
 
         WIN32_FIND_DATAA findData;
-        HANDLE hFind = FindFirstFileA(srcSearch, &findData);
+        HANDLE hFind = FindFirstFileA(szSrcSearch, &findData);
 
         if (hFind == INVALID_HANDLE_VALUE) 
         {
@@ -146,22 +151,22 @@ namespace Shared
             if (V_strcmp(findData.cFileName, ".") == 0 || V_strcmp(findData.cFileName, "..") == 0)
                 continue;
 
-            char fullSrc[MAX_PATH];
-            char fullDst[MAX_PATH];
-            V_snprintf(fullSrc, sizeof(fullSrc), "%s\\%s", srcPath, findData.cFileName);
-            V_snprintf(fullDst, sizeof(fullDst), "%s\\%s", dstPath, findData.cFileName);
+            char szFullSrc[MAX_PATH];
+            char szFullDst[MAX_PATH];
+            V_snprintf(szFullSrc, sizeof(szFullSrc), "%s\\%s", srcPath, findData.cFileName);
+            V_snprintf(szFullDst, sizeof(szFullDst), "%s\\%s", dstPath, findData.cFileName);
 
             if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) 
             {
                 // Recursively copy subdirectories
-                CopyDirectoryContents(fullSrc, fullDst, extension);
+                CopyDirectoryContents(szFullSrc, szFullSrc, extension);
             }
             else 
             {
                 // Copy the file
-                if (!CopyFileA(fullSrc, fullDst, FALSE)) 
+                if (!CopyFileA(szFullDst, szFullDst, FALSE))
                 {
-                    Shared::qError("AssetSystem -> Failed to copy file: %s to %s (Error: %lu)\n", fullSrc, fullDst, GetLastError());
+                    Shared::qError("AssetSystem -> Failed to copy file: %s to %s (Error: %lu)\n", szFullSrc, szFullDst, GetLastError());
                 }
             }
         } while (FindNextFileA(hFind, &findData));
@@ -178,11 +183,11 @@ namespace Shared
     {
         WIN32_FIND_DATAA findFileData;
         HANDLE hFind;
-        char searchPath[MAX_PATH];
+        char szSearchPath[MAX_PATH];
         
-        V_snprintf(searchPath, sizeof(searchPath), "%s\\*", srcDir);
+        V_snprintf(szSearchPath, sizeof(szSearchPath), "%s\\*", srcDir);
 
-        hFind = FindFirstFileA(searchPath, &findFileData);
+        hFind = FindFirstFileA(szSearchPath, &findFileData);
 
         if (hFind == INVALID_HANDLE_VALUE) 
         {
@@ -191,7 +196,7 @@ namespace Shared
 
         do 
         {
-            char fullPath[MAX_PATH] = "", *outPath;
+            char szFullPath[MAX_PATH] = "", *outPath;
             const char* fileName = findFileData.cFileName;
 
             // Skip "." and ".."
@@ -200,32 +205,33 @@ namespace Shared
                 continue;
             }
 
-            V_snprintf(fullPath, sizeof(fullPath), "%s\\%s", srcDir, fileName);
-            outPath = Shared::ReplaceSubstring(fullPath, srcfolder, gamefolder);
+            V_snprintf(szFullPath, sizeof(szFullPath), "%s\\%s", srcDir, fileName);
+            outPath = Shared::ReplaceSubstring(szFullPath, srcfolder, gamefolder);
 
             if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) 
             {
                 // Recursively process subdirectories
                 free(outPath);
-                CopyFilesRecursivelyGame(fullPath, srcfolder, gamefolder, extension);
+                CopyFilesRecursivelyGame(szFullPath, srcfolder, gamefolder, extension);
             }
             else 
             {
-                const char* fileExt = V_strrchr(fileName, '.');
-                if (fileExt && V_strcmp(fileExt, extension) == 0) 
-                {
-                    char* createDir = Shared::ReplaceSubstring(srcDir, srcfolder, gamefolder);
-                    CreateDirectory(createDir, NULL);
-                    free(createDir);
+                const char* szFileExt = V_strrchr(fileName, '.');
 
-                    if (!CopyFileA(fullPath, outPath, FALSE)) 
+                if (szFileExt && V_strcmp(szFileExt, extension) == 0)
+                {
+                    char* szCreateDir = Shared::ReplaceSubstring(srcDir, srcfolder, gamefolder);
+                    CreateDirectory(szCreateDir, NULL);
+                    free(szCreateDir);
+
+                    if (!CopyFileA(szFullPath, outPath, FALSE))
                     {
-                        Shared::qError("Failed to copy: %s to %s\n", fullPath, outPath);
+                        Shared::qError("Failed to copy: %s to %s\n", szFullPath, outPath);
                         free(outPath);
                     }
                     else 
                     {
-                        qprintf("\nCopied: %s -> %s\n", fullPath, outPath);
+                        qprintf("\nCopied: %s -> %s\n", szFullPath, outPath);
                         free(outPath);
                     }
                 }
@@ -238,19 +244,19 @@ namespace Shared
 
     void DeleteFolderWithContents(const char* folderPath) 
     {
-        char path[MAX_PATH];
-        V_snprintf(path, sizeof(path), "%s\\", folderPath); // trailing slash required
-        path[V_strlen(path) + 1] = '\0'; // double null-terminated string
+        char szPath[MAX_PATH];
+        V_snprintf(szPath, sizeof(szPath), "%s\\", folderPath); // trailing slash required
+        szPath[V_strlen(szPath) + 1] = '\0';                    // double null-terminated string
 
         SHFILEOPSTRUCTA fileOp = { 0 };
         fileOp.wFunc = FO_DELETE;
-        fileOp.pFrom = path;
+        fileOp.pFrom = szPath;
         fileOp.fFlags = FOF_NO_UI; // No confirmation dialogs
 
         int result = SHFileOperationA(&fileOp);
         if (result != 0) 
         {
-            Warning("AssetSystem -> Failed to delete: \"%s\". SHFileOperation error: %d\n", path, result);
+            Warning("AssetSystem -> Failed to delete: \"%s\". SHFileOperation error: %d\n", szPath, result);
         }
     }
 
@@ -260,42 +266,42 @@ namespace Shared
     //-----------------------------------------------------------------------------
     void AssetInfoBuild(const char* folder, const char* extension)
     {
-        char searchPath[MAX_PATH];
+        char szSearchPath[MAX_PATH];
 
         if(!g_spewallcommands)
         {
             return;
         }
 
-        V_snprintf(searchPath, sizeof(searchPath), "%s\\*", folder);
+        V_snprintf(szSearchPath, sizeof(szSearchPath), "%s\\*", folder);
 
         WIN32_FIND_DATAA findData;
-        HANDLE hFind = FindFirstFileA(searchPath, &findData);
+        HANDLE hFind = FindFirstFileA(szSearchPath, &findData);
         if (hFind == INVALID_HANDLE_VALUE)
             return;
 
         do 
         {
-            const char* name = findData.cFileName;
+            const char* szName = findData.cFileName;
 
-            if (V_strcmp(name, ".") == 0 || V_strcmp(name, "..") == 0)
+            if (V_strcmp(szName, ".") == 0 || V_strcmp(szName, "..") == 0)
                 continue;
 
-            char fullPath[MAX_PATH];
-            V_snprintf(fullPath, sizeof(fullPath), "%s\\%s", folder, name);
+            char szFullPath[MAX_PATH];
+            V_snprintf(szFullPath, sizeof(szFullPath), "%s\\%s", folder, szName);
 
             if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) 
             {
-                AssetInfoBuild(fullPath, extension); // Recurse into subdirectory
+                AssetInfoBuild(szFullPath, extension); // Recurse into subdirectory
             }
             else 
             {
-                const char* dot = V_strrchr(name, '.');
-                if (dot && V_stricmp(dot, extension) == 0)
+                const char* szDot = V_strrchr(szName, '.');
+                if (szDot && V_stricmp(szDot, extension) == 0)
                 {     
                     ColorSpewMessage(SPEW_MESSAGE, &sucesfullprocess_color, "OK");
                     Msg(" - %s - ", Shared::TimeStamp());
-                    ColorSpewMessage(SPEW_MESSAGE, &path_color, "%s\n", fullPath);
+                    ColorSpewMessage(SPEW_MESSAGE, &path_color, "%s\n", szFullPath);
                 }
             }
 
@@ -321,14 +327,15 @@ namespace Shared
     //-----------------------------------------------------------------------------
     std::size_t CountAssets(const char* directory, const char* asset_type) 
     {
-        char searchPath[MAX_PATH];
+        char szSearchPath[MAX_PATH];
         int count = 0;
+
         size_t extLen = V_strlen(asset_type);
 
-        V_snprintf(searchPath, sizeof(searchPath), "%s\\*", directory); // Search for all files and folders
+        V_snprintf(szSearchPath, sizeof(szSearchPath), "%s\\*", directory); // Search for all files and folders
 
         WIN32_FIND_DATA findData;
-        HANDLE hFind = FindFirstFile(searchPath, &findData);
+        HANDLE hFind = FindFirstFile(szSearchPath, &findData);
 
         if (hFind == INVALID_HANDLE_VALUE) 
         {
@@ -342,13 +349,13 @@ namespace Shared
                 continue; // Skip special entries
             } 
 
-            char fullPath[MAX_PATH];
-            V_snprintf(fullPath, sizeof(fullPath), "%s\\%s", directory, findData.cFileName);
+            char szFullPath[MAX_PATH];
+            V_snprintf(szFullPath, sizeof(szFullPath), "%s\\%s", directory, findData.cFileName);
 
             if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) 
             {
                 // If it's a directory, recursively scan it
-                count += CountAssets(fullPath, asset_type);
+                count += CountAssets(szFullPath, asset_type);
             }
             else 
             {
@@ -383,7 +390,7 @@ namespace Shared
         // First count how many times old_sub appears
         int count = 0;
         const char* tmp = str;
-        while ((tmp = strstr(tmp, old_sub))) 
+        while ((tmp = V_strstr(tmp, old_sub))) 
         {
             count++;
             tmp += old_len;
@@ -397,7 +404,7 @@ namespace Shared
         char* dst = result;
         const char* src = str;
 
-        while ((tmp = strstr(src, old_sub))) 
+        while ((tmp = V_strstr(src, old_sub))) 
         {
             size_t bytes_to_copy = tmp - src;
             memcpy(dst, src, bytes_to_copy);
@@ -417,14 +424,14 @@ namespace Shared
     //-----------------------------------------------------------------------------
     void CreateAssetSystemGamePath(const char* gamedir, const char* asset_dir)
     {
-        char _temp[MAX_PATH];
-        V_snprintf(_temp, sizeof(_temp), "%s\\%s", gamedir, asset_dir);
+        char szTemp[MAX_PATH];
+        V_snprintf(szTemp, sizeof(szTemp), "%s\\%s", gamedir, asset_dir);
 
-        if (SHCreateDirectoryEx(NULL, _temp, NULL) == ERROR_SUCCESS)
+        if (SHCreateDirectoryEx(NULL, szTemp, NULL) == ERROR_SUCCESS)
         {
             if (g_spewallcommands) 
             {
-                Msg("\tAssetSystem -> Creating directory: ");   ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\"\n", _temp);
+                Msg("\tAssetSystem -> Creating directory: ");   ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\"\n", szTemp);
             }
         }
         else if (GetLastError() == ERROR_ALREADY_EXISTS)
@@ -432,7 +439,7 @@ namespace Shared
             if (g_spewallcommands)
             {
                 Msg("\tAssetSystem -> Directory:");
-                ColorSpewMessage(SPEW_MESSAGE, &path_color, " \"%s\" ", _temp);
+                ColorSpewMessage(SPEW_MESSAGE, &path_color, " \"%s\" ", szTemp);
                 Msg(", already exists!\n");
             }
         }
@@ -440,7 +447,7 @@ namespace Shared
         {
             Shared::qError("AssetSystem -> Cound not create: \"%s\"\n"
                            "AssetSystem -> Exit code (%i)\n",
-                           _temp, GetLastError()
+                            szTemp, GetLastError()
             );
         }
     }
@@ -468,8 +475,8 @@ namespace Shared
     //-----------------------------------------------------------------------------
     bool HasExtension(const char* filename, const char* extension)
     {
-        const char* dot = V_strrchr(filename, '.');
-        return (dot && V_stricmp(dot, extension) == 0);
+        const char* szDot = V_strrchr(filename, '.');
+        return (szDot && V_stricmp(szDot, extension) == 0);
     }
 
 
@@ -481,14 +488,16 @@ namespace Shared
 
     //-----------------------------------------------------------------------------
     // Purpose:     If g_buildoutofdatecontent = true, we check if the compiled
-    //              asset is out of date in comparasion to the src, if it is
+    //              asset is out of date in comparasion to the src, if it is,
     //              return true, if not false
     //-----------------------------------------------------------------------------
     bool PartialBuildAsset(const char* asset_path, const char* asset_src_folder, const char* asset_folder)
     {
         if (!g_buildoutofdatecontent)
+        {
             return true;
-        
+        }
+
         char* szAssetSrcPath = V_strdup(asset_path);
         char* szAssetPath = ReplaceSubstring(szAssetSrcPath, asset_src_folder, asset_folder);
 
@@ -501,10 +510,8 @@ namespace Shared
         FILETIME ftCompiled, ftSource;
 
         // Open both files
-        HANDLE hCompiled = CreateFileW(wCompiled, GENERIC_READ,
-            FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-        HANDLE hSource = CreateFileW(wSource, GENERIC_READ,
-            FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        HANDLE hCompiled = CreateFileW(wCompiled, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        HANDLE hSource = CreateFileW(wSource, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
         if (hCompiled == INVALID_HANDLE_VALUE || hSource == INVALID_HANDLE_VALUE) 
         {
@@ -560,11 +567,11 @@ namespace Shared
     //-----------------------------------------------------------------------------
     bool FindFileRecursive(const char* baseDir, const char* extension)
     {
-        char searchPath[MAX_PATH];
-        V_snprintf(searchPath, sizeof(searchPath), "%s\\*", baseDir);
+        char szSearchPath[MAX_PATH];
+        V_snprintf(szSearchPath, sizeof(szSearchPath), "%s\\*", baseDir);
 
         WIN32_FIND_DATAA findFileData;
-        HANDLE hFind = FindFirstFileA(searchPath, &findFileData);
+        HANDLE hFind = FindFirstFileA(szSearchPath, &findFileData);
         if (hFind == INVALID_HANDLE_VALUE)
             return false;
 
@@ -573,12 +580,12 @@ namespace Shared
             if (V_strcmp(findFileData.cFileName, ".") == 0 || V_strcmp(findFileData.cFileName, "..") == 0)
                 continue;
 
-            char fullPath[MAX_PATH];
-            V_snprintf(fullPath, sizeof(fullPath), "%s\\%s", baseDir, findFileData.cFileName);
+            char szFullPath[MAX_PATH];
+            V_snprintf(szFullPath, sizeof(szFullPath), "%s\\%s", baseDir, findFileData.cFileName);
 
             if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
             {
-                if (FindFileRecursive(fullPath, extension))
+                if (FindFileRecursive(szFullPath, extension))
                 {
                     FindClose(hFind);
                     return true;
@@ -634,17 +641,17 @@ namespace Shared
     //-----------------------------------------------------------------------------
     void AssetToolCheck(const char* gamebin, const char* tool_name, const char* sub_system)
     {
-        char tool_path[MAX_PATH];
+        char szPath[MAX_PATH];
 
-        V_snprintf(tool_path, sizeof(tool_path), "%s\\%s", gamebin, tool_name);
+        V_snprintf(szPath, sizeof(szPath), "%s\\%s", gamebin, tool_name);
 
         if (g_spewallcommands)
         {
             Msg("\t%s: ", sub_system);
-            ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\"\n", tool_path);
+            ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\"\n", szPath);
         }
 
-        if (!Shared::CheckIfFileExist(tool_path))
+        if (!Shared::CheckIfPathOrFileExist(szPath))
         {
             Shared::qError("\n\t%s doesnt not exist in %s !\n", tool_name, gamebin);
         }
@@ -656,14 +663,14 @@ namespace Shared
     //----------------------------------------------------------------------------
     void StartExe( const char* type_asset, const char* tool_name, const char* Keyvalues)
     {
-        char _gametoolpath[8192];
+        char szGameToolPath[8192];
         float start = Plat_FloatTime();
 
-        V_snprintf(_gametoolpath, sizeof(_gametoolpath), "\"%s\\%s\" %s", g_gamebin, tool_name, Keyvalues);
+        V_snprintf(szGameToolPath, sizeof(szGameToolPath), "\"%s\\%s\" %s", g_gamebin, tool_name, Keyvalues);
 
         if (!g_quiet)
         {
-            Msg("AssetTools -> Starting: ");    ColorSpewMessage(SPEW_MESSAGE, &path_color, "%s\n\n", _gametoolpath);
+            Msg("AssetTools -> Starting: ");    ColorSpewMessage(SPEW_MESSAGE, &path_color, "%s\n\n", szGameToolPath);
         }
 
         STARTUPINFO si = { 0 };
@@ -671,10 +678,11 @@ namespace Shared
         si.cb = sizeof(si);
 
         // Create process
-        if (!CreateProcess(NULL, _gametoolpath, NULL, NULL, false, 0, NULL, NULL, &si, &pi))
+        if (!CreateProcess(NULL, szGameToolPath, NULL, NULL, false, 0, NULL, NULL, &si, &pi))
         {
-            Shared::qError("%s could not start!\n", _gametoolpath);
+            Shared::qError("%s could not start!\n", szGameToolPath);
             g_process_error++;
+            return;
         }
 
         // Wait until child process exits
@@ -686,8 +694,9 @@ namespace Shared
         {
             if (exitCode > 0)
             {
-                Shared::qError("%s compile failed: %d!\n", _gametoolpath, exitCode);
+                Shared::qError("%s compile failed: %d!\n", szGameToolPath, exitCode);
                 g_process_error++;
+                return;
             }
             else
             {
@@ -710,7 +719,7 @@ namespace Shared
         }
     }
 
-
+#if 0
     //-----------------------------------------------------------------------------
     // Purpose:     Char to wide character type, REMENBER TO FREE! free(output), 
     //-----------------------------------------------------------------------------
@@ -726,12 +735,12 @@ namespace Shared
         mbstowcs(output, input, (size * sizeof(wchar_t)));
         return output;
     }
-
+#endif
 
     //-----------------------------------------------------------------------------
-    // Purpose:   Checks if file exist
+    // Purpose:   Checks if path or file exists
     //-----------------------------------------------------------------------------
-    bool CheckIfFileExist(const char *path)
+    bool CheckIfPathOrFileExist(const char *path)
     {
         return (_access(path, 0) == 0);
     }
@@ -742,18 +751,18 @@ namespace Shared
     //-----------------------------------------------------------------------------
     bool TargetPlatform()
     {
-        bool _temp = PLATFORM_64BITS ? true : false; // Default value
+        bool szTemp = PLATFORM_64BITS ? true : false; // Default value
         
         if (g_force32bits) 
         {
-            _temp = false;
+            szTemp = false;
         }
         else if (g_force64bits)
         {
-            _temp = true;
+            szTemp = true;
         }
 
-        return _temp;
+        return szTemp;
     }
 
 
@@ -784,33 +793,43 @@ namespace Shared
     {
         float start = Plat_FloatTime();
 
-        KeyValues* GameInfoKVCubemap = ReadKeyValuesFile(g_gameinfodir);
+        KeyValues* GameInfoKVCubemap = new KeyValues(CONTENTBUILDER);
 
         qprintf("Loading Keyvalues from: \'%s\'... ", ToolKeyValue);
 
+        GameInfoKVCubemap->LoadFromFile(g_pFullFileSystem, CONTENTBUILDER, "MOD");
+
         if (!GameInfoKVCubemap)
         {
-            Shared::qError("Could not get KeyValues from \"%s\"!\n", g_gameinfodir);
+            Warning("AssetSystem -> Could not get KeyValues from \"%s\"!\n", g_contentbuilderdir);
+            Warning("AssetSystem -> Using default values for asset compile, this might not be ideal!\n");
+            return;
         }
 
         KeyValues* ContentBuilderKV = GameInfoKVCubemap->FindKey(CONTENTBUILDER_KV, false);
 
         if (!ContentBuilderKV)
         {
-            Shared::qError("Could not get \'%s\' KeyValues from \"%s\"!\n", CONTENTBUILDER_KV, g_gameinfodir);
+            Warning("Could not get \'%s\' KeyValues from \"%s\"!\n", CONTENTBUILDER_KV, g_contentbuilderdir);
+            Warning("AssetSystem -> Using default values for asset compile, this might not be ideal!\n");
+            return;
         }
 
         KeyValues* ToolKV = ContentBuilderKV->FindKey(ToolKeyValue, false);
 
         if (!ToolKV)
         {
-            Shared::qError("Could not get \'%s\' KeyValues from \"%s\"!\n", ToolKeyValue, g_gameinfodir);
+            Warning("Could not get \'%s\' KeyValues from \"%s\"!\n", ToolKeyValue, g_contentbuilderdir);
+            Warning("AssetSystem -> Using default values for asset compile, this might not be ideal!\n");
+            return;
         }
 
         for (KeyValues* subKey = ToolKV->GetFirstSubKey(); subKey; subKey = subKey->GetNextKey())
         {
-            V_snprintf(output_argv, bufferSize, "%s %s %s", output_argv, subKey->GetName(), subKey->GetString());
+            V_snprintf(output_argv, bufferSize, " %s %s ", output_argv, subKey->GetString(BUILDPARAM));
         }
+
+        GameInfoKVCubemap->deleteThis();
 
         if (verbose) 
         { 

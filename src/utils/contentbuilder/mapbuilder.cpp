@@ -169,9 +169,9 @@ namespace MapBuilder
 	{
 		char* szBspPath = V_strdup(szPath);
 
-		if(strlen(szPath) > 0 && (strstr(szPath, MAPSRC_EXTENSION) || strstr(szPath, MAPSRC_EXTENSION2)))
+		if(V_strlen(szPath) > 0 && (V_strstr(szPath, MAPSRC_EXTENSION) || V_strstr(szPath, MAPSRC_EXTENSION2)))
 		{
-			szBspPath[strlen(szPath) - strlen(MAPSRC_EXTENSION)] = '\0';
+			szBspPath[V_strlen(szPath) - V_strlen(MAPSRC_EXTENSION)] = '\0';
 			
 			V_snprintf(szPath, MAX_PATH, "%s%s", szBspPath, MAPS_EXTENSION);
 		}
@@ -201,28 +201,28 @@ namespace MapBuilder
 				continue;
 			}
 
-			char fullPath[MAX_PATH];
-			V_snprintf(fullPath, sizeof(fullPath), "%s\\%s", directory, name);
+			char szFullPath[MAX_PATH];
+			V_snprintf(szFullPath, sizeof(szFullPath), "%s\\%s", directory, name);
 
 			if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 			{
 				MapProcessRec(	vbsp_command, vvis_command, vrad_command,
-								vbspinfo_command, fullPath, extension);
+								vbspinfo_command, szFullPath, extension);
 			}
 			else if (Shared::HasExtension(name, extension))
 			{
 				char vmfPath[MAX_PATH] = "", bspPath[MAX_PATH] = "";
 				char _temp_vbsp[4096] = "", _temp_vvis[4096] = "", _temp_vrad[4096] = "", _temp_vbspinfo[4096] = "";
 
-				if (!Shared::PartialBuildAsset(fullPath, MAPSRC_DIR, MAPS_DIR))
+				if (!Shared::PartialBuildAsset(szFullPath, MAPSRC_DIR, MAPS_DIR))
 					continue;
 
 				// Exclude folder!
-				if (Shared::ExcludeDirOrFile(fullPath, MAPBUILDER_KV))
+				if (Shared::ExcludeDirOrFile(szFullPath))
 					continue;
 
-				V_snprintf(vmfPath, sizeof(vmfPath), "%s", fullPath); // game/mod/mapsrc/vmfname.vmf
-				V_snprintf(bspPath, sizeof(bspPath), "%s", fullPath); // game/mod/mapsrc/vmfname.bsp
+				V_snprintf(vmfPath, sizeof(vmfPath), "%s", szFullPath); // game/mod/mapsrc/vmfname.vmf
+				V_snprintf(bspPath, sizeof(bspPath), "%s", szFullPath); // game/mod/mapsrc/vmfname.bsp
 				ReplaceVmfBspExten(bspPath);
 
 				// Now we get append the path of the .vmf file to vbsp
@@ -296,7 +296,7 @@ namespace MapBuilder
 		if (!bContinueVmf && !bContinueVmn)
 			return;
 
-		Msg("%s", (g_quiet || !g_spewallcommands) ? "Asset report:\n" : "");
+		Msg("%s", (g_spewallcommands) ? "Asset report:\n" : "");
 		Shared::AssetInfoBuild(mapSrcPath, MAPSRC_EXTENSION);
 		Shared::AssetInfoBuild(mapSrcPath, MAPSRC_EXTENSION2);
 		if (g_infocontent)

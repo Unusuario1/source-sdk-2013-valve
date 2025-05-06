@@ -19,7 +19,8 @@
 #include "vpkbuilder.h"
 #include "shared.h"
 
-
+// TODO: dont use gameinfo.txt, use contentbuilder.txt
+// TODO: Change the keyvalue to not no be an error, just use the default
 // TODO: setup a log funtion also a warning, error, smth like _build/build(date time).log
 //                                                            _build/warning.contentlist
 //                                                            _build/asset_report.contentlist
@@ -53,6 +54,7 @@ bool g_createlog            = true;
 char g_gamebin[MAX_PATH]    = "";       //  game/bin or game/bin/x64
 char g_steamdir[MAX_PATH]   = "";       //  game
 char g_gameinfodir[MAX_PATH] = "";      //  game/mod/gameinfo.txt
+char g_contentbuilderdir[MAX_PATH] = "";  //  game/mod/contentbuilder.txt
 char g_contentbuilderPath[MAX_PATH] = ""; // game/mod/_build
 
 
@@ -61,7 +63,10 @@ char g_contentbuilderPath[MAX_PATH] = ""; // game/mod/_build
 //-----------------------------------------------------------------------------
 void HitKeyToContinue()
 {
-    g_pause ? system("pause") : void();
+    if (g_pause)
+    {
+        system("pause");
+    }
 }
 
 
@@ -148,14 +153,10 @@ std::size_t GetSkippedAssets()
 
 
 //-----------------------------------------------------------------------------
-// Purpose:     Add MOD search path to the filesystem
+// Purpose:     
 //-----------------------------------------------------------------------------
 void PreInit()
 {
-    // We dont care about compiled assets or search paths
-    g_pFullFileSystem->RemoveAllSearchPaths();
-    g_pFullFileSystem->AddSearchPath("MOD", gamedir);
-
     // Note: Even though it's standard to add a '\' at the end of the string,
     // we remove it here because it makes managing paths much easier across the tool.
     V_StripTrailingSlash(gamedir);
@@ -172,7 +173,7 @@ void SetUpLogFile()
     V_snprintf(g_contentbuilderPath, sizeof(g_contentbuilderPath), "%s\\%s", gamedir, CONTENTBUILDER_OUTPATH);
 
     // Remove old files
-    if (Shared::CheckIfFileExist(g_contentbuilderPath) && g_cleanuptempcontent)
+    if (Shared::CheckIfPathOrFileExist(g_contentbuilderPath) && g_cleanuptempcontent)
     {
         if (remove(g_contentbuilderPath) != 0)
         {
@@ -183,6 +184,7 @@ void SetUpLogFile()
     if(!Shared::CreateDirectoryRecursive(g_contentbuilderPath))
     {
       DWORD err = GetLastError();
+
       if (err != ERROR_ALREADY_EXISTS)
       {
           Shared::qError("\nCould not create temporary directory at: \"%s\" (Error code: %lu)\n", g_contentbuilderPath, err);
@@ -225,7 +227,7 @@ void Init_AssetTools()
     if (!g_nosteam)
     {
         FileSystem_GetAppInstallDir(g_steamdir, sizeof(g_steamdir));
-        if (g_steamdir == NULL) 
+        if (g_steamdir == nullptr)
         {
             Error("AssetSystem -> steam game dir is NULL! Check \'-steamgamedir\' command!\n");
         }
@@ -233,6 +235,7 @@ void Init_AssetTools()
 
     Shared::SetUpBinDir(g_gamebin, sizeof(g_gamebin));
     V_snprintf(g_gameinfodir, sizeof(g_gameinfodir), "%s\\%s", gamedir, GAMEINFO);
+    V_snprintf(g_contentbuilderdir, sizeof(g_contentbuilderdir), "%s\\%s", gamedir, CONTENTBUILDER);
 
     SetUpLogFile();
 
@@ -242,10 +245,10 @@ void Init_AssetTools()
     Msg("Mod:                 %s\n", gamedir);
     Msg("Operation:           %s\n", g_buildcontent && !g_buildoutofdatecontent ? "Force-building content" : "Partial-building content");
     Msg("Verbosity:           %s %s\n", (verbose ? "High" : (g_quiet ? "Quiet" : "Standard")), (g_spewallcommands ? "(showing paths)" : ""));
-    Msg("Building:            %s\n", g_addonbuild ? "Partial (addon)" : (g_buildmaterials && g_buildmodels && g_buildsounds && 
-                                                                         g_buildscene && g_buildcaption && g_buildmap &&
-                                                                         g_buildvpk) ? "Full (game)" : "Partial (game)"); // lol...
-    
+    Msg("Building:            %s\n", g_addonbuild ? "Partial (addon)" : (g_buildmaterials && g_buildmodels && g_buildsounds &&
+        g_buildscene && g_buildcaption && g_buildmap &&
+        g_buildvpk) ? "Full (game)" : "Partial (game)"); // lol...
+
     if (!g_buildmaterials)   V_strcat(szExclude, "(materials) ", sizeof(szExclude));
     if (!g_buildmodels)      V_strcat(szExclude, "(models) ", sizeof(szExclude));
     if (!g_buildsounds)      V_strcat(szExclude, "(sounds) ", sizeof(szExclude));
@@ -262,6 +265,7 @@ void Init_AssetTools()
         ColorSpewMessage(SPEW_MESSAGE, &header_color, "\nGeneral paths:\n");
         Msg("\tPath - GameInfo.txt: ");             ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\"\n", g_gameinfodir);
         Msg("\tPath - Game binary (tools): ");      ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\"\n", g_gamebin);
+        g_pFullFileSystem->PrintSearchPaths();
 
         //Game/Mod source assets (src) paths
         ColorSpewMessage(SPEW_MESSAGE, &header_color, "Game/Mod Source/Compiled assets paths:\n");
@@ -283,12 +287,13 @@ void Init_AssetTools()
 
     //Create asset compiled dir
     ColorSpewMessage(SPEW_MESSAGE, g_spewallcommands ? &header_color : &white, "Initializing AssetSystem... %s", g_spewallcommands ? "\n" : "");
-    Shared::CreateAssetSystemGamePath(gamedir, MATERIALS_DIR);
-    Shared::CreateAssetSystemGamePath(gamedir, MODELS_DIR);
-    Shared::CreateAssetSystemGamePath(gamedir, SOUNDS_DIR);
-    Shared::CreateAssetSystemGamePath(gamedir, SCENE_DIR);
-    Shared::CreateAssetSystemGamePath(gamedir, CAPTION_DIR);
-    Shared::CreateAssetSystemGamePath(gamedir, MAPS_DIR);
+    
+    const char* rgpszCreateFolderList[] = { MATERIALS_DIR, MODELS_DIR, SOUNDS_DIR, SCENE_DIR, CAPTION_DIR, MAPS_DIR };
+    for (const char* folder : rgpszCreateFolderList)
+    {
+        Shared::CreateAssetSystemGamePath(gamedir, folder);
+    }
+
     if (g_spewallcommands)
     {
         //scan source assets
@@ -306,13 +311,13 @@ void Init_AssetTools()
 
     //Tools paths
     ColorSpewMessage(SPEW_MESSAGE, g_spewallcommands ? &header_color : &white, "Initializing AssetTools systems (%s)... %s", Shared::TargetPlatform() ? "64 bits" : "32 bits", g_spewallcommands ? "\n" : ""); // I know....
-    MaterialBuilder::AssetToolCheck(g_gamebin);
-    ModelBuilder::AssetToolCheck(g_gamebin);
-    SoundBuilder::AssetToolCheck(g_gamebin);
-    SceneBuilder::AssetToolCheck(g_gamebin);
-    CaptionBuilder::AssetToolCheck(g_gamebin);
-    MapBuilder::AssetToolCheck(g_gamebin);
-    VpkBuilder::AssetToolCheck(g_gamebin);
+    if (g_buildmaterials)   MaterialBuilder::AssetToolCheck(g_gamebin);
+    if (g_buildmodels)      ModelBuilder::AssetToolCheck(g_gamebin);
+    if (g_buildsounds)      SoundBuilder::AssetToolCheck(g_gamebin);
+    if (g_buildscene)       SceneBuilder::AssetToolCheck(g_gamebin);
+    if (g_buildcaption)     CaptionBuilder::AssetToolCheck(g_gamebin);
+    if (g_buildmap)         MapBuilder::AssetToolCheck(g_gamebin);
+    if (g_buildvpk)         VpkBuilder::AssetToolCheck(g_gamebin);
     ColorSpewMessage(SPEW_MESSAGE, g_spewallcommands ? &sucesfullprocess_color : &done_color, "Done in %.2f seconds. All sub systems checks passed!\n", Plat_FloatTime() - start);
 
     Msg("Finalizing build list... \n");
@@ -364,7 +369,7 @@ void PrintUsage(int argc, char* argv[])
         , MATERIALSRC_DIR, MODELSRC_DIR, SOUNDSRC_DIR, SCENESRC_DIR, CAPTIONSRC_DIR, MAPSRC_DIR);
     ColorSpewMessage(SPEW_MESSAGE, &header_color, " Spew Options:\n");
     Msg("   -v or -verbose:        Enables verbose.\n"
-        "   -quiet:                Prints minimal text. (Note: Disables \'-verbose\' and \'spewallcommands\')\n"
+        "   -quiet:                Prints minimal text. (Note: Disables \'-verbose\' and \'-spewallcommands\')\n"
         "   -spewallcommands:                     \n"
         "\n");
     ColorSpewMessage(SPEW_MESSAGE, &header_color, " Advanced Build Options:\n");
@@ -479,8 +484,8 @@ void ParseCommandline(int argc, char* argv[])
         {
             g_addonbuild = true;
             g_buildcaption = false;
+            g_buildscene = false;
             g_buildvpk = false;
-            g_buildscene = true;
         }
         else if (!V_stricmp(argv[i], "-skipmaterial"))
         {
@@ -560,15 +565,12 @@ int main(int argc, char* argv[])
     float start = Plat_FloatTime();
 
     SetupDefaultToolsMinidumpHandler();
-    
     CommandLine()->CreateCmdLine(argc, argv);
     InstallSpewFunction();
     PrintHeader();
 	ParseCommandline(argc, argv);
-    
     CmdLib_InitFileSystem(gamedir);
     PreInit();
-
     Init_AssetTools();
 
     if (g_buildcontent || g_addonbuild)

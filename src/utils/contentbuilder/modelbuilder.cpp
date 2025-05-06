@@ -52,25 +52,25 @@ namespace ModelBuilder
 			if (V_strcmp(name, ".") == 0 || V_strcmp(name, "..") == 0)
 				continue;
 
-			char fullPath[MAX_PATH];
-			V_snprintf(fullPath, sizeof(fullPath), "%s\\%s", directory, name);
+			char szFullPath[MAX_PATH];
+			V_snprintf(szFullPath, sizeof(szFullPath), "%s\\%s", directory, name);
 
 			if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 			{
-				ModelProcessRec(fullPath, tool_commands, extension);
+				ModelProcessRec(szFullPath, tool_commands, extension);
 			}
 			else if (Shared::HasExtension(name, extension))
 			{
 				char szTemp[4096];
 
-				if (!Shared::PartialBuildAsset(fullPath, MODELSRC_DIR, MODELS_DIR))
+				if (!Shared::PartialBuildAsset(szFullPath, MODELSRC_DIR, MODELS_DIR))
 					continue;
 
 				// Exclude folder!
-				if (Shared::ExcludeDirOrFile(fullPath, MAPBUILDER_KV))
+				if (Shared::ExcludeDirOrFile(szFullPath))
 					continue;
 
-				V_snprintf(szTemp, sizeof(szTemp), "%s \"%s\"", tool_commands, fullPath);
+				V_snprintf(szTemp, sizeof(szTemp), "%s \"%s\"", tool_commands, szFullPath);
 				Shared::StartExe("Models", NAME_MODEL_TOOL, szTemp);
 			}
 		} while (FindNextFileA(hFind, &findFileData));
@@ -95,7 +95,7 @@ namespace ModelBuilder
 		if (!bContinue)
 			return;
 
-		Msg("%s", (g_quiet || !g_spewallcommands) ? "Asset report:\n" : "");
+		Msg("%s", (g_spewallcommands) ? "Asset report:\n" : "");
 		Shared::AssetInfoBuild(modelSrcPath, MODELSRC_EXTENSION);
 		if (g_infocontent)
 			return;
