@@ -1,3 +1,8 @@
+//========= Copyright Valve Corporation, All rights reserved. ============//
+//
+// Purpose: 
+//
+//=====================================================================================//
 #include "appframework/AppFramework.h"
 #include "tier1/strtools.h"
 #include "tier0/icommandline.h"
@@ -35,14 +40,16 @@ void HitKeyToContinue()
 
 void PrintHeader()
 {
-    Msg("sceneimagebuilder.exe (Build: %s %s)\n", __DATE__, __TIME__);
+    Msg("Valve Software - sceneimagebuilder.exe (Build: %s %s)\n", __DATE__, __TIME__);
 }
 
 
 void PrintUsage()
 {
-    Msg("Usage: sceneimagebuilder.exe [options] -game <path>\n"
-        "   -game <paht>:    Path of the game folder to \'gameinfo.txt\'. (e.g: C:\\Half Life 2\\hl2)\n"
+    Msg(
+        "\n"
+        "Usage: sceneimagebuilder.exe [options] -game <path>\n"
+        "   -game <path>:    Path of the game folder to \'gameinfo.txt\'. (e.g: C:\\Half Life 2\\hl2)\n"
         "   -? or -help:     Prints help.\n"
         "   -v or -verbose:  Turn on verbose output.\n"
         "   -l:              log to file log.txt\n"
@@ -143,9 +150,6 @@ void ParseCommandline()
 }
 
 
-//-----------------------------------------------------------------------------
-// Purpose: Sets up the game path
-//-----------------------------------------------------------------------------
 bool CSceneImageBuilderApp::SetupSearchPaths()
 {
     if (!BaseClass::SetupSearchPaths(NULL, false, true))
@@ -158,9 +162,6 @@ bool CSceneImageBuilderApp::SetupSearchPaths()
 }
 
 
-//-----------------------------------------------------------------------------
-// Purpose: Contructor
-//-----------------------------------------------------------------------------
 bool CSceneImageBuilderApp::Create()
 {
     AppSystemInfo_t appSystems[] =
@@ -172,9 +173,6 @@ bool CSceneImageBuilderApp::Create()
 }
 
 
-//-----------------------------------------------------------------------------
-// Purpose: Destructor
-//-----------------------------------------------------------------------------
 void CSceneImageBuilderApp::Destroy()
 {
 }
@@ -197,6 +195,14 @@ bool CSceneImageBuilderApp::PreInit()
     // Add paths...
     if (!SetupSearchPaths())
         return false;
+
+    if(g_log)
+    {
+        char logFile[512];
+        V_snprintf(logFile, sizeof(logFile), "%s\%s\\%s.log", gamedir, "scenes", "sceneimagebuilder");
+        remove(logFile);
+        SetSpewFunctionLogFile(logFile);
+    }
 
     return true;
 }
@@ -258,12 +264,10 @@ int CSceneImageBuilderApp::Main()
 {
     float start = Plat_FloatTime();
 
-    SetupDefaultToolsMinidumpHandler();
     InstallSpewFunction();
+    SetupDefaultToolsMinidumpHandler();
     PrintHeader();
-
     ParseCommandline();
-
     Create();
     PreInit();
 
