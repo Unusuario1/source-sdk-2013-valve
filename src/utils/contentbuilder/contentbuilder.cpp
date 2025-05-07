@@ -22,8 +22,8 @@
 // TODO: dont use gameinfo.txt, use contentbuilder.txt
 // TODO: Change the keyvalue to not no be an error, just use the default
 // TODO: setup a log funtion also a warning, error, smth like _build/build(date time).log
-//                                                            _build/warning.contentlist
-//                                                            _build/asset_report.contentlist
+//                                                            _build/asset_report_source.contentlist
+//                                                            _build/asset_report_compiled.contentlist
 
 //-----------------------------------------------------------------------------
 // Purpose: Global vars 
@@ -364,7 +364,7 @@ void PrintUsage(int argc, char* argv[])
         "   -skipscene:            Skips scene (\\%s) compile.\n"
         "   -skipcaption:          Skips caption (\\%s) compile.\n"
         "   -skipmap:              Skips maps (\\%s) compile.\n"
-        "   -vpk:                  Generate vpk files (Not avaible for \'-addonbuild\').\n"
+        "   -vpk:                  Generate vpk files. (Not avaible for \'-addonbuild\').\n"
         "\n"
         , MATERIALSRC_DIR, MODELSRC_DIR, SOUNDSRC_DIR, SCENESRC_DIR, CAPTIONSRC_DIR, MAPSRC_DIR);
     ColorSpewMessage(SPEW_MESSAGE, &header_color, " Spew Options:\n");
@@ -374,9 +374,9 @@ void PrintUsage(int argc, char* argv[])
         "\n");
     ColorSpewMessage(SPEW_MESSAGE, &header_color, " Advanced Build Options:\n");
     Msg(
-        //"   -proc <num>:           Max simultaneous compile subsystems (default: 5, max: 5).\n" 
         "   -toolsforce32bits:     Force contentbuilder to use 32 bits tools.\n"
         "   -toolsforce64bits:     Force contentbuilder to use 64 bits tools.\n"
+        "   -proc n or -threads n: Max simultaneous compile subsystems. (Not avaible in maps and vpk build).\n"
         "\n");
     ColorSpewMessage(SPEW_MESSAGE, &header_color, " Other Options:\n");
     Msg("   -FullMinidumps:        Write large minidumps on crash.\n"
@@ -420,6 +420,10 @@ void ParseCommandline(int argc, char* argv[])
         else if (!V_stricmp(argv[i], "-v") || !V_stricmp(argv[i], "-verbose"))
         {
             verbose = true;
+        }  
+        else if (!V_stricmp(argv[i], "-threads") || !V_stricmp(argv[i], "-proc"))
+        {
+            //threads = true; //TODO!
         }
         else if (!V_stricmp(argv[i], "-b"))
         {
@@ -609,7 +613,8 @@ int main(int argc, char* argv[])
         ColorSpewMessage(SPEW_MESSAGE, &sucesfullprocess_color, "Completed: %llu,     ", g_process_completed);
         ColorSpewMessage(SPEW_MESSAGE, &red, "Error: %llu,     ", g_process_error);
         ColorSpewMessage(SPEW_MESSAGE, &yellow, "Skipped: %llu         ", GetSkippedAssets());
-        Msg("\n-------------------------------------------------------------------------------------------\n\n");
+        Msg("\n-------------------------------------------------------------------------------------------\n");
+        Msg("\n");
     }
 
     DeleteCmdLine(argc, argv);

@@ -56,25 +56,34 @@ namespace MapBuilder
 	//-----------------------------------------------------------------------------
 	void LoadGameInfoKv(char* vbsp_command, char* vvis_command, char* vrad_command, char* vbspinfo_command, std::size_t bufferSize)
 	{
-		KeyValues* GameInfoKVCubemap = ReadKeyValuesFile(g_gameinfodir);
+		KeyValues* GameInfoKVCubemap = ReadKeyValuesFile(g_contentbuilderdir);
 
 		if (!GameInfoKVCubemap)
 		{
-			Shared::qError("Could not get KeyValues from \"%s\"!\n", g_gameinfodir);
+			Warning("AssetSystem -> Could not get KeyValues from \"%s\"!\n"
+					"AssetSystem -> Using default values for map compile, this might not be ideal!\n", 
+					g_contentbuilderdir);
+			return;
 		}
 
 		KeyValues *ContentBuilderKV = GameInfoKVCubemap->FindKey(CONTENTBUILDER_KV, false);
 
 		if (!ContentBuilderKV)
 		{
-			Shared::qError("Could not get KeyValues from \"%s\"!\n", g_gameinfodir);
+			Warning("AssetSystem -> Could not get KeyValues from \"%s\"!\n"
+					"AssetSystem -> Using default values for map compile, this might not be ideal!\n", 
+					g_contentbuilderdir);
+			return;
 		}
 
 		KeyValues* MapBuilderKV = ContentBuilderKV->FindKey(MAPBUILDER_KV, false);
 
 		if (!MapBuilderKV)
 		{
-			Shared::qError("Could not get \'%s\' KeyValues from \"%s\"!\n", MAPBUILDER_KV, g_gameinfodir);
+			Warning("AssetSystem -> Could not get \'%s\' KeyValues from \"%s\"!\n"
+					"AssetSystem -> Using default values for map compile, this might not be ideal!\n",
+					MAPBUILDER_KV, g_contentbuilderdir);
+			return;
 		}
 
 		KeyValues* VbspKv = MapBuilderKV->FindKey(MAP_GEOMETRY_KV, false);
@@ -84,28 +93,30 @@ namespace MapBuilder
 
 		if (!VbspKv || !VvisKv || !VradKv || !VbspinfoKv)
 		{
-			Shared::qError("Could not get \'%s\' or \'%s\' or \'%s\' or \'%s\' KeyValues from \'%s\'!\n", 
-				MAP_GEOMETRY_KV, MAP_VISIBILITY_KV, MAP_RADIOSITY_KV, MAP_BSPINFO_KV, MAPBUILDER_KV);
+			Warning("AssetSystem -> Could not get \'%s\' or \'%s\' or \'%s\' or \'%s\' KeyValues from \'%s\'!\n"
+					"AssetSystem -> Using default values for map compile, this might not be ideal!\n", 
+					MAP_GEOMETRY_KV, MAP_VISIBILITY_KV, MAP_RADIOSITY_KV, MAP_BSPINFO_KV, MAPBUILDER_KV);
+			return;
 		}
 
 		for (KeyValues* subKey = VbspKv->GetFirstSubKey(); subKey; subKey = subKey->GetNextKey())
 		{
-			V_snprintf(vbsp_command, bufferSize, "%s %s", subKey->GetName(), subKey->GetString());
+			V_snprintf(vbsp_command, bufferSize, " %s ", subKey->GetString(BUILDPARAM, NULL));
 		}
 
 		for (KeyValues* subKey = VvisKv->GetFirstSubKey(); subKey; subKey = subKey->GetNextKey())
 		{
-			V_snprintf(vvis_command, bufferSize, "%s %s", subKey->GetName(), subKey->GetString());
+			V_snprintf(vvis_command, bufferSize, " %s ", subKey->GetString(BUILDPARAM, NULL));
 		}		
 		
 		for (KeyValues* subKey = VradKv->GetFirstSubKey(); subKey; subKey = subKey->GetNextKey())
 		{
-			V_snprintf(vrad_command, bufferSize, "%s %s", subKey->GetName(), subKey->GetString());
+			V_snprintf(vrad_command, bufferSize, " %s ", subKey->GetString(BUILDPARAM, NULL));
 		}		
 		
 		for (KeyValues* subKey = VbspinfoKv->GetFirstSubKey(); subKey; subKey = subKey->GetNextKey())
 		{
-			V_snprintf(vbspinfo_command, bufferSize, "%s %s", subKey->GetName(), subKey->GetString());
+			V_snprintf(vbspinfo_command, bufferSize, " %s ",subKey->GetString(BUILDPARAM, NULL));
 		}
 		
 		// Note: we dont mount the .vmf file here, we do it in MapCompile since there it scans mapsrc!!
@@ -124,10 +135,19 @@ namespace MapBuilder
 		char mapdir[MAX_PATH], mapgamedir[MAX_PATH], mapgamedir_file[MAX_PATH];
 		float start = Plat_FloatTime();
 
+		// Sanity check
+		if(!Shared::CheckIfPathOrFileExist(mapsrc))
+		{
+			Warning("AssetSystem -> NO map found in: \"%s\"\n"
+					"AssetSystem -> Most likely \'%s\' build failed!\n",
+					mapsrc, level_name);
+			return;
+		}
+
 		V_snprintf(mapdir, sizeof(mapdir), "%s", mapsrc);							// (e.g: "C:\Half Life 2\hl2\mapsrc\test.bsp")
 		V_snprintf(mapgamedir, sizeof(mapgamedir), "%s\\%s", gamedir, MAPS_DIR);	// (e.g: "C:\Half Life 2\hl2\maps")
 		V_snprintf(mapgamedir_file, sizeof(mapgamedir_file), "%s",					/*This causes a memory leak!*/
-				Shared::ReplaceSubstring(mapsrc, MATERIALSRC_DIR, MATERIALS_DIR));	// (e.g: "C:\Half Life 2\hl2\maps\test.bsp")
+				Shared::ReplaceSubstring(mapsrc, MAPSRC_DIR, MAPS_DIR));	// (e.g: "C:\Half Life 2\hl2\maps\test.bsp")
 
 		Msg("Map original directory: ");	ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\"\n", mapdir);
 		Msg("Map game folder:		 ");	ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\"\n", mapgamedir);
@@ -136,7 +156,7 @@ namespace MapBuilder
 		Msg("Copying source .bsp to game directory... ");
 
 		// Ensure the "maps" directory exists before copying
-		if (!CreateDirectory(mapgamedir, NULL))
+		if (!CreateDirectoryA(mapgamedir, NULL))
 		{
 			DWORD err = GetLastError();
 			if (err != ERROR_ALREADY_EXISTS)
@@ -242,7 +262,7 @@ namespace MapBuilder
 					Shared::StartExe("Bsp Info", NAME_MAP_BPSINFO_TOOL, _temp_vbspinfo); //vbspinfo
 				}
 
-				// Now that we have all the .bsp compiled we copy it to game/mod/mapsrc -> game/mod/maps 
+				// Now that we have the .bsp fully compiled, we copy it from game/mod/mapsrc -> game/mod/maps 
 				CopyBspToGameDir(bspPath, findFileData.cFileName);
 
 				// We cleanup the temp files generated by vbsp, vvis, vrad
@@ -261,7 +281,7 @@ namespace MapBuilder
 					{
 						if (remove(file) != 0)
 						{
-							Warning("Could not delete \"%s\" file!\n", file);
+							Warning("\nCould not delete \"%s\" file!\n", file);
 						}
 					}
 
@@ -307,13 +327,11 @@ namespace MapBuilder
 		// We do this because in case we have to compile both .vmf & .vmn files
 		if (bContinueVmf) 
 		{
-			MapProcessRec(	vbsp_command, vvis_command, vrad_command,
-							vbspinfo_command, mapSrcPath, MAPSRC_EXTENSION);
+			MapProcessRec(vbsp_command, vvis_command, vrad_command, vbspinfo_command, mapSrcPath, MAPSRC_EXTENSION);
 		}		
 		if (bContinueVmn)
 		{
-			MapProcessRec(	vbsp_command, vvis_command, vrad_command,
-							vbspinfo_command, mapSrcPath, MAPSRC_EXTENSION2);
+			MapProcessRec(vbsp_command, vvis_command, vrad_command, vbspinfo_command, mapSrcPath, MAPSRC_EXTENSION2);
 		}
 	}
 }

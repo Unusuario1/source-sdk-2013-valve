@@ -194,8 +194,10 @@ bool CSceneImageBuilderApp::PreInit()
 
     // Add paths...
     if (!SetupSearchPaths())
+    {
         return false;
-
+    }
+    
     if(g_log)
     {
         char logFile[512];

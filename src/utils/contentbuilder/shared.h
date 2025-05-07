@@ -203,7 +203,8 @@
 #define MAP_RADIOSITY_KV            "Vrad"
 #define MAP_BSPINFO_KV              "VbspInfo"
 #define VPKBUILDER_KV               "VpkBuilder"
-#define EXCLUDE_KV                  "Exclude"       // Exclude folder and files  
+#define EXCLUDE_KV                  "Exclude"              
+#define EXCLUDESTRING_KV            "ExcludeFileOrFolder"       
 #define BUILDPARAM                  "BuildParams"
 
 

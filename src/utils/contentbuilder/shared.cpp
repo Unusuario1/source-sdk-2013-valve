@@ -44,15 +44,21 @@ namespace Shared
 
     bool ExcludeDirOrFile(const char* assetpath)
     {
-        // We dont need to check if gameinfo, contenbuilder KVs exist
-        KeyValues* GameInfoKVCubemap = new KeyValues(CONTENTBUILDER);
-        KeyValues* ContentBuilderKV = GameInfoKVCubemap->FindKey(CONTENTBUILDER_KV, false);
-        KeyValues* AssetSystemKV = ContentBuilderKV->FindKey(EXCLUDE_KV, false);
-        
-        // Check if Exclude kv exists
-        if (AssetSystemKV == nullptr)
+        KeyValues* ContentBuilderKV_Read = ReadKeyValuesFile(g_contentbuilderdir);
+        if (!ContentBuilderKV_Read) 
         {
-            GameInfoKVCubemap->deleteThis();
+            return false; 
+        }
+
+        KeyValues* ContentBuilderKV = ContentBuilderKV_Read->FindKey(CONTENTBUILDER_KV, false);
+        if (!ContentBuilderKV) 
+        { 
+            return false; 
+        }
+
+        KeyValues* AssetSystemKV = ContentBuilderKV->FindKey(EXCLUDE_KV, false);        
+        if (!AssetSystemKV)
+        {
             return false;
         }
 
@@ -70,7 +76,7 @@ namespace Shared
         {
             folderExcludeList[j] = new char[MAX_PATH];
 
-            V_snprintf(folderExcludeList[j],sizeof(folderExcludeList[j]), "%s%s", subKey->GetName(), subKey->GetString());
+            V_snprintf(folderExcludeList[j],sizeof(folderExcludeList[j]), "%s", subKey->GetString(EXCLUDESTRING_KV, NULL));
             
             j++;
         }
@@ -80,7 +86,7 @@ namespace Shared
         {
             if(V_strstr(assetpath, folderExcludeList[i]))
             {
-                Msg("\n\n\n\t%s\n\n", folderExcludeList[i]);
+                // Msg("\n\n\n\t%s\n\n", folderExcludeList[i]);
                 // free the memory
                 for (std::size_t i = 0; i < numberExcludePath; i++)
                 {
@@ -88,7 +94,7 @@ namespace Shared
                 }
                 delete[] folderExcludeList;
 
-                GameInfoKVCubemap->deleteThis();
+                ContentBuilderKV_Read->deleteThis();
                 
                 return true;
             }
@@ -101,7 +107,7 @@ namespace Shared
         }
         delete[] folderExcludeList;
 
-        GameInfoKVCubemap->deleteThis();
+        ContentBuilderKV_Read->deleteThis();
 
         return false;
     }
@@ -482,7 +488,7 @@ namespace Shared
 
     void PrintHeaderCompileType(const char* compile_type)
     {
-        ColorSpewMessage(SPEW_MESSAGE, &header_color, "\n====== %s %s ======\n", g_buildcontent ? "Building" : "Printing", compile_type);
+        ColorSpewMessage(SPEW_MESSAGE, &header_color, "\n====== %s %s ======\n", g_infocontent ? "Printing" : "Building", compile_type);
     }
 
 
@@ -618,8 +624,8 @@ namespace Shared
         }
         else 
         {
-            Warning("AssetsSystem -> No files with extension \"%s\" found in \"%s\"\n"
-                    "AssetsSystem -> Skipping %s (%s) compile!\n",
+            Warning("AssetSystem -> No files with extension \"%s\" found in \"%s\"\n"
+                    "AssetSystem -> Skipping %s (%s) compile!\n",
                     extension, directoryPath, asset_type, extension);
             return false;
         }
@@ -793,22 +799,12 @@ namespace Shared
     {
         float start = Plat_FloatTime();
 
-        KeyValues* GameInfoKVCubemap = new KeyValues(CONTENTBUILDER);
+        KeyValues* ContentBuilderKV_Read = ReadKeyValuesFile(g_contentbuilderdir);
+        KeyValues* ContentBuilderKV = ContentBuilderKV_Read->FindKey(CONTENTBUILDER_KV, false);
 
         qprintf("Loading Keyvalues from: \'%s\'... ", ToolKeyValue);
 
-        GameInfoKVCubemap->LoadFromFile(g_pFullFileSystem, CONTENTBUILDER, "MOD");
-
-        if (!GameInfoKVCubemap)
-        {
-            Warning("AssetSystem -> Could not get KeyValues from \"%s\"!\n", g_contentbuilderdir);
-            Warning("AssetSystem -> Using default values for asset compile, this might not be ideal!\n");
-            return;
-        }
-
-        KeyValues* ContentBuilderKV = GameInfoKVCubemap->FindKey(CONTENTBUILDER_KV, false);
-
-        if (!ContentBuilderKV)
+        if (!ContentBuilderKV_Read || !ContentBuilderKV)
         {
             Warning("Could not get \'%s\' KeyValues from \"%s\"!\n", CONTENTBUILDER_KV, g_contentbuilderdir);
             Warning("AssetSystem -> Using default values for asset compile, this might not be ideal!\n");
@@ -826,10 +822,10 @@ namespace Shared
 
         for (KeyValues* subKey = ToolKV->GetFirstSubKey(); subKey; subKey = subKey->GetNextKey())
         {
-            V_snprintf(output_argv, bufferSize, " %s %s ", output_argv, subKey->GetString(BUILDPARAM));
+            V_snprintf(output_argv, bufferSize, " %s %s ", output_argv, subKey->GetString(BUILDPARAM, NULL));
         }
 
-        GameInfoKVCubemap->deleteThis();
+        ContentBuilderKV_Read->deleteThis();
 
         if (verbose) 
         { 
