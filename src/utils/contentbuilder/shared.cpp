@@ -37,14 +37,14 @@ namespace Shared
 
         if (g_ignoreerrors)
         {
-            V_snprintf(szErrorFile, sizeof(szErrorFile), "%s\\%s\\%s", gamedir, CONTENTBUILDER_OUTPATH, "error.log");
+            V_snprintf(szErrorFile, sizeof(szErrorFile), "%s\\%s\\%s", gamedir, CONTENTBUILDER_OUTPATH, CONTENTBUILDER_ERROR_MSG);
             FILE* file = fopen(szErrorFile, "a");
             
             ColorSpewMessage(SPEW_MESSAGE, &red, "%s", str);
 
             if (!file)
             {
-                Shared::qWarning("AssetSystem -> Cannot save Error msg!!\n");
+                Warning("AssetSystem -> Cannot save Error msg!!\n");
             }
             else
             {
@@ -63,20 +63,20 @@ namespace Shared
     
     void qWarning(const char* format, ...)
     {
-        Color yellow = { 255,255,0 };
+        Color yellow = { 255,255,0 , 255 };
         va_list argptr;
         va_start(argptr, format);
 
         char str[8192], szWarnignFile[MAX_PATH] = "";
         Q_vsnprintf(str, sizeof(str), format, argptr);
-        V_snprintf(szWarnignFile, sizeof(szWarnignFile), "%s\\%s\\%s", gamedir, CONTENTBUILDER_OUTPATH, "warning.log");
+        V_snprintf(szWarnignFile, sizeof(szWarnignFile), "%s\\%s\\%s", gamedir, CONTENTBUILDER_OUTPATH, CONTENTBUILDER_WARNING_MSG);
         FILE* file = fopen(szWarnignFile, "a");
 
         ColorSpewMessage(SPEW_MESSAGE, &yellow, "%s", str);
 
         if (!file)
         {
-            Shared::qWarning("AssetSystem -> Cannot save Shared::qWarning msg!!\n");
+            Warning("AssetSystem -> Cannot save Warning msg!!\n");
         }
         else
         {
@@ -815,7 +815,7 @@ namespace Shared
         {
             if (exitCode > 0)
             {
-                Shared::qError("%s compile failed: %d!\n", szGameToolPath, exitCode);
+                Shared::qWarning("AssetSystem -> %s compile failed: %d!\n", szGameToolPath, exitCode);
                 g_process_error++;
                 return;
             }
@@ -828,6 +828,7 @@ namespace Shared
         {
             Shared::qError("GetExitCodeProcess() failed!\n");
             g_process_error++;
+            return;
         }
 
         // Close process handles

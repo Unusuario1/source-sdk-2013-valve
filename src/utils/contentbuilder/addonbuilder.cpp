@@ -57,7 +57,7 @@ namespace AddonBuilder
         const char* PackFolderList[] = { MATERIALS_DIR, MODELS_DIR, SOUNDS_DIR, "particles", "expressions", "cfg", "scripts", "resource", /*tf stuff*/ "classes","media"};
         char szBspZipToolArgv[8192] = "", szBspZipListPath[MAX_PATH] = "", szBspZipListFile[MAX_PATH] = "";
 
-        Shared::PrintHeaderCompileType("Addon");
+        Shared::PrintHeaderCompileType("MP - Addon");
 
         //scan all folders and genereate the list
         V_snprintf(szBspZipListPath, sizeof(szBspZipListPath), "%s\\%s", g_contentbuilderPath, TEMP_BSPZIP_DIR);
@@ -84,11 +84,11 @@ namespace AddonBuilder
 
         LoadGameInfoKv(szBspZipToolArgv, sizeof(szBspZipToolArgv), szBspZipListFile);
 
-        for (const char* folder : PackFolderList) 
+        for (const char* pFolder : PackFolderList) 
         {
-            if (!Shared::ScanFolderSaveContents(folder, szBspZipListFile, ADDONBUILDER_KV))
+            if (!Shared::ScanFolderSaveContents(pFolder, szBspZipListFile, ADDONBUILDER_KV))
             {
-                Shared::qWarning("AssetSytem -> Skipping \"\\%s\" folder!\n", folder);
+                Shared::qWarning("AssetSytem -> Skipping \"\\%s\" folder!\n", pFolder);
             }
         }
 

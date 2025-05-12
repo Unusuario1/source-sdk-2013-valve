@@ -127,9 +127,17 @@
 // 
 
 
-//content builder stuff
-#define GAMEINFO                    "gameinfo.txt"
+//content builder stuff, relative to mod/_build path
 #define CONTENTBUILDER              "contentbuilder.txt"
+#define CONTENTBUILDER_WARNING_MSG  "warning.log"       
+#define CONTENTBUILDER_ERROR_MSG    "error.log" 
+#define CONTENTBUILDER_ASSERT_R_SRC "asset_report_source.contentlist"  
+#define CONTENTBUILDER_ASSERT_R_COM "asset_report_compiled.contentlist"  
+
+// temp dir
+#define CONTENTBUILDER_OUTPATH      "_build"
+#define TEMP_VPK_DIR                 "_temp_vpk"
+#define TEMP_BSPZIP_DIR              "_temp_bspzip"
 
 //Common paths
 #define MATERIALS_DIR               "materials"
@@ -144,11 +152,6 @@
 #define CAPTIONSRC_DIR              "resource"
 #define MAPS_DIR                    "maps" 
 #define MAPSRC_DIR                  "mapsrc"
-
-// temp dir
-#define CONTENTBUILDER_OUTPATH      "_build"
-#define TEMP_VPK_DIR                 "_temp_vpk"
-#define TEMP_BSPZIP_DIR              "_temp_bspzip"
 
 //Bin tools paths
 #define TOOLS_PATH_64BITS           "bin\\x64"

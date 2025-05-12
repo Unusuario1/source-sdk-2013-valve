@@ -145,8 +145,8 @@ namespace MapBuilder
 		if(!Shared::CheckIfPathOrFileExist(mapsrc))
 		{
 			Shared::qWarning("AssetSystem -> NO map found in: \"%s\"\n"
-					"AssetSystem -> Most likely \'%s\' build failed!\n",
-					mapsrc, level_name);
+							 "AssetSystem -> Most likely \'%s\' build failed!\n",
+						     mapsrc, level_name);
 			return;
 		}
 
@@ -167,7 +167,8 @@ namespace MapBuilder
 			DWORD err = GetLastError();
 			if (err != ERROR_ALREADY_EXISTS)
 			{
-				Shared::qError("\nCould not create directory at: \"%s\" (Error code: %lu)\n", mapgamedir, err);
+				Shared::qError("\nAssetSystem -> Could not create directory at: \"%s\" (Error code: %lu)\n", mapgamedir, err);
+				return;
 			}
 		}
 
@@ -178,8 +179,11 @@ namespace MapBuilder
 		if (!CopyFile(mapdir, mapgamedir_file, FALSE))
 		{
 			DWORD error = GetLastError();
-			Shared::qError("\nCould not copy to game directory %s\n"
-							"Error CopyFile() : %lu, %s\n", mapgamedir_file, error);
+			Shared::qError(	"\n"
+							"AssetSystem -> Could not copy to game directory %s\n"
+							"AssetSystem -> Error CopyFile() : %lu, %s\n", 
+							mapgamedir_file, error);
+			return;
 		}
 		else
 		{
