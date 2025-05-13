@@ -22,9 +22,12 @@
 #include "captionbuilder.h"
 #include "mapbuilder.h"
 #include "vpkbuilder.h"
-#include "addonbuilder.h"
 #include "shared.h"
 #include "colorscheme.h"
+
+#ifdef MP_ADDON_SUPPORT
+#include "addonbuilder.h"
+#endif // MP_ADDON_SUPPORT
 
 
 // TODO List:
@@ -86,6 +89,7 @@
 // - Maybe rework how the paths are handled in mat, mod, cap, sce, etc... ------------------------------------ NNAA
 // - FIX scheme path issues ---------------------------------------------------------------------------------- DONE
 // - Fix some paths not been in path_color ------------------------------------------------------------------- DONE
+// - Add more verbose in the program!!
 
 
 //-----------------------------------------------------------------------------
@@ -289,7 +293,8 @@ void Init_AssetTools()
         FileSystem_GetAppInstallDir(g_steamdir, sizeof(g_steamdir));
         if (g_steamdir == nullptr)
         {
-            Error("AssetSystem -> steam game dir is NULL! Check \'-steamgamedir\' command!\n");
+            Shared::qError("AssetSystem -> steam game dir is NULL! Check \'-steamgamedir\' command!\n");
+            exit(-1);
         }
     }
 
@@ -407,6 +412,7 @@ void Init_AssetTools()
         for (const char* folder : FolderListSrc)
         {
             V_snprintf(szTemp, sizeof(szTemp), "%s\\%s", gamedir, folder);
+            qprintf("AssetSystemVerbose -> \"%s\"\n", szTemp);
             Shared::ScanFolderSaveContents(folder, szAssetReportSource, "Content Report");
         }
         ColorSpewMessage(SPEW_MESSAGE, &done_color, "done(%.2f)\n", Plat_FloatTime() - start);
@@ -419,6 +425,7 @@ void Init_AssetTools()
         for (const char* folder : FolderList)
         {
             V_snprintf(szTemp, sizeof(szTemp), "%s\\%s", gamedir, folder);
+            qprintf("AssetSystemVerbose -> \"%s\"\n", szTemp);
             Shared::ScanFolderSaveContents(folder, szAssetReportCompiled, "Content Report");
         }
         ColorSpewMessage(SPEW_MESSAGE, &done_color, "done(%.2f)\n", Plat_FloatTime() - start);
@@ -590,11 +597,13 @@ void ParseCommandline(int argc, char* argv[])
             g_buildcaption = false;
             g_buildscene = false;
             g_buildvpk = false;
-        }        
+        }      
+#ifdef MP_ADDON_SUPPORT
         else if (!V_stricmp(argv[i], "-mp_addon"))
         {
             g_mp_addon = true;
         }
+#endif // MP_ADDON_SUPPORT
         else if (!V_stricmp(argv[i], "-skipmaterial"))
         {
             g_buildmaterials = false;
@@ -711,10 +720,12 @@ int main(int argc, char* argv[])
         {
             VpkBuilder::VpkCompile();
         }
+#ifdef MP_ADDON_SUPPORT
         if(g_mp_addon && g_addonbuild && !g_infocontent)
         {
             AddonBuilder::AddonCompile();
         }
+#endif // MP_ADDON_SUPPORT
         Msg("\n-------------------------------------------------------------------------------------------\n");
         Msg(" AssetCompile -> Done in %s | ", Shared::TimeStamp());
         ColorSpewMessage(SPEW_MESSAGE, &sucesfullprocess_color, "Completed: %llu,     ", g_process_completed);

@@ -257,7 +257,7 @@ namespace Shared
     bool CopyDirectoryContents(const char* srcPath, const char* dstPath, const char* pExtension);
     void DeleteFolderWithContents(const char* folderPath);
     bool CreateDirectoryRecursive(const char* path);
-    bool ScanFolderSaveContents(const char* asset_folder, const char* outputfile, const char* subsystem, const char* pExtension = "");
+    bool ScanFolderSaveContents(const char* asset_folder, const char* outputfile, const char* pExtension, const char* pSubSystem = "");
     bool ExcludeDirOrFile(const char* assetpath);
     char* MergeString(const char* string, const char* sub1);
 }

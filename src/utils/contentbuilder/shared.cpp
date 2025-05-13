@@ -289,7 +289,7 @@ namespace Shared
                     }
                     else 
                     {
-                        qprintf("\nCopied: %s -> %s\n", szFullPath, outPath);
+                        qprintf("\n AssetSystemVerbose -> Copied: %s -> %s\n", szFullPath, outPath);
                         free(outPath);
                     }
                 }
@@ -377,28 +377,15 @@ namespace Shared
     }
 
 
-    // TODO: FIX THIS FUNTION! cuz it doesnt work at the moment
-    bool ScanFolderSaveContents(const char* asset_folder, const char* outputfile, const char* pExtension, const char* subsystem)
+    static bool ScanFolderSaveContentsInternal(const char* asset_folder, FILE* file, const char* pExtension)
     {
-        char szSearchPath[MAX_PATH] = "";
-
-        V_snprintf(szSearchPath, sizeof(szSearchPath), "%s\\*%s", asset_folder, pExtension);
-
-        FILE* file = fopen(outputfile, "a");
-
-        // Check if the file was opened successfully
-        if (!file)
-        {
-            Shared::qError( "AssetSystem -> Error opening file: \"%s\"\n" ,outputfile);
-            return false;
-        }
+        char szSearchPath[MAX_PATH];
+        V_snprintf(szSearchPath, sizeof(szSearchPath), "%s\\*", asset_folder);
 
         WIN32_FIND_DATAA findData;
         HANDLE hFind = FindFirstFileA(szSearchPath, &findData);
         if (hFind == INVALID_HANDLE_VALUE)
             return false;
-
-        fprintf(file, "//-- %s -- auto generated file for %s system --//\n", CONTENTBUILDER_KV, subsystem);
 
         do
         {
@@ -407,12 +394,12 @@ namespace Shared
             if (V_strcmp(szName, ".") == 0 || V_strcmp(szName, "..") == 0)
                 continue;
 
-            static char szFullPath[MAX_PATH];
+            char szFullPath[MAX_PATH];
             V_snprintf(szFullPath, sizeof(szFullPath), "%s\\%s", asset_folder, szName);
 
             if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
             {
-                ScanFolderSaveContents(szSearchPath, outputfile, pExtension, subsystem); // Recurse into subdirectory
+                ScanFolderSaveContentsInternal(szFullPath, file, pExtension); // Recurse into subdirectory
             }
             else
             {
@@ -425,14 +412,35 @@ namespace Shared
 
         } while (FindNextFileA(hFind, &findData));
 
-        fprintf(file, "\n\n");
-
-        // Close the file
-        fclose(file);
         FindClose(hFind);
-
         return true;
     }
+
+
+    bool ScanFolderSaveContents(const char* asset_folder, const char* outputfile, const char* pExtension, const char* pSubSystem)
+    {
+        FILE* file = fopen(outputfile, "a");
+        if (!file)
+        {
+            Shared::qError("AssetSystem -> Error opening file: \"%s\"\n", outputfile);
+            return false;
+        }
+
+        fprintf(file, "//-- %s -- auto generated file for %s system --//\n", CONTENTBUILDER_KV, pSubSystem);
+
+        bool bResult = ScanFolderSaveContentsInternal(asset_folder, file, pExtension);
+        
+        if(bResult)
+        {
+            qWarning("AssetSystem -> Cound not generate report at: \"%s\"\n", outputfile);
+        }
+
+        fprintf(file, "\n\n");
+        fclose(file);
+
+        return bResult;
+    }
+
     
 
     //-----------------------------------------------------------------------------
@@ -726,7 +734,7 @@ namespace Shared
         return false;
     }
 
-
+    // TODO: maybe remove this!
     //-----------------------------------------------------------------------------
     // Purpose: Checks a if a dir has at least ONE asset type
     //-----------------------------------------------------------------------------
@@ -801,7 +809,7 @@ namespace Shared
         // Create process
         if (!CreateProcess(NULL, szGameToolPath, NULL, NULL, false, 0, NULL, NULL, &si, &pi))
         {
-            Shared::qError("%s could not start!\n", szGameToolPath);
+            Shared::qError("AssetSystem -> %s could not start!\n", szGameToolPath);
             g_process_error++;
             return;
         }
@@ -841,24 +849,6 @@ namespace Shared
         }
     }
 
-    //TODO: remove this!!
-#if 0
-    //-----------------------------------------------------------------------------
-    // Purpose:     Char to wide character type, REMENBER TO FREE! free(output), 
-    //-----------------------------------------------------------------------------
-    wchar_t* CtoWc(char* input, wchar_t* output,std::size_t size)
-    {
-        output = (wchar_t*)malloc(size * sizeof(wchar_t));
-        
-        if (!output)
-        {
-            return nullptr;
-        }
-        
-        mbstowcs(output, input, (size * sizeof(wchar_t)));
-        return output;
-    }
-#endif
 
     //-----------------------------------------------------------------------------
     // Purpose:   Checks if path or file exists
@@ -919,7 +909,7 @@ namespace Shared
         KeyValues* ContentBuilderKV_Read = ReadKeyValuesFile(g_contentbuilderdir);
         KeyValues* ContentBuilderKV = ContentBuilderKV_Read->FindKey(CONTENTBUILDER_KV, false);
 
-        qprintf("Loading Keyvalues from: \'%s\'... ", ToolKeyValue);
+        qprintf("AssetSystemVerbose -> Loading Keyvalues from: \'%s\'... ", ToolKeyValue);
 
         if (!ContentBuilderKV_Read || !ContentBuilderKV)
         {

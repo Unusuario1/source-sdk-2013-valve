@@ -78,6 +78,9 @@ namespace CaptionBuilder
 					continue;
 
 				V_snprintf(szTemp, sizeof(szTemp), "%s \"%s\"", szToolCommand, szFullPath);
+
+				//MAKE a list here and then start StartExe in any thread
+
 				Shared::StartExe("Captions", NAME_CAPTION_TOOL, szTemp);
 			}
 		} while (FindNextFileA(hFind, &findFileData));
