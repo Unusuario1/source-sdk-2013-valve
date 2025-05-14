@@ -116,6 +116,7 @@ bool g_buildvpk             = false;
 bool g_ignoreerrors         = false;
 bool g_pause                = false;    
 bool g_spewallcommands      = false;
+bool g_compileverbose       = false;
 bool g_quiet                = false;
 bool g_createlog            = true;
 bool g_mp_addon             = true;
@@ -471,6 +472,8 @@ void PrintUsage(int argc, char* argv[])
     Msg("   -v or -verbose:        Enables verbose.\n"
         "   -quiet:                Prints minimal text. (Note: Disables \'-verbose\' and \'-spewallcommands\')\n"
         "   -spewallcommands:                     \n"
+        "   -compileverbose:       Enable verbose for tools. (Prints a LOT of text)\n"
+        "   -spewallverbose:       Same as \'-v -spewallcommands -compileverbose\'\n"      
         "\n");
     ColorSpewMessage(SPEW_MESSAGE, &header_color, " Advanced Build Options:\n");
     Msg("   -toolsforce32bits:     Force contentbuilder to use 32 bits tools.\n"
@@ -583,6 +586,16 @@ void ParseCommandline(int argc, char* argv[])
         else if (!V_stricmp(argv[i], "-spewallcommands"))
         {
             g_spewallcommands = true;
+        }          
+        else if (!V_stricmp(argv[i], "-compileverbose"))
+        {
+            g_compileverbose = true;
+        }  
+        else if (!V_stricmp(argv[i], "-spewallverbose"))
+        {
+            verbose = true;
+            g_spewallcommands = true;
+            g_compileverbose = true;
         }       
         else if (!V_stricmp(argv[i], "-quiet"))
         {
