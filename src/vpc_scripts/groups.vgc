@@ -59,6 +59,8 @@ $Group "everything"
 	"vtfdiff"
 	"vvis_dll"
 	"vvis_launcher"
+	"psdwriter"
+	//"psd_sdk"
 
 	"game_shader_generic_example"
 
