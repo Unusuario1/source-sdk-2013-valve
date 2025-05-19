@@ -150,3 +150,12 @@ $Project "vvis_launcher"
 	"utils\vvis_launcher\vvis_launcher.vpc" [$WINDOWS]
 }
 
+$Project "psdwriter"
+{
+	"utils\psdwriter\psdwriter.vpc" [$WINDOWS]
+}
+
+$Project "psd_sdk"
+{
+	"thirdparty\psd_sdk\psd_sdk.vpc" [$WINDOWS]
+}

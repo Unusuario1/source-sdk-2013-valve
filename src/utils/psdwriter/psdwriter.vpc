@@ -1,0 +1,40 @@
+//-----------------------------------------------------------------------------
+//	PSDWRITER.VPC
+//
+//	Project Script
+//-----------------------------------------------------------------------------
+
+$Macro SRCDIR		"..\.."
+$Macro OUTBINDIR	"$SRCDIR\..\game\bin"
+
+$Include "$SRCDIR\vpc_scripts\source_exe_con_base.vpc"
+
+$Configuration
+{
+	$Compiler
+	{
+		$AdditionalIncludeDirectories		"$BASE,..\common,..\..\thirdparty\psd_sdk\src"
+	}
+}
+
+$Project "PSD Writter"
+{
+	$Folder	"Source Files"
+	{
+		-$File	"..\..\public\tier0\memoverride.cpp"
+		$File	"psdwriter.cpp"
+		$File	"psdmain.cpp"
+	}
+
+	$Folder	"Header Files"
+	{
+		$File	"psdwriter.h"
+		$File	"psdmain.h"
+	}
+
+	//TODO: if not needed remove this!!
+	$Folder	"Link Libraries"
+	{
+		$Lib $LIBCOMMON/Psd_Sdk
+	}
+}
