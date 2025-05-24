@@ -5,6 +5,9 @@
 
 #include <cstdio>
 
+// This is not part of the original lib, it is for the source engine - start
+#include "../../../../public/tier0/dbg.h"
+// source engine - end
 
 /// \def PSD_ENABLE_LOGGING 
 /// \ingroup Platform
@@ -35,8 +38,14 @@
 /// \sa PSD_ENABLE_LOGGING PSD_WARNING
 
 #if PSD_ENABLE_LOGGING
+// Source engine - start
+	#define PSD_WARNING(channel, ...)		Warning("\n***Interal (psd_sdk) WARNING*** " "[" channel "] " __VA_ARGS__)
+	#define PSD_ERROR(channel, ...)			Error("\n***Interal (psd_sdk) ERROR*** " "[" channel "] " __VA_ARGS__)
+// Source engine - end
+#if 0
 	#define PSD_WARNING(channel, ...)		printf("\n***WARNING*** " "[" channel "] " __VA_ARGS__)
 	#define PSD_ERROR(channel, ...)			printf("\n***ERROR*** " "[" channel "] " __VA_ARGS__)
+#endif // 0
 #else
 	#define PSD_WARNING(channel, ...)		PSD_UNUSED(channel)
 	#define PSD_ERROR(channel, ...)			PSD_UNUSED(channel)

@@ -12,9 +12,7 @@
 #endif // _WIN32
 
 
-void Write8BitsPsd(const char* pFilename, const char* pLayer1);
-void Write16BitsPsd(const char* pFilename, const char* pLayer1);
-void Write32BitsPsd(const char* pFilename, const char* pLayer1);
+void CheckAndExportToPsd(const char* pFilename);
 
 
 #endif // PSDWRITER_H

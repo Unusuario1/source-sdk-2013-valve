@@ -62,6 +62,14 @@ $Group "everything"
 	"psdwriter"
 	"psd_sdk"
 
+	"vmpi"
+	"vmpi_job_search"
+	"vmpi_job_watch"
+	"vmpi_service"
+	"vmpi_service_ui"
+	"vmpi_services_watch"
+	"vmpi_transfer"
+
 	"game_shader_generic_example"
 
 	// You probably don't want to override all shaders by default.

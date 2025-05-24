@@ -20,6 +20,7 @@
 //	-Add a exclusion command smth like -tga
 //	-Add a command that manages the compression of the .psd file
 //	-Also add the template albedo, normal, etc.. texture template
+//  -Add an option to remove the old source files
 
 
 #define MATERIALSRC_DIR		"materialsrc"
@@ -31,33 +32,48 @@
 //TODO: MAKE A SANTIY check the iamge cannot be greater than 4096x4096
 bool			g_bQuiet = false;
 bool            g_bSignature = false;
+bool            g_bIsSingleFile = true;
+bool            g_bTempalteGeneration = false;
 char			g_szGameMaterialSrcDir[MAX_PATH] = "";
+char			g_szSingleInputFile[MAX_PATH] = "";
 char			g_szExcludeExt[16][16] = { "" };
-const char*		g_rgpAssetConvertList[] = { ".jpg",".jpeg",".png",".tga",".bmp",".psd",".gif",".hdr",".pic",".ppm",".pgm" };
-const char*     g_rgpEndFileName[] = {  "_color",         //https://developer.valvesoftware.com/wiki/$basetexture
-                                        "_normal",        //https://developer.valvesoftware.com/wiki/$bumpmap
-                                        "_ao",            //https://developer.valvesoftware.com/wiki/$ambientoccltexture
-                                        "_detail",        //https://developer.valvesoftware.com/wiki/$detail
-                                        "_envmap",        //https://developer.valvesoftware.com/wiki/$envmap
-                                        "_envmapmask",    //https://developer.valvesoftware.com/wiki/$envmapmask
-                                        "_trans",         //
-                                        "_specular"       //https://developer.valvesoftware.com/wiki/$phongexponenttexture
+const char* g_rgpAssetConvertList[10] = {   ".jpg",         //0
+                                            ".jpeg",        //1
+                                            ".png",         //2
+                                            ".tga",         //3
+                                            ".bmp",         //4
+                                            ".gif",         //5
+                                            ".hdr",         //6
+                                            ".pic",         //7
+                                            ".ppm",         //9
+                                            ".pgm"          //10
+};
+const char* g_rgpEndFileName[12] = {          "_color",         //https://developer.valvesoftware.com/wiki/$basetexture
+                                            "_normal",        //https://developer.valvesoftware.com/wiki/$bumpmap
+                                            "_ao",            //https://developer.valvesoftware.com/wiki/$ambientoccltexture
+                                            "_detail",        //https://developer.valvesoftware.com/wiki/$detail
+                                            "_envmap",        //https://developer.valvesoftware.com/wiki/$envmap
+                                            "_envmapmask",    //https://developer.valvesoftware.com/wiki/$envmapmask
+                                            "_trans",         //
+                                            "_specular"       //https://developer.valvesoftware.com/wiki/$phongexponenttexture                             
+                                            "_flowmap",       //https://developer.valvesoftware.com/wiki/Water_(shader)#Flowing_water
+                                            "_selfilum",      //https://developer.valvesoftware.com/wiki/Glowing_textures_(Source)#$selfillum
+                                            "_blendmodulate", //https://developer.valvesoftware.com/wiki/$blendmodulatetexture
+                                            "_lightwarp",     //https://developer.valvesoftware.com/wiki/$lightwarptexture
+                                            "_dudvmap"        //https://developer.valvesoftware.com/wiki/Water_(shader)
+                                            "_ramp"           //https://developer.valvesoftware.com/wiki/$ramptexture
 #if 0
-                                        "_tintmask",      //this is only in post found in csgo branch
-                                        "_flowmapnoise",  //https://developer.valvesoftware.com/wiki/Water_(shader)#Flowing_water
-#endif                                  
-                                        "_flowmap",       //https://developer.valvesoftware.com/wiki/Water_(shader)#Flowing_water
-                                        "_selfilum",      //https://developer.valvesoftware.com/wiki/Glowing_textures_(Source)#$selfillum
-                                        "_blendmodulate", //https://developer.valvesoftware.com/wiki/$blendmodulatetexture
-                                        "_lightwarp",     //https://developer.valvesoftware.com/wiki/$lightwarptexture
-                                        "_dudvmap"        //https://developer.valvesoftware.com/wiki/Water_(shader)
-                                        "_ramp"           //https://developer.valvesoftware.com/wiki/$ramptexture
-                                    };
+                                            "_tintmask",      //this is only in post found in csgo branch
+                                            "_flowmapnoise",  //https://developer.valvesoftware.com/wiki/Water_(shader)#Flowing_water
+#endif     
+};
 uint16_t		g_uiImageWidth;
 uint16_t		g_uiImageHeight;
 Color			header_color(0, 255, 255, 255);
+Color			successful_color(0, 255, 0, 255);
+Color			failed(255, 0, 0, 255);
 
-#if 0
+
 //-----------------------------------------------------------------------------
 // Purpose:   
 //-----------------------------------------------------------------------------
@@ -65,7 +81,7 @@ void ProcessDirAndConvertContents()
 {
 	char szWildCard[MAX_PATH] = "";
 
-	for (const char* pExtension : rgpAssetConvertList)
+	for (const char* pExtension : g_rgpAssetConvertList)
 	{
 		for (uint8_t i = 0; i < 8; i++) //TODO: fix this!
 		{
@@ -78,7 +94,7 @@ void ProcessDirAndConvertContents()
 		}
 	}
 }
-#endif
+
 
 //-----------------------------------------------------------------------------
 // Purpose:   
@@ -100,25 +116,35 @@ void PrintHeader()
 
 
 //-----------------------------------------------------------------------------
-// Purpose:   Print contentbuilder usage
+// Purpose:   Print psdwriter usage
 //-----------------------------------------------------------------------------
 void PrintUsage(int argc, char* argv[])
 {
+    char szTemp[256] = "";
+
+    for(const char* pExt: g_rgpAssetConvertList)
+    {
+        V_snprintf(szTemp, sizeof(szTemp), "%s %s ", szTemp == "" ? "" : szTemp, pExt);
+    }
+
     Msg("Usage: psdwriter.exe [options] -game <path>\n\n");
     ColorSpewMessage(SPEW_MESSAGE, &header_color, " General Options:\n");
-    Msg("	-psdcompresion  <n>:   "
-        "   -notemplategeneration: "
-        "   -exclusionformat <extension>: "
-        "   -signature <studio> <mod>: (e.g: -signature myfirststudio myfirstsourcemod)"
-		"   -game <path>:          Specify the folder of the gameinfo.txt file.\n"
-        "   -vproject <path>:      Same as \'-game\'.\n"
-        "\n");
+    Msg("   -i <file>:                      \n"
+        "   -recc:                          \n"  
+        "   -psdtemplategeneration:         \n"
+        "   -exclusionformat <extension>:   Suported formats: %s\n"
+        "   -signature <studio> <mod>:      (e.g: -signature myfirststudio myfirstsourcemod)\n"
+		"   -game <path>:                   Specify the folder of the gameinfo.txt file.\n"
+        "   -vproject <path>:               Same as \'-game\'.\n"
+        "\n", szTemp);
     ColorSpewMessage(SPEW_MESSAGE, &header_color, " Spew Options:\n");
-    Msg("   -v or -verbose:        Enables verbose.\n"
-        "   -quiet:                Prints minimal text. (Note: Disables \'-verbose\' and \'-spewallcommands\')\n"
+    Msg("   -v or -verbose:                 Enables verbose.\n"
+        "   -quiet:                         Prints minimal text. (Note: Disables \'-verbose\')\n"
         "\n");
     ColorSpewMessage(SPEW_MESSAGE, &header_color, " Other Options:\n");
-    Msg("   -FullMinidumps:        Write large minidumps on crash.\n"
+    Msg("   -FullMinidumps:                 Write large minidumps on crash.\n"
+        "   -forcebittype <n>:              8/16/32 applied to all .psd files\n" 
+        "   -psdcompresion <n>:            \n"
         "\n");
 
     DeleteCmdLine(argc, argv);
@@ -157,6 +183,27 @@ void ParseCommandline(int argc, char* argv[])
         {
 			EnableFullMinidumps(true);
 		}
+        else if (!V_stricmp(argv[i], "-psdtemplategeneration"))
+        {
+            g_bTempalteGeneration = true;
+		}
+        else if (!V_stricmp(argv[i], "-i"))
+        {
+            if (++i < argc && argv[i][0] != '-')
+            {
+                char* pInputPath = argv[i];
+                if (!pInputPath)
+                {
+                    Error("Error: \'-i\' requires a valid path argument. NULL path\n");
+                }
+                g_bIsSingleFile = true;
+                V_strcpy(g_szSingleInputFile, pInputPath);
+            }
+            else
+            {
+                Error("Error: \'-i\' requires a valid path argument.\n");
+            }
+        }
         else if (!V_stricmp(argv[i], "-game") || !V_stricmp(argv[i], "-vproject"))
         {
             if (++i < argc && argv[i][0] != '-')
@@ -175,7 +222,7 @@ void ParseCommandline(int argc, char* argv[])
         }
         else
         {
-            Warning("\nWarning Unknown option \'%s\'\n", argv[i]);
+            Error("\Error Unknown option \'%s\'\n", argv[i]);
             PrintUsage(argc, argv);
         }
     }
@@ -192,14 +239,17 @@ int main(int argc, char* argv[])
 	InstallSpewFunction();
 	PrintHeader();
 	ParseCommandline(argc, argv);
-	CmdLib_InitFileSystem(gamedir);
+	CmdLib_InitFileSystem(gamedir); // remove this!
 	Init();
 	
-
-	//ProcessDirAndConvertContents();
-    Write8BitsPsd("", "_");
-    Write16BitsPsd("", "_");
-    Write32BitsPsd("", "_");
+    if (g_bIsSingleFile)
+    {
+        CheckAndExportToPsd(g_szSingleInputFile);
+    }
+    else 
+    {
+        ProcessDirAndConvertContents();
+    }
 
 	DeleteCmdLine(argc, argv);
 	CmdLib_Cleanup();
