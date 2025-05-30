@@ -64,8 +64,8 @@
 // - Rename vars to have the hungarian notation:
 // -	contentbuilder.cpp
 // -	contentbuilder.h
-// -	colorscheme.cpp
-// -	colorscheme.h
+// -	colorscheme.cpp -------------------------------------------------------------------------------------- NA
+// -	colorscheme.h ---------------------------------------------------------------------------------------- NA
 // -	captionbuilder.cpp ----------------------------------------------------------------------------------- DONE
 // -	captionbuilder.h ------------------------------------------------------------------------------------- DONE
 // -	scenebuilder.cpp ------------------------------------------------------------------------------------- DONE
@@ -119,7 +119,7 @@ bool g_spewallcommands      = false;
 bool g_compileverbose       = false;
 bool g_quiet                = false;
 bool g_createlog            = true;
-bool g_mp_addon             = true;
+bool g_buildmp_addon             = true;
 char g_gamebin[MAX_PATH]    = "";           //  game/bin or game/bin/x64
 char g_steamdir[MAX_PATH]   = "";           //  game
 char g_gameinfodir[MAX_PATH] = "";          //  game/mod/gameinfo.txt
@@ -614,7 +614,7 @@ void ParseCommandline(int argc, char* argv[])
 #ifdef MP_ADDON_SUPPORT
         else if (!V_stricmp(argv[i], "-mp_addon"))
         {
-            g_mp_addon = true;
+            g_buildmp_addon = true;
         }
 #endif // MP_ADDON_SUPPORT
         else if (!V_stricmp(argv[i], "-skipmaterial"))
@@ -734,7 +734,7 @@ int main(int argc, char* argv[])
             VpkBuilder::VpkCompile();
         }
 #ifdef MP_ADDON_SUPPORT
-        if(g_mp_addon && g_addonbuild && !g_infocontent)
+        if(g_buildmp_addon && g_addonbuild && !g_infocontent)
         {
             AddonBuilder::AddonCompile();
         }
