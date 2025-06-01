@@ -2443,7 +2443,7 @@ int ParseCommandLine( int argc, char **argv, bool *onlydetail )
 			{
 				if (atof(argv[i]) > 0)
 				{
-					ambientcubes_perleaf = atof(argv[i]);
+					g_iAmbientCubesPerLeaf = atof(argv[i]);
 				}
 				else
 				{
