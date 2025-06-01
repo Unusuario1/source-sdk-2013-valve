@@ -102,7 +102,7 @@ bool		debug_extra = false;
 qboolean	do_fast = false;
 qboolean	do_centersamples = false;
 int			extrapasses = 4;
-int			ambientcubes_perleaf = 16;
+int			g_iAmbientCubesPerLeaf = 16;
 float		smoothing_threshold = 0.7071067; // cos(45.0*(M_PI/180)) 
 // Cosine of smoothing angle(in radians)
 float		coring = 1.0;	// Light threshold to force to blackness(minimizes lightmaps)
