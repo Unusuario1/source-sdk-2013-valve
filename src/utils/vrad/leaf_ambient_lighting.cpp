@@ -313,7 +313,7 @@ struct ambientsample_t
 // be discarded.  This has the effect of converging on the best samples when enough are added.
 void AddSampleToList( CUtlVector<ambientsample_t> &list, const Vector &samplePosition, Vector *pCube )
 {
-	const int MAX_SAMPLES = ambientcubes_perleaf;
+	const int MAX_SAMPLES = g_iAmbientCubesPerLeaf;
 
 	int index = list.AddToTail();
 	list[index].pos = samplePosition;
