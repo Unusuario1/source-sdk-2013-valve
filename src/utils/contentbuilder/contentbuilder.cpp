@@ -98,8 +98,8 @@
 std::size_t g_process_completed = 0;
 std::size_t g_process_error = 0;
 std::size_t g_timer         = 0;        // global timer for assets!
-bool g_force32bits          = PLATFORM_64BITS ? true : false;
-bool g_force64bits          = PLATFORM_64BITS ? true : false;
+bool g_force32bits          = !IsPlatform64Bits();
+bool g_force64bits          = IsPlatform64Bits();
 bool g_cleanuptempcontent   = true;     //Do we cleanup temp content?
 bool g_infocontent          = false;    //Dont build, only print assets
 bool g_nosteam              = false;    //No steam funtions

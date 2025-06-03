@@ -864,18 +864,18 @@ namespace Shared
     //-----------------------------------------------------------------------------
     bool TargetPlatform()
     {
-        bool szTemp = PLATFORM_64BITS ? true : false; // Default value
+        bool bTemp = IsPlatform64Bits(); // Default value
         
         if (g_force32bits) 
         {
-            szTemp = false;
+            bTemp = false;
         }
         else if (g_force64bits)
         {
-            szTemp = true;
+            bTemp = true;
         }
 
-        return szTemp;
+        return bTemp;
     }
 
 
