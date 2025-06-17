@@ -4,15 +4,14 @@
 //
 // $NoKeywords: $
 //=============================================================================//
-#ifndef SCENEBUILDER_H
-#define SCENEBUILDER_H
-#include <cstddef>
+#ifndef ADDONBUILDER_H
+#define ADDONBUILDER_H
 
-
-namespace SceneBuilder
+namespace AddonBuilder
 {
 	void AssetToolCheck(const char* pGameBin);
-	void SceneCompile();
+	void AddonCompile();
 }
 
-#endif //SCENEBUILDER_H
+
+#endif // ADDONBUILDER_H

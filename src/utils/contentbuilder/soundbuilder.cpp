@@ -17,9 +17,9 @@
 namespace SoundBuilder
 {
 	//Does audioprocess.exe exist?
-	void AssetToolCheck(const char* gamebin)
+	void AssetToolCheck(const char* pGameBin)
 	{
-		Shared::AssetToolCheck(gamebin, NAME_SOUND_TOOL, "SoundBuilder");
+		Shared::AssetToolCheck(pGameBin, NAME_SOUND_TOOL, SOUNDBUILDER_KV);
 	}
 
 	void LoadGameInfoKv(const char* vtex_argv)
