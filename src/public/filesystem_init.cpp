@@ -38,18 +38,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
 
-#if !defined( _X360 )
-#define GAMEINFO_FILENAME			"gameinfo.txt"
-#else
-// The .xtx file is a TCR requirement, as .txt files cannot live on the DVD.
-// The .xtx file only exists outside the zips (same as .txt and is made during the image build) and is read to setup the search paths.
-// So all other code should be able to safely expect gameinfo.txt after the zip is mounted as the .txt file exists inside the zips.
-// The .xtx concept is private and should only have to occurr here. As a safety measure, if the .xtx file is not found
-// a retry is made with the original .txt name
-#define GAMEINFO_FILENAME			"gameinfo.xtx"
-#endif
-#define GAMEINFO_FILENAME_ALTERNATE	"gameinfo.txt"
-
 static char g_FileSystemError[256];
 static bool s_bUseVProjectBinDir = false;
 static FSErrorMode_t g_FileSystemErrorMode = FS_ERRORMODE_VCONFIG;
@@ -1404,36 +1392,6 @@ void FileSystem_SetErrorMode( FSErrorMode_t errorMode )
 	g_FileSystemErrorMode = errorMode;
 }
 
-//-----------------------------------------------------------------------------
-// Returns a string where the app dir is instaled 
-//-----------------------------------------------------------------------------
-void FileSystem_GetAppInstallDir(char* string, size_t bufferSize) 
-{
-	if (!SteamAPI_Init()) 
-	{
-		Error("SteamAPI_Init() failed! Possible causes:\n"
-			"  - Steam is not open.\n"
-			"  - Could not find steam_appid.txt\n"
-#ifdef PLATFORM_64BITS
-			"  - Could not find steam_api64.dll\n"
-#else
-			"  - Could not find steam_api.dll\n"
-#endif
-		);
-	}
-
-	AppId_t appID = SteamUtils()->GetAppID();
-	if (appID == 0) 
-	{
-		Error("Failed to get AppID!");
-	}
-
-	uint32 result = SteamApps()->GetAppInstallDir(appID, string, bufferSize);
-	if (result == 0) 
-	{
-		Error("Failed to get App Install Directory!");
-	}
-}
 
 void FileSystem_ClearSteamEnvVars()
 {

@@ -150,8 +150,3 @@ $Project "contentbuilder"
 	"utils\contentbuilder\contentbuilder.vpc" [$WINDOWS]
 }
 
-$Project "sceneimagebuilder"
-{
-	"utils\sceneimagebuilder\sceneimagebuilder.vpc" [$WINDOWS]
-}
-

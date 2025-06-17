@@ -14,7 +14,9 @@ $Configuration
 	$Compiler
 	{
 		$AdditionalIncludeDirectories		"$BASE,..\common"
-		$PreprocessorDefinitions			"$BASE;PROTECTED_THINGS_DISABLE"
+
+		// Right now we dont have a complete implementation for MP_ADDON_SUPPORT, so we disable it.
+		$PreprocessorDefinitions			"$BASE;PROTECTED_THINGS_DISABLE" 
 
 	}
 
@@ -29,21 +31,16 @@ $Project "Content builder"
 {
 	$Folder	"Source Files"
 	{
+		-$File	"$SRCDIR\public\tier0\memoverride.cpp"
+
+		$File "corebuilder.cpp"
 		$File "contentbuilder.cpp"
-		$File "colorscheme.cpp"
-		$File "captionbuilder.cpp"
-		$File "scenebuilder.cpp"
-		$File "mapbuilder.cpp"
-		$File "materialbuilder.cpp"
-		$File "modelbuilder.cpp"
-		$File "soundbuilder.cpp"
-		$File "vpkbuilder.cpp"
-		$File "shared.cpp"
 
 		$Folder	"Common Files"
 		{
 			$File	"..\common\cmdlib.cpp"
 			$File	"$SRCDIR\public\filesystem_helpers.cpp"
+			$File	"$SRCDIR\public\resourcecopy/cresourcecopy.cpp"
 			$File	"$SRCDIR\public\filesystem_init.cpp"
 			$File	"..\common\filesystem_tools.cpp"
 			$File	"..\common\scriplib.cpp"
@@ -54,31 +51,32 @@ $Project "Content builder"
 
 	$Folder	"Header Files"
 	{
-		$File "contentbuilder.h"
-		$File "colorscheme.h"
-		$File "materialbuilder.h"
-		$File "modelbuilder.h"
-		$File "soundbuilder.h"
-		$File "scenebuilder.h"
-		$File "captionbuilder.h"
-		$File "mapbuilder.h"
-		$File "vpkbuilder.h"
-		$File "shared.h"
+		$File "contentbuilder.hpp"
+		$File "assetbuilder_material.hpp"
+		$File "assetbuilder_model.hpp"
+		$File "assetbuilder_scene.hpp"
+		$File "assetbuilder_caption.hpp"
+		$File "assetbuilder_map.hpp"
+		$File "assetbuilder_vpk.hpp"
+		//$File "assetbuilder_addon.hpp"
+		$File "corebuilder.hpp"
 
 		$Folder	"Common header files"
 		{
+			$File	"..\common\consolelogger.hpp"
 			$File	"..\common\tools_minidump.h"
+			$File	"..\common\pipeline_shareddefs.h"
 			$File	"..\common\cmdlib.h"
+			$File	"$SRCDIR\public\resourcecopy/cresourcecopy.hpp"
 			$File	"$SRCDIR\public\filesystem_init.h"
 			$File	"..\common\filesystem_tools.h"
 			$File	"$SRCDIR\public\loadcmdline.h"
+			$File "../common/colorschemetools.h"
 		}
 	}
 
 	$Folder	"Link Libraries"
 	{
 		$Lib tier2
-		$Lib steam_api64 [$WIN64]
-		$Lib steam_api [$WIN32]
 	}
 }

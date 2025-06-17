@@ -1,334 +1,213 @@
+//=== Contenbuilder -> Written by Unusuario2, https://github.com/Unusuario2  ===//
+//
+// Purpose: ContentBuilder - Tool for compiling, processing, and packaging game assets 
+//
+// $NoKeywords: $
+//==============================================================================//
 #include <windows.h>
-#include "stdlib.h"
-#include "tier1/strtools.h"
-#include "tier0/icommandline.h"
-#include "tools_minidump.h"
-#include "loadcmdline.h"
-#include "cmdlib.h"
-#include "filesystem_init.h"
-#include "filesystem_tools.h"
+#include <tier1/strtools.h>
+#include <tier0/icommandline.h>
+#include <tools_minidump.h>
+#include <loadcmdline.h>
+#include <cmdlib.h>
+#include <filesystem_init.h>
+#include <filesystem_tools.h>
+#include <colorschemetools.h>
+#include <pipeline_shareddefs.h>
+#include <consolelogger.hpp>
 
-#include "contentbuilder.h"
-#include "colorscheme.h"
-#include "materialbuilder.h"
-#include "modelbuilder.h"
-#include "soundbuilder.h"
-#include "scenebuilder.h"
-#include "captionbuilder.h"
-#include "mapbuilder.h"
-#include "vpkbuilder.h"
-#include "shared.h"
+#include "contentbuilder.hpp"
+#include "assetbuilder_material.hpp"
+#include "assetbuilder_model.hpp"
+#include "assetbuilder_scene.hpp"
+#include "assetbuilder_caption.hpp"
+#include "assetbuilder_map.hpp"
+#include "assetbuilder_vpk.hpp"
 
-// TODO: dont use gameinfo.txt, use contentbuilder.txt
-// TODO: Change the keyvalue to not no be an error, just use the default
-// TODO: setup a log funtion also a warning, error, smth like _build/build(date time).log
-//                                                            _build/asset_report_source.contentlist
-//                                                            _build/asset_report_compiled.contentlist
+// Note: this is disabled in SP-branch
+#ifdef MP_ADDON_SUPPORT
+#include "assetbuilder_addon.hpp"
+#endif // MP_ADDON_SUPPORT
+
+#pragma warning(disable : 4238)
+
+// TODO List:
+// - Fix the -lb build not working.
+// - Add a -steambuild command. - cleanup content and more stuff
+// - Test the following:
+//     * nosteam addon
+//     * nosteam game 
+//     * steam addon
+//     * game build
+//     * game/tf_addons folder
+// - In VPK builder, add all folders (and files) that need to be packed.
+// - VPK builder maybe add a santity check to se if we can alloc all the temp files
+
 
 //-----------------------------------------------------------------------------
 // Purpose: Global vars 
 //-----------------------------------------------------------------------------
-std::size_t g_process_completed = 0;
-std::size_t g_process_error = 0;
-std::size_t g_timer         = 0;        // global timer for assets!
-bool g_force32bits          = PLATFORM_64BITS ? true : false;
-bool g_force64bits          = PLATFORM_64BITS ? true : false;
-bool g_cleanuptempcontent   = true;     //Do we cleanup temp content?
-bool g_infocontent          = false;    //Dont build only print assets
-bool g_nosteam              = false;    //No steam funtions
-bool g_addonbuild           = false;    //Build the -game dir as addon instead of a game
-bool g_buildcontent         = false;    
-bool g_buildoutofdatecontent = false;
-bool g_buildmaterials       = true;
-bool g_buildmodels          = true;
-bool g_buildsounds          = true;
-bool g_buildscene           = true;
-bool g_buildcaption         = true;
-bool g_buildmap             = true;
-bool g_buildvpk             = false;
-bool g_ignoreerrors         = false;
-bool g_pause                = false;    
-bool g_spewallcommands      = false;
-bool g_quiet                = false;
-bool g_createlog            = true;
-char g_gamebin[MAX_PATH]    = "";       //  game/bin or game/bin/x64
-char g_steamdir[MAX_PATH]   = "";       //  game
-char g_gameinfodir[MAX_PATH] = "";      //  game/mod/gameinfo.txt
-char g_contentbuilderdir[MAX_PATH] = "";  //  game/mod/contentbuilder.txt
-char g_contentbuilderPath[MAX_PATH] = ""; // game/mod/_build
+float               g_flStartTime           = 0;
+int                 g_iThreads              = -1; 
+bool                g_bForce32bits          = !IsPlatform64Bits();
+bool                g_bForce64bits          = IsPlatform64Bits();
+bool                g_bGenerateInfoBuild    = false;
+bool                g_bAddonBuilder         = false;
+bool                g_bForceBuildContent    = true;
+bool                g_bBuildMaterials       = true;
+bool                g_bBuildModels          = true;
+bool                g_bBuildScene           = true;
+bool                g_bBuildCaption         = true;
+bool                g_bBuildMap             = true;
+bool                g_bBuildVpk             = false;
+bool                g_bContentDstDelete     = false;
+bool                g_bQuiet                = false;
+bool                g_bSteamBuild           = false;
+char                g_szGameBin[MAX_PATH];                  //  $SteamDir/Half-Life 2/bin or $SteamDir/Half-Life 2/bin/x64
+char                g_szSteamDir[MAX_PATH];                 //  $SteamDir/Half-Life 2
+char                g_szGameInfoFile[MAX_PATH];             //  $SteamDir/Half-Life 2/hl2/gameinfo.txt
+char                g_szContentBuilderScriptFile[MAX_PATH]; //  $SteamDir/Half-Life 2/hl2/scripts/tools/contentbuilder_settings.txt
+char                g_szContentBuilderOutPath[MAX_PATH];    //  $SteamDir/Half-Life 2/hl2/_build
+CConsoleLogger*     g_pConsoleLogger        = nullptr;
+CResourceCopy*      g_pResourceCopy         = nullptr;
+CMaterialBuilder*   g_pMaterialBuilder      = nullptr;
+CModelBuilder*      g_pModelBuilder         = nullptr;
+CSceneBuilder*      g_pSceneBuilder         = nullptr;
+CCaptionBuilder*    g_pCaptionBuilder       = nullptr;
+CMapBuilder*        g_pMapBuilder           = nullptr;
+CVpkBuilder*        g_pVpkBuilder           = nullptr;
+#ifdef MP_ADDON_SUPPORT
+CAddonBuilder*      g_pAddonBuilder         = nullptr;
+#endif // MP_ADDON_SUPPORT
+SpewMode            g_eSpewMode             = SpewMode::k_Normal;
 
 
 //-----------------------------------------------------------------------------
-// Purpose:   Wait until the user wants to exit the program
+// Purpose:
 //-----------------------------------------------------------------------------
-void HitKeyToContinue()
+static void Init_AssetTools()
 {
-    if (g_pause)
     {
-        system("pause");
+        const float start = Plat_FloatTime();
+        Msg("Initializing Sub-AssetSystem... ");
+        g_pMaterialBuilder =    new CMaterialBuilder();
+        g_pModelBuilder =       new CModelBuilder();
+        g_pSceneBuilder =       new CSceneBuilder();
+        g_pCaptionBuilder =     new CCaptionBuilder();
+        g_pMapBuilder =         new CMapBuilder();
+        g_pVpkBuilder =         new CVpkBuilder();
+#ifdef MP_ADDON_SUPPORT
+        g_pAddonBuilder =       new CAddonBuilder();
+#endif // MP_ADDON_SUPPORT
+        g_pResourceCopy->SetThreads(g_iThreads);
+        Msg("done(%.2f)\n", Plat_FloatTime() - start);
     }
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose:  Count how many assets we have to compile
-//-----------------------------------------------------------------------------
-std::size_t CountAllAssets()
-{
-    std::size_t i = 0;
-    if (g_buildmaterials)
-    {
-        i += Shared::CountAssets(gamedir, TEXTURESRC_EXTENSION1);
-        i += Shared::CountAssets(gamedir, TEXTURESRC_EXTENSION2);
-        i += Shared::CountAssets(gamedir, TEXTURESRC_EXTENSION3);
-        i += Shared::CountAssets(gamedir, MATERIALS_EXTENSION);
-    }
-    if (g_buildmodels)
-    {
-        i += Shared::CountAssets(gamedir, MODELSRC_EXTENSION);
-    }
-    if (g_buildsounds)
-    {
-        i += Shared::CountAssets(gamedir, SOUNDSRC_EXTENSION);
-    }
-    if (g_buildscene)
-    {
-        i += Shared::CountAssets(gamedir, SCENESRC_EXTENSION);
-    }
-    if (g_buildcaption)
-    {
-        i += Shared::CountAssets(gamedir, CAPTIONSRC_EXTENSION);
-    }
-    if (g_buildmap)
-    {
-        i += Shared::CountAssets(gamedir, MAPSRC_EXTENSION);
-    }
-    if (g_buildvpk)
-    {
-        i += 1;
-    }
-    return i;
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose:   Get how many skips assets we got in the build
-//-----------------------------------------------------------------------------
-std::size_t GetSkippedAssets()
-{
-    std::size_t i = 0;
-    if (!g_buildmaterials)
-    {
-        i += Shared::CountAssets(gamedir, TEXTURESRC_EXTENSION1);
-        i += Shared::CountAssets(gamedir, TEXTURESRC_EXTENSION2);
-        i += Shared::CountAssets(gamedir, TEXTURESRC_EXTENSION3);
-        i += Shared::CountAssets(gamedir, MATERIALS_EXTENSION);
-    }
-    if (!g_buildmodels)
-    {
-        i += Shared::CountAssets(gamedir, MODELSRC_EXTENSION);
-    }
-    if (!g_buildsounds)
-    {
-        i += Shared::CountAssets(gamedir, SOUNDSRC_EXTENSION);
-    }
-    if (!g_buildscene)
-    {
-        i += Shared::CountAssets(gamedir, SCENESRC_EXTENSION);
-    }
-    if (!g_buildcaption)
-    {
-        i += Shared::CountAssets(gamedir, CAPTIONSRC_EXTENSION);
-    }
-    if (!g_buildmap)
-    {
-        i += Shared::CountAssets(gamedir, MAPSRC_EXTENSION);
-    }
-    if (!g_buildvpk)
-    {
-        i += 1;
-    }
-    return i;
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose:     
-//-----------------------------------------------------------------------------
-void PreInit()
-{
-    // Note: Even though it's standard to add a '\' at the end of the string,
-    // we remove it here because it makes managing paths much easier across the tool.
-    V_StripTrailingSlash(gamedir);
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose:   Create the log file   //TODO: do the same for warning an errors!!
-//-----------------------------------------------------------------------------
-void SetUpLogFile()
-{
-    char logFile[MAX_PATH];
-
-    V_snprintf(g_contentbuilderPath, sizeof(g_contentbuilderPath), "%s\\%s", gamedir, CONTENTBUILDER_OUTPATH);
-
-    // Remove old files
-    if (Shared::CheckIfPathOrFileExist(g_contentbuilderPath) && g_cleanuptempcontent)
-    {
-        if (remove(g_contentbuilderPath) != 0)
-        {
-            Warning("\nCould not remove old build files in \"%s\"!\n", g_contentbuilderPath);
-        }
-    }
-
-    if(!Shared::CreateDirectoryRecursive(g_contentbuilderPath))
-    {
-      DWORD err = GetLastError();
-
-      if (err != ERROR_ALREADY_EXISTS)
-      {
-          Shared::qError("\nCould not create temporary directory at: \"%s\" (Error code: %lu)\n", g_contentbuilderPath, err);
-      }
-    }
-
-    if (g_createlog)
-    {
-        SYSTEMTIME st;
-        GetLocalTime(&st);
-        
-        V_snprintf(logFile, sizeof(logFile), "%s\\%s_build(%02d:%02d:%04d %02d:%02d:%02d).log",
-            g_contentbuilderPath, g_addonbuild ? "addon" : "game",
-            st.wMonth, st.wDay,
-            st.wYear, st.wHour,
-            st.wMinute, st.wSecond);
-
-        SetSpewFunctionLogFile(logFile);
-    }
-
-    if(g_infocontent)
-    {
-        // asset report!
-
-    }
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose:   Check if the tools are in bin or bin/x64
-//-----------------------------------------------------------------------------
-void Init_AssetTools()
-{
-    char szExclude[128] = "";
-    float start = Plat_FloatTime();
-
-    g_timer = start;
-
-    //Basic setup
-    if (!g_nosteam)
-    {
-        FileSystem_GetAppInstallDir(g_steamdir, sizeof(g_steamdir));
-        if (g_steamdir == nullptr)
-        {
-            Error("AssetSystem -> steam game dir is NULL! Check \'-steamgamedir\' command!\n");
-        }
-    }
-
-    Shared::SetUpBinDir(g_gamebin, sizeof(g_gamebin));
-    V_snprintf(g_gameinfodir, sizeof(g_gameinfodir), "%s\\%s", gamedir, GAMEINFO);
-    V_snprintf(g_contentbuilderdir, sizeof(g_contentbuilderdir), "%s\\%s", gamedir, CONTENTBUILDER);
-
-    SetUpLogFile();
 
     // Basic info
+    Msg("Working Directory:   ");   ColorSpewMessage(SPEW_MESSAGE, &ColorPath, "\"%s\"\n", g_szSteamDir);
+    Msg("Mod:                 ");   ColorSpewMessage(SPEW_MESSAGE, &ColorPath, "\"%s\"\n", gamedir);
+    Msg("Operation:           %s\n",
+        []() -> const char*
+        {
+            if (g_bForceBuildContent)
+                return "Force-building content";
+            else
+                return "Partial-building content";
+        }()
+            );
+    Msg("Verbosity:           %s\n",
+        []()-> const char*
+        {
+            if (verbose)
+                return "High";
+            else if (g_bQuiet)
+                return "Quiet";
+            else
+                return "Standard";
+        }()
+            );
+    Msg("Building:            %s\n",
+        []() -> const char*
+        {
+            if (g_bAddonBuilder)
+                return "Addon";
+            else
+                return "Game";
+        }()
+            );
+    Msg("Exclude:             %s\n",
+        []() -> const char*
+        {
+            char szExclude[MAX_PATH] = {'\0'};
+            if (!g_bBuildMaterials)   V_strcat_safe(szExclude, "(materials) ");
+            if (!g_bBuildModels)      V_strcat_safe(szExclude, "(models) ");
+            if (!g_bBuildScene)       V_strcat_safe(szExclude, "(scene) ");
+            if (!g_bBuildCaption)     V_strcat_safe(szExclude, "(caption) ");
+            if (!g_bBuildMap)         V_strcat_safe(szExclude, "(maps) ");
+            if (!g_bBuildVpk)         V_strcat_safe(szExclude, "(vpk) ");
+            else                     V_strcat_safe(szExclude, "None ");
+
+            return szExclude;
+        }()
+            );
+
+     ColorSpewMessage(SPEW_MESSAGE, &ColorHeader, "\nGeneral paths:\n");
+     Msg("  Path - gameinfo.txt:         ");      ColorSpewMessage(SPEW_MESSAGE, &ColorPath, "\"%s\"\n", g_szGameInfoFile);
+     Msg("  Path - Game binary (tools):  ");      ColorSpewMessage(SPEW_MESSAGE, &ColorPath, "\"%s\"\n", g_szGameBin);
+
+     ColorSpewMessage(SPEW_MESSAGE, &ColorHeader, "%s Source/Compiled assets paths:\n", 
+         []() -> const char*
+         {
+             if (g_bAddonBuilder)
+                 return "Addon";
+             else
+                 return "Game";
+         }()
+             );
+    if (g_bBuildMaterials)   { Msg("  Content Source - Materials:  ");   ColorSpewMessage(SPEW_MESSAGE, &ColorPath, "%s\n", g_pMaterialBuilder->m_szGameAssetSrcPath); }
+    if (g_bBuildModels)      { Msg("  Content Source - Models:     ");   ColorSpewMessage(SPEW_MESSAGE, &ColorPath, "%s\n", g_pModelBuilder->m_szGameAssetSrcPath); }
+    if (g_bBuildScene)       { Msg("  Content Source - Scene:      ");   ColorSpewMessage(SPEW_MESSAGE, &ColorPath, "%s\n", g_pSceneBuilder->m_szGameAssetSrcPath); }
+    if (g_bBuildCaption)     { Msg("  Content Source - Caption:    ");   ColorSpewMessage(SPEW_MESSAGE, &ColorPath, "%s\n", g_pCaptionBuilder->m_szGameAssetSrcPath); }
+    if (g_bBuildMap)         { Msg("  Content Source - Maps:       ");   ColorSpewMessage(SPEW_MESSAGE, &ColorPath, "%s\n", g_pMapBuilder->m_szGameAssetSrcPath); }
+    if (g_bBuildVpk)         { Msg("  Content Source - VPK:        ");   ColorSpewMessage(SPEW_MESSAGE, &ColorPath, "%s\n", g_pVpkBuilder->m_szGameDirPath); }
+    if (g_bBuildMaterials)   { Msg("  Content Compiled - Materials:");   ColorSpewMessage(SPEW_MESSAGE, &ColorPath, "%s\n", g_pMaterialBuilder->m_szGameAssetDstPath); }
+    if (g_bBuildModels)      { Msg("  Content Compiled - Models:   ");   ColorSpewMessage(SPEW_MESSAGE, &ColorPath, "%s\n", g_pModelBuilder->m_szGameAssetDstPath); }
+    if (g_bBuildScene)       { Msg("  Content Compiled - Scene:    ");   ColorSpewMessage(SPEW_MESSAGE, &ColorPath, "%s\n", g_pSceneBuilder->m_szGameAssetDstPath); }
+    if (g_bBuildCaption)     { Msg("  Content Compiled - Caption:  ");   ColorSpewMessage(SPEW_MESSAGE, &ColorPath, "%s\n", g_pCaptionBuilder->m_szGameAssetDstPath); }
+    if (g_bBuildMap)         { Msg("  Content Compiled - Maps:     ");   ColorSpewMessage(SPEW_MESSAGE, &ColorPath, "%s\n", g_pMapBuilder->m_szGameAssetDstPath); }
+    if (g_bBuildVpk)         { Msg("  Content Compiled - VPK:      ");   ColorSpewMessage(SPEW_MESSAGE, &ColorPath, "%s\n", g_pVpkBuilder->m_szGameDirPath); }
     Msg("\n");
-    Msg("Working Directory:   %s\n", g_steamdir);
-    Msg("Mod:                 %s\n", gamedir);
-    Msg("Operation:           %s\n", g_buildcontent && !g_buildoutofdatecontent ? "Force-building content" : "Partial-building content");
-    Msg("Verbosity:           %s %s\n", (verbose ? "High" : (g_quiet ? "Quiet" : "Standard")), (g_spewallcommands ? "(showing paths)" : ""));
-    Msg("Building:            %s\n", g_addonbuild ? "Partial (addon)" : (g_buildmaterials && g_buildmodels && g_buildsounds &&
-        g_buildscene && g_buildcaption && g_buildmap &&
-        g_buildvpk) ? "Full (game)" : "Partial (game)"); // lol...
 
-    if (!g_buildmaterials)   V_strcat(szExclude, "(materials) ", sizeof(szExclude));
-    if (!g_buildmodels)      V_strcat(szExclude, "(models) ", sizeof(szExclude));
-    if (!g_buildsounds)      V_strcat(szExclude, "(sounds) ", sizeof(szExclude));
-    if (!g_buildscene)       V_strcat(szExclude, "(scene) ", sizeof(szExclude));
-    if (!g_buildcaption)     V_strcat(szExclude, "(caption) ", sizeof(szExclude));
-    if (!g_buildmap)         V_strcat(szExclude, "(maps) ", sizeof(szExclude));
-    if (!g_buildvpk)         V_strcat(szExclude, "(vpk) ", sizeof(szExclude));
-    else                     V_strcat(szExclude, "None ", sizeof(szExclude));
-    Msg("Excluding:           %s\n\n", szExclude);
-
-    if (g_spewallcommands)
     {
-        //General paths
-        ColorSpewMessage(SPEW_MESSAGE, &header_color, "\nGeneral paths:\n");
-        Msg("\tPath - GameInfo.txt: ");             ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\"\n", g_gameinfodir);
-        Msg("\tPath - Game binary (tools): ");      ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\"\n", g_gamebin);
-        g_pFullFileSystem->PrintSearchPaths();
-
-        //Game/Mod source assets (src) paths
-        ColorSpewMessage(SPEW_MESSAGE, &header_color, "Game/Mod Source/Compiled assets paths:\n");
-        Msg("\tContent Source - Materials: ");      ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\\%s\"\n", gamedir, MATERIALSRC_DIR);
-        Msg("\tContent Source - Models: ");         ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\\%s\"\n", gamedir, MODELSRC_DIR);
-        Msg("\tContent Source - Sounds: ");         ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\\%s\"\n", gamedir, SOUNDSRC_DIR);
-        Msg("\tContent Source - Scene: ");          ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\\%s\"\n", gamedir, SCENE_DIR);
-        Msg("\tContent Source - Caption: ");        ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\\%s\"\n", gamedir, CAPTIONSRC_DIR);
-        Msg("\tContent Source - Maps: ");           ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\\%s\"\n", gamedir, MAPSRC_DIR);
-        Msg("\tContent Source - Valve Pack File (vpk): ");  ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\"\n", gamedir);
-        Msg("\tContent Compiled - Materials: ");    ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\\%s\"\n", gamedir, MATERIALS_DIR);
-        Msg("\tContent Compiled - Models: ");       ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\\%s\"\n", gamedir, MODELS_DIR);
-        Msg("\tContent Compiled - Sounds: ");       ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\\%s\"\n", gamedir, SOUNDS_DIR);
-        Msg("\tContent Compiled - Scene: ");        ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\\%s\"\n", gamedir, SCENE_DIR);
-        Msg("\tContent Compiled - Caption: ");      ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\\%s\"\n", gamedir, CAPTION_DIR);
-        Msg("\tContent Compiled - Maps: ");         ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\\%s\"\n", gamedir, MAPS_DIR);
-        Msg("\tContent Compiled - Valve Pack File (vpk): ");  ColorSpewMessage(SPEW_MESSAGE, &path_color, "\"%s\"\n", gamedir);
+        const float start = Plat_FloatTime();
+        Msg("Initializing AssetTools systems (%s bits)... ",
+            []() -> const char*
+            {
+                if (g_bForce32bits)
+                    return "32";
+                else
+                    return "64";
+            }()
+        );
+        if (g_bBuildMaterials)   g_pMaterialBuilder->AssetToolCheck();
+        if (g_bBuildModels)      g_pModelBuilder->AssetToolCheck();
+        if (g_bBuildScene)       g_pSceneBuilder->AssetToolCheck();
+        if (g_bBuildCaption)     g_pCaptionBuilder->AssetToolCheck();
+        if (g_bBuildMap)         g_pMapBuilder->AssetToolCheck();
+        if (g_bBuildVpk)         g_pVpkBuilder->AssetToolCheck();
+#ifdef MP_ADDON_SUPPORT
+        if (g_bAddonBuilder)     g_pAddonBuilder->AssetToolCheck();
+#endif // MP_ADDON_SUPPORT
+        Msg("done(%.2f)\n", Plat_FloatTime() - start);
     }
 
-    //Create asset compiled dir
-    ColorSpewMessage(SPEW_MESSAGE, g_spewallcommands ? &header_color : &white, "Initializing AssetSystem... %s", g_spewallcommands ? "\n" : "");
-    
-    const char* rgpszCreateFolderList[] = { MATERIALS_DIR, MODELS_DIR, SOUNDS_DIR, SCENE_DIR, CAPTION_DIR, MAPS_DIR };
-    for (const char* folder : rgpszCreateFolderList)
-    {
-        Shared::CreateAssetSystemGamePath(gamedir, folder);
-    }
+    if (!g_pResourceCopy->CreateDir(g_szContentBuilderOutPath))
+        g_pConsoleLogger->Error("AssetSystem -> Could not create contentbuilder build path: %s\n", g_szContentBuilderOutPath);
 
-    if (g_spewallcommands)
     {
-        //scan source assets
-        Msg("\tAssetSystem -> Materials: %llu count\n", Shared::CountAssets(gamedir, MATERIALS_EXTENSION));
-        Msg("\tAssetSystem -> Textures:  %llu count\n", Shared::CountAssets(gamedir, TEXTURESRC_EXTENSION1) +
-                                                        Shared::CountAssets(gamedir, TEXTURESRC_EXTENSION2) +
-                                                        Shared::CountAssets(gamedir, TEXTURESRC_EXTENSION3));
-        Msg("\tAssetSystem -> Models:    %llu count\n", Shared::CountAssets(gamedir, MODELSRC_EXTENSION));
-        Msg("\tAssetSystem -> Sounds:    %llu count\n", Shared::CountAssets(gamedir, SOUNDSRC_EXTENSION));
-        Msg("\tAssetSystem -> Scene:     %llu count\n", Shared::CountAssets(gamedir, SCENESRC_EXTENSION));
-        Msg("\tAssetSystem -> Caption:   %llu count\n", Shared::CountAssets(gamedir, CAPTIONSRC_EXTENSION));
-        Msg("\tAssetSystem -> Maps       %llu count\n", Shared::CountAssets(gamedir, MAPSRC_EXTENSION));
-    }
-    ColorSpewMessage(SPEW_MESSAGE, g_spewallcommands ? &sucesfullprocess_color : &done_color, "Done in %.2f seconds.\n", Plat_FloatTime() - start);
-
-    //Tools paths
-    ColorSpewMessage(SPEW_MESSAGE, g_spewallcommands ? &header_color : &white, "Initializing AssetTools systems (%s)... %s", Shared::TargetPlatform() ? "64 bits" : "32 bits", g_spewallcommands ? "\n" : ""); // I know....
-    if (g_buildmaterials)   MaterialBuilder::AssetToolCheck(g_gamebin);
-    if (g_buildmodels)      ModelBuilder::AssetToolCheck(g_gamebin);
-    if (g_buildsounds)      SoundBuilder::AssetToolCheck(g_gamebin);
-    if (g_buildscene)       SceneBuilder::AssetToolCheck(g_gamebin);
-    if (g_buildcaption)     CaptionBuilder::AssetToolCheck(g_gamebin);
-    if (g_buildmap)         MapBuilder::AssetToolCheck(g_gamebin);
-    if (g_buildvpk)         VpkBuilder::AssetToolCheck(g_gamebin);
-    ColorSpewMessage(SPEW_MESSAGE, g_spewallcommands ? &sucesfullprocess_color : &done_color, "Done in %.2f seconds. All sub systems checks passed!\n", Plat_FloatTime() - start);
-
-    Msg("Finalizing build list... \n");
-    std::size_t uCountAsset = CountAllAssets();
-    Msg("%llu assets need to be built\n\n", uCountAsset);
-    
-    // Sanity check
-    if(uCountAsset == 0)
-    {
-        Warning("No assets to %s!\n", g_infocontent ? "print" : "build");
-        exit(0);
+        char szLogFile[MAX_PATH];
+        V_sprintf_safe(szLogFile, "%s\\contentbuilder.log", g_szContentBuilderOutPath);
+        SetSpewFunctionLogFile(szLogFile);
     }
 }
 
@@ -336,79 +215,68 @@ void Init_AssetTools()
 //-----------------------------------------------------------------------------
 // Purpose:   Print contentbuilder usage
 //-----------------------------------------------------------------------------
-void PrintUsage(int argc, char* argv[])
+static void PrintUsage(int argc, char* argv[])
 {
-    // Add somewhere a -steamBuild
     Msg("\nUsage: contentbuilder.exe [options] -game <path>\n\n");
-    ColorSpewMessage(SPEW_MESSAGE, &header_color, " General Options:\n");
-    Msg("   -b:                    Build the content.\n"
-        "   -lb:                   Build only out-of-date content.\n"
-        "   -pause:                After building the content, pause the program.\n"
-        "   -info:                 Only prints all the assets to be compiled (no compile).\n"
-        "   -forcedirty:           Do not remove temp content.\n"
-        "   -ignoreerrors:         Ignores errors unless is strictly necesary.\n"
-        "                          (NOT recomended for steam builds, only for testing and fast builds)\n"
-        "   -nolog:                Disables log generation.\n"
-        "   -nosteam:              Dont use steam api mount funtions. Use when \'-game\' path is outside the game root path.\n"
-        "                          Useful for no steam mods builds, addon builds outside the game (steam) path.\n"
+    ColorSpewMessage(SPEW_MESSAGE, &ColorHeader, " General Options:\n");
+    Msg("   -lb:                   Build only out-of-date content.\n"
+        "   -contentdstdelete:     Deletes all compiled assets before starting contentbuilder compile.\n"
+        "   -info:                 Generate filelist of the assets that will be build (This mode disables building). (Note: This will be generated at '%s' folder).\n"
         "   -game <path>:          Specify the folder of the gameinfo.txt file.\n"
         "   -vproject <path>:      Same as \'-game\'.\n"
-        "   -steamgamedir <path>:  if \'-nosteam\' is enabled, loads the steam game path,\n"
-        "                          (e.g: \"C:\\Program Files (x86)\\Steam\\steamapps\\common\\Half-life 2\")\n"
-        "\n");
-    ColorSpewMessage(SPEW_MESSAGE, &header_color, " Building Options:\n");
-    Msg("   -addonbuild:           Builds only maps, materials, models and sounds.\n"
-        "   -skipmaterial:         Skips texture (\\%s) compile.\n"
-        "   -skipmodel:            Skips model (\\%s) compile.\n"
-        "   -skipsound:            Skips sound (\\%s) compile.\n"
-        "   -skipscene:            Skips scene (\\%s) compile.\n"
-        "   -skipcaption:          Skips caption (\\%s) compile.\n"
-        "   -skipmap:              Skips maps (\\%s) compile.\n"
+        "\n", BUILDER_OUTDIR);
+    ColorSpewMessage(SPEW_MESSAGE, &ColorHeader, " Building Options:\n");
+    Msg(
+#ifdef MP_ADDON_SUPPORT
+        "   -addonbuild:             If enabled, it will compile the addon and pack all the contents into the defined .bsp file\n"
+#endif // MP_ADDON_SUPPORT
+        "                          Useful for addons intended for release on the Workshop. (\'-addonbuild\' needs to be enabled to work)\n"
+        "   -skipmaterial:         Skips texture compile.\n"
+        "   -skipmodel:            Skips model compile.\n"
+        "   -skipscene:            Skips scene compile.\n"
+        "   -skipcaption:          Skips caption compile.\n"
+        "   -skipmap:              Skips maps compile.\n"
         "   -vpk:                  Generate vpk files. (Not avaible for \'-addonbuild\').\n"
-        "\n"
-        , MATERIALSRC_DIR, MODELSRC_DIR, SOUNDSRC_DIR, SCENESRC_DIR, CAPTIONSRC_DIR, MAPSRC_DIR);
-    ColorSpewMessage(SPEW_MESSAGE, &header_color, " Spew Options:\n");
+        "   -steambuild:           Generates a build for steam release content, (Not avaible for addon build, only for game builds)\n"
+        "                          The -steambuild command enables VPK generation and sanitizes the game directory.\n"    
+        "\n");
+    ColorSpewMessage(SPEW_MESSAGE, &ColorHeader, " Spew Options:\n");
     Msg("   -v or -verbose:        Enables verbose.\n"
         "   -quiet:                Prints minimal text. (Note: Disables \'-verbose\' and \'-spewallcommands\')\n"
         "   -spewallcommands:                     \n"
+        "   -compileverbose:       Enable verbose for tools. (Prints a LOT of text)\n"
+        "   -spewallverbose:       Same as \'-v -spewallcommands -compileverbose\'\n"      
         "\n");
-    ColorSpewMessage(SPEW_MESSAGE, &header_color, " Advanced Build Options:\n");
-    Msg(
-        "   -toolsforce32bits:     Force contentbuilder to use 32 bits tools.\n"
+    ColorSpewMessage(SPEW_MESSAGE, &ColorHeader, " Advanced Build Options:\n");
+    Msg("   -toolsforce32bits:     Force contentbuilder to use 32 bits tools.\n"
         "   -toolsforce64bits:     Force contentbuilder to use 64 bits tools.\n"
-        "   -proc n or -threads n: Max simultaneous compile subsystems. (Not avaible in maps and vpk build).\n"
+        "   -proc n or -threads n: Max simultaneous compile subsystems. (Not avaible for MapBuilder, SceneBuilder, AddonBuilder, VpkBuilder).\n"
         "\n");
-    ColorSpewMessage(SPEW_MESSAGE, &header_color, " Other Options:\n");
+    ColorSpewMessage(SPEW_MESSAGE, &ColorHeader, " Other Options:\n");
     Msg("   -FullMinidumps:        Write large minidumps on crash.\n"
         "\n");
 
     DeleteCmdLine(argc, argv);
-    CmdLib_Exit(1);
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose:   Prints the header
-//-----------------------------------------------------------------------------
-void PrintHeader()
-{
-    Msg("\n\n");
-    ColorSpewMessage(SPEW_MESSAGE, &header_color, "//------------------------------------------------------------\n");
-    ColorSpewMessage(SPEW_MESSAGE, &header_color, "// "); Msg("Content builder (Build: %s %s)\n" ,__DATE__, __TIME__);
-    ColorSpewMessage(SPEW_MESSAGE, &header_color, "//------------------------------------------------------------\n");
+    CmdLib_Cleanup();
+    CmdLib_Exit(-1);
 }
 
 
 //-----------------------------------------------------------------------------
 // Purpose:   Parse command line
 //-----------------------------------------------------------------------------
-void ParseCommandline(int argc, char* argv[])
+static void ParseCommandline(int argc, char* argv[])
 {
-    ColorSpewMessage(SPEW_MESSAGE, &header_color, "\nCommand Line:\n\t");
-    
+    ColorSpewMessage(SPEW_MESSAGE, &ColorHeader, "Command Line:\n\t");
     for (std::size_t i = 1; i < argc; ++i)
     {
         Msg("%s ", argv[i]);
+    }
+    Msg("\n");
+
+    if(argc == 1 || argc == 2)
+    {
+        PrintUsage(argc, argv);
     }
 
     for (int i = 1; i < argc; ++i)
@@ -420,104 +288,91 @@ void ParseCommandline(int argc, char* argv[])
         else if (!V_stricmp(argv[i], "-v") || !V_stricmp(argv[i], "-verbose"))
         {
             verbose = true;
-        }  
-        else if (!V_stricmp(argv[i], "-threads") || !V_stricmp(argv[i], "-proc"))
-        {
-            //threads = true; //TODO!
-        }
-        else if (!V_stricmp(argv[i], "-b"))
-        {
-            g_buildcontent = true;
-        }        
+        }       
         else if (!V_stricmp(argv[i], "-lb"))
         {
-            g_buildcontent = true;
-            g_buildoutofdatecontent = true;
-        }
-        else if (!V_stricmp(argv[i], "-pause"))
-        {
-            g_pause = true;
+            g_bForceBuildContent = false;
         }
         else if (!V_stricmp(argv[i], "-info"))
         {
-            g_infocontent = true;
-            g_buildcontent = true;
-        }
-        else if (!V_stricmp(argv[i], "-forcedirty"))
+            g_bGenerateInfoBuild = true;
+        }        
+        else if (!V_stricmp(argv[i], "-contentdstdelete"))
         {
-            g_cleanuptempcontent = false;
+            g_bContentDstDelete = true;
         }       
-        else if (!V_stricmp(argv[i], "-nolog"))
-        {
-            g_createlog = false;
-        }
-        else if (!Q_stricmp(argv[i], "-FullMinidumps"))
+        else if (!V_stricmp(argv[i], "-FullMinidumps"))
         {
             EnableFullMinidumps(true);
         }
         else if (!V_stricmp(argv[i], "-toolsforce32bits"))
         {
-            g_force32bits = true;
-            g_force64bits = false;
+            g_bForce32bits = true;
+            g_bForce64bits = false;
         }
         else if (!V_stricmp(argv[i], "-toolsforce64bits"))
         {
-            g_force32bits = false;
-            g_force64bits = true;
-        }
-        else if (!V_stricmp(argv[i], "-ignoreerrors"))
-        {
-            g_ignoreerrors = true;
-        }
-        else if (!V_stricmp(argv[i], "-nosteam"))
-        {
-            g_nosteam = true;
-        }
-        else if (!V_stricmp(argv[i], "-spewallcommands"))
-        {
-            g_spewallcommands = true;
-        }       
+            g_bForce32bits = false;
+            g_bForce64bits = true;
+        }        
         else if (!V_stricmp(argv[i], "-quiet"))
         {
-            g_quiet = true;
+            g_bQuiet = true;
             verbose = false;
-            g_spewallcommands = false;
-            g_infocontent = false;
         }
+#ifdef MP_ADDON_SUPPORT
         else if (!V_stricmp(argv[i], "-addonbuild"))
         {
-            g_addonbuild = true;
-            g_buildcaption = false;
-            g_buildscene = false;
-            g_buildvpk = false;
-        }
+            g_bAddonBuilder = true;
+            g_bBuildVpk = false;
+        }      
+#endif // MP_ADDON_SUPPORT
         else if (!V_stricmp(argv[i], "-skipmaterial"))
         {
-            g_buildmaterials = false;
+            g_bBuildMaterials = false;
         }
         else if (!V_stricmp(argv[i], "-skipmodel"))
         {
-            g_buildmodels = false;
-        }
-        else if (!V_stricmp(argv[i], "-skipsound"))
-        {
-            g_buildsounds = false;
+            g_bBuildModels = false;
         }
         else if (!V_stricmp(argv[i], "-skipscene"))
         {
-            g_buildscene = false;
+            g_bBuildScene = false;
         }
         else if (!V_stricmp(argv[i], "-skipcaption"))
         {
-            g_buildcaption = false;
+            g_bBuildCaption = false;
         }
         else if (!V_stricmp(argv[i], "-skipmap"))
         {
-            g_buildmap = false;
+            g_bBuildMap = false;
         }
         else if (!V_stricmp(argv[i], "-vpk"))
         {
-            g_buildvpk = true;
+            g_bBuildVpk = true;
+        }
+        else if (!V_stricmp(argv[i], "-steambuild"))
+        {
+            g_bSteamBuild = true;
+            g_bBuildVpk = true;
+        }
+        else if (!V_stricmp(argv[i], "-threads") || !V_stricmp(argv[i], "-proc"))
+        {
+            if (++i < argc && argv[i] != '\0')
+            {
+                int iTemp = V_atoi(argv[i]);
+                if (iTemp < 1)
+                {
+                    Warning("Expected value greater or equal that 1!\n");
+                    PrintUsage(argc, argv);
+                }
+                g_iThreads = iTemp;
+            }
+            else
+            {
+                Warning("Expected value after '-threads'\n");
+                PrintUsage(argc, argv);
+            }
         }
         else if (!V_stricmp(argv[i], "-game") || !V_stricmp(argv[i], "-vproject"))
         {
@@ -526,34 +381,18 @@ void ParseCommandline(int argc, char* argv[])
                 char* gamePath = argv[i];
                 if (!gamePath)
                 {
-                    Error("Error: \'-game\' requires a valid path argument. NULL path\n");
+                    Error("\nError: \'-game\' requires a valid path argument. NULL path\n");
                 }
-                V_strcpy(gamedir, gamePath);
+                V_strcpy_safe(gamedir, gamePath);
             }
             else
             {
-                Error("Error: \'-game\' requires a valid path argument.\n");
-            }
-        }
-        else if (!V_stricmp(argv[i], "-steamgamedir"))
-        {
-            if (++i < argc && argv[i][0] != '-')
-            {
-                const char* gamePath = argv[i];
-                if (!gamePath)
-                {
-                    Error("\nError: \'-steamgamedir\' requires a valid path argument. NULL path\n");
-                }
-                V_strcpy(g_steamdir, gamePath);
-            }
-            else
-            {
-                Error("\nError: \'-steamgamedir\' requires a valid path argument.\n");
+                Error("\nError: \'-game\' requires a valid path argument.\n");
             }
         }
         else
         {
-            Warning("Warning: Unknown option \'%s\'\n", argv[i]);
+            Warning("\nWarning Unknown option \'%s\'\n", argv[i]);
             PrintUsage(argc, argv);
         }
     }
@@ -562,64 +401,185 @@ void ParseCommandline(int argc, char* argv[])
 
 
 //-----------------------------------------------------------------------------
-// Purpose:   Main funtion
+// Purpose:   Prints the header
 //-----------------------------------------------------------------------------
-int main(int argc, char* argv[])
+static void PrintHeader()
 {
-    float start = Plat_FloatTime();
+    Msg("\n");
+    ColorSpewMessage(SPEW_MESSAGE, &ColorHeader, "//------------------------------------------------------------\n");
+    ColorSpewMessage(SPEW_MESSAGE, &ColorHeader, "// "); Msg("Content builder (Build: %s %s)\n", __DATE__, __TIME__);
+    ColorSpewMessage(SPEW_MESSAGE, &ColorHeader, "// "); Msg("Written by Unusuario 2 https://github.com/Unusuario2\n");
+    ColorSpewMessage(SPEW_MESSAGE, &ColorHeader, "//------------------------------------------------------------\n");
+}
+
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+static void Init(int argc, char* argv[])
+{
+    g_flStartTime = Plat_FloatTime();
 
     SetupDefaultToolsMinidumpHandler();
     CommandLine()->CreateCmdLine(argc, argv);
     InstallSpewFunction();
     PrintHeader();
-	ParseCommandline(argc, argv);
+    ParseCommandline(argc, argv);
+
+    // Note: Even though it's standard to add a '\' at the end of the string,
+    // we remove it here because it makes managing paths much easier across the tool.
     CmdLib_InitFileSystem(gamedir);
-    PreInit();
-    Init_AssetTools();
+    V_StripTrailingSlash(gamedir);
 
-    if (g_buildcontent || g_addonbuild)
+    V_sprintf_safe(g_szGameInfoFile, "%s\\%s", gamedir, GAMEINFO_FILENAME);
+    V_sprintf_safe(g_szContentBuilderScriptFile, "%s\\%s", gamedir, BUILDER_CONFIG_FILE);
+    V_sprintf_safe(g_szContentBuilderOutPath, "%s\\%s", gamedir, BUILDER_OUTDIR);
+
+    g_pConsoleLogger = new CConsoleLogger(g_szContentBuilderOutPath, BUILDER_SPECIFIC_LOG, BUILDER_WARNING_LOG, BUILDER_ERROR_LOG);
+    g_pResourceCopy = new CResourceCopy();
+
+    if (verbose)
+        g_eSpewMode = SpewMode::k_Verbose;
+    else if (g_bQuiet)
+        g_eSpewMode = SpewMode::k_Quiet;
+    else
+        g_eSpewMode = SpewMode::k_Normal;
+
     {
-        if (g_buildmaterials)
-        {
-            MaterialBuilder::MaterialCompile();
-        }
-        if (g_buildmodels)
-        {
-            ModelBuilder::ModelCompile();
-        }
-        if (g_buildsounds)
-        {
-            SoundBuilder::SoundCompile();
-        }
-        if (g_buildscene)
-        {
-            SceneBuilder::SceneCompile();
-        }
-        if (g_buildcaption)
-        {
-            CaptionBuilder::CaptionCompile();
-        }
-        if (g_buildmap)
-        {
-            MapBuilder::MapCompile();
-        }
-        if (g_buildvpk)
-        {
-            VpkBuilder::VpkCompile();
-        }
+        g_pFullFileSystem->GetSearchPath_safe("BASE_PATH", false, g_szSteamDir);
+        char* pChar = V_strchr(g_szSteamDir, ';');
+        if (pChar)
+            pChar = '\0';
 
-        Msg("\n-------------------------------------------------------------------------------------------\n");
-        Msg(" AssetCompile -> Done in %s | ", Shared::TimeStamp());
-        ColorSpewMessage(SPEW_MESSAGE, &sucesfullprocess_color, "Completed: %llu,     ", g_process_completed);
-        ColorSpewMessage(SPEW_MESSAGE, &red, "Error: %llu,     ", g_process_error);
-        ColorSpewMessage(SPEW_MESSAGE, &yellow, "Skipped: %llu         ", GetSkippedAssets());
-        Msg("\n-------------------------------------------------------------------------------------------\n");
-        Msg("\n");
+        V_StripTrailingSlash(g_szSteamDir);
     }
+
+    // Setup the gamebin dir!
+    V_sprintf_safe(g_szGameBin, "%s\\%s", g_szSteamDir,
+        []() -> const char*
+        {
+            if (g_bForce32bits)
+                return DIR_TOOLS_X86;
+            else
+                return DIR_TOOLS_X64;
+        }()
+            );
+
+    // Set the Threads number
+    if (g_iThreads == -1)
+    {
+        SYSTEM_INFO sysInfo;
+        GetSystemInfo(&sysInfo);
+        g_iThreads = sysInfo.dwNumberOfProcessors;
+    }
+
+    Init_AssetTools();
+}
+
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+static void Destroy(int argc, char* argv[])
+{
+    g_pResourceCopy->GenerateGlobalOperationReport();
+    ColorSpewMessage(SPEW_MESSAGE, &ColorSucesfull, "-------------------------------------------------------------------------------------------\n");
+    ColorSpewMessage(SPEW_MESSAGE, &ColorSucesfull, "| Build Done in %.2f seconds.\n", Plat_FloatTime() - g_flStartTime);
+    ColorSpewMessage(SPEW_MESSAGE, &ColorSucesfull, "-------------------------------------------------------------------------------------------\n");
+
+    delete g_pMaterialBuilder;
+    delete g_pModelBuilder;
+    delete g_pSceneBuilder;
+    delete g_pCaptionBuilder;
+    delete g_pMapBuilder;
+    delete g_pVpkBuilder;
+#ifdef MP_ADDON_SUPPORT
+    delete g_pAddonBuilder;
+#endif // MP_ADDON_SUPPORT
+
+    delete g_pResourceCopy;
+    delete g_pConsoleLogger;
 
     DeleteCmdLine(argc, argv);
     CmdLib_Cleanup();
-
-    HitKeyToContinue();
-	return 0;
+    CmdLib_Exit(0);
 }
+
+
+//-----------------------------------------------------------------------------
+// Purpose:   Main funtion
+//-----------------------------------------------------------------------------
+int main(int argc, char* argv[])
+{
+    Init(argc, argv);
+
+    // MOVE THIS TO ANOTHER funtion!!!!
+    if (g_bBuildMaterials) 
+    {
+        if (g_bGenerateInfoBuild)
+            g_pMaterialBuilder->GenerateAssetReport();
+        else
+            g_pMaterialBuilder->AssetBuilderCompile();
+    }
+    if (g_bBuildModels) 
+    {
+        if (g_bGenerateInfoBuild)
+            g_pModelBuilder->GenerateAssetReport();
+        else
+            g_pModelBuilder->AssetBuilderCompile();
+    }
+    if (g_bBuildCaption) 
+    {
+        if (g_bGenerateInfoBuild)
+            g_pCaptionBuilder->GenerateAssetReport();
+        else
+            g_pCaptionBuilder->AssetBuilderCompile();
+    }
+    if (g_bBuildScene) 
+    {
+        if (g_bGenerateInfoBuild)
+            g_pSceneBuilder->GenerateAssetReport();
+        else
+            g_pSceneBuilder->AssetBuilderCompile();
+    }
+    if (g_bBuildMap) 
+    {
+        if (g_bGenerateInfoBuild)
+            g_pMapBuilder->GenerateAssetReport();
+        else
+            g_pMapBuilder->AssetBuilderCompile();
+    }
+    if (g_bSteamBuild)
+    {
+        ColorSpewMessage(SPEW_MESSAGE, &ColorHeader, "\n==== Sanitize Game Diretory ====\n");
+        {
+            char szWildCard[MAX_PATH];
+            const char* rgpExt[] = { ".log", ".ptr", ".lin" };
+            for (int i = 0; i < 3; i++) 
+            {
+                V_sprintf_safe(szWildCard, "%s\\*%s", gamedir, rgpExt[i]);
+                g_pResourceCopy->DeleteDirRecursive(szWildCard);
+            }
+        }
+    }
+    if (g_bBuildVpk)
+    {
+        if (g_bGenerateInfoBuild)
+            g_pVpkBuilder->GenerateAssetReport();
+        else
+            g_pVpkBuilder->AssetBuilderCompile();
+    };
+#ifdef MP_ADDON_SUPPORT
+    if (g_bAddonBuilder) 
+    {
+        if (g_bGenerateInfoBuild)
+            g_pAddonBuilder->GenerateAssetReport();
+        else
+            g_pAddonBuilder->AssetBuilderCompile();
+    }
+#endif // MP_ADDON_SUPPORT
+    Destroy(argc, argv);
+
+    return 0;
+}
+

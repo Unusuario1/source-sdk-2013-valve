@@ -58,7 +58,6 @@ $Group "everything"
 	"vvis_dll"
 	"vvis_launcher"
 	"contentbuilder"
-	"sceneimagebuilder"
 
 	"game_shader_generic_example"
 
