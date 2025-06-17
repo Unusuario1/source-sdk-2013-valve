@@ -1,9 +1,3 @@
-//========= --------------------------------------------------- ============//
-//
-// Purpose: 
-//
-// $NoKeywords: $
-//=============================================================================//
 #ifndef SCENEBUILDER_H
 #define SCENEBUILDER_H
 #include <cstddef>
@@ -11,7 +5,7 @@
 
 namespace SceneBuilder
 {
-	void AssetToolCheck(const char* pGameBin);
+	void AssetToolCheck(const char* gamebin);
 	void SceneCompile();
 }
 

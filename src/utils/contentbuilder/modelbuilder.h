@@ -1,16 +1,10 @@
-//========= --------------------------------------------------- ============//
-//
-// Purpose: 
-//
-// $NoKeywords: $
-//=============================================================================//
 #ifndef MODELBUILDER_H
 #define MODELBUILDER_H
 #include <cstddef>
 
 namespace ModelBuilder
 {
-	void AssetToolCheck(const char* pGameBin);
+	void AssetToolCheck(const char* gamebin);
 	void ModelCompile();
 }
 

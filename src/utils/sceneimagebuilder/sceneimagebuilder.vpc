@@ -28,8 +28,6 @@ $Project "sceneimagebuilder"
 {
 	$Folder	"Source Files"
 	{
-		-$File	"$SRCDIR\public\tier0\memoverride.cpp"
-
 		$File "sceneimagebuilder.cpp"
 
 		$Folder	"Common Files"
