@@ -13,7 +13,7 @@ $Configuration
 {
 	$Compiler
 	{
-		$AdditionalIncludeDirectories		"$BASE,..\common,..\vmpi,..\vmpi\mysql\mysqlpp\include,..\vmpi\mysql\include"
+		$AdditionalIncludeDirectories		"$BASE,..\common,..\vmpi,..\vmpi\mysql\mysqlpp\include,..\vmpi\mysql\include;$SRCDIR\public"
 		$PreprocessorDefinitions			"$BASE;MPI" [$WIN32]
 		$PreprocessorDefinitions			"$BASE;PROTECTED_THINGS_DISABLE;VRAD"
 	}

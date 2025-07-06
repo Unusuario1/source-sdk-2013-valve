@@ -139,10 +139,10 @@ void AddEmitSurfaceLights( const Vector &vStart, Vector lightBoxColor[6] )
 void ComputeAmbientFromSphericalSamples( int iThread, const Vector &vStart, Vector lightBoxColor[6] )
 {
 	// Figure out the color that rays hit when shot out from this position.
-	Vector radcolor[NUMVERTEXNORMALS];
-	float tanTheta = tan(VERTEXNORMAL_CONE_INNER_ANGLE);
+	Vector* radcolor = new Vector[g_iUnitSpherePoints];
+	float tanTheta = tan(g_fUnitSphereVectorVertexInnerAngle);
 
-	for ( int i = 0; i < NUMVERTEXNORMALS; i++ )
+	for ( int i = 0; i < g_iUnitSpherePoints; i++ )
 	{
 		Vector vEnd = vStart + g_anorms[i] * (COORD_EXTENT * 1.74);
 
@@ -161,7 +161,7 @@ void ComputeAmbientFromSphericalSamples( int iThread, const Vector &vStart, Vect
 
 		lightBoxColor[j].Init();
 
-		for (int i = 0; i < NUMVERTEXNORMALS; i++)
+		for (int i = 0; i < g_iUnitSpherePoints; i++)
 		{
 			float c = DotProduct( g_anorms[i], g_BoxDirections[j] );
 			if (c > 0)
@@ -177,6 +177,8 @@ void ComputeAmbientFromSphericalSamples( int iThread, const Vector &vStart, Vect
 	// Now add direct light from the emit_surface lights. These go in the ambient cube because
 	// there are a ton of them and they are often so dim that they get filtered out by r_worldlightmin.
 	AddEmitSurfaceLights( vStart, lightBoxColor );
+
+	delete[] radcolor;
 }
 
 

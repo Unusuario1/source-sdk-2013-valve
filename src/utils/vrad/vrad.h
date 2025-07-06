@@ -30,6 +30,7 @@
 #include "utlvector.h"
 #include "iincremental.h"
 #include "raytrace.h"
+#include "mathlib/anorms.h"
 
 
 #ifdef _WIN32
@@ -54,6 +55,9 @@
 
 extern float dispchop; // "-dispchop" tightest number of luxel widths for a patch, used on edges
 extern float g_MaxDispPatchRadius;
+extern bool  g_bGenerateUnitSphereVector;
+extern int   g_iUnitSpherePoints;
+extern float g_fUnitSphereVectorVertexInnerAngle;
 
 //-----------------------------------------------------------------------------
 // forward declarations
