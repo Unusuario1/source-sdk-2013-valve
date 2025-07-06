@@ -1324,11 +1324,13 @@ bool CanLeafTraceToSky( int iLeaf )
 
 	FourVectors center4, delta;
 	fltx4 fractionVisible;
-	for ( int j = 0; j < NUMVERTEXNORMALS; j+=4 )
+
+	// For large values this is way to slow!
+	for ( int j = 0; j < g_iUnitSpherePoints; j+=4 )
 	{
 		// search back to see if we can hit a sky brush
-		delta.LoadAndSwizzle( g_anorms[j], g_anorms[min( j+1, NUMVERTEXNORMALS-1 )],
-			g_anorms[min( j+2, NUMVERTEXNORMALS-1 )], g_anorms[min( j+3, NUMVERTEXNORMALS-1 )] );
+		delta.LoadAndSwizzle( g_anorms[j], g_anorms[min( j+1, g_iUnitSpherePoints-1 )],
+			g_anorms[min( j+2, g_iUnitSpherePoints-1 )], g_anorms[min( j+3, g_iUnitSpherePoints-1 )] );
 		delta *= -MAX_TRACE_LENGTH;
 		delta += center4;
 
@@ -1763,7 +1765,7 @@ void GatherSampleAmbientSkySSE( SSE_sampleLightOutput_t &out, directlight_t *dl,
 	}
 
 	DirectionalSampler_t sampler;
-	int nsky_samples = NUMVERTEXNORMALS;
+	int nsky_samples = g_iUnitSpherePoints;
 	if (do_fast || force_fast )
 		nsky_samples /= 4;
 	else

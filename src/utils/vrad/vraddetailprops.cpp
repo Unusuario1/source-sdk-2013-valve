@@ -619,7 +619,7 @@ void CalcRayAmbientLighting( int iThread, const Vector &vStart, const Vector &vE
 //-----------------------------------------------------------------------------
 // Compute ambient lighting component at specified position.
 //-----------------------------------------------------------------------------
-static void ComputeAmbientLightingAtPoint( int iThread, const Vector &origin, Vector radcolor[NUMVERTEXNORMALS], Vector color[MAX_LIGHTSTYLES] )
+static void ComputeAmbientLightingAtPoint( int iThread, const Vector &origin, Vector* radcolor, Vector color[MAX_LIGHTSTYLES] )
 {
 	// NOTE: I'm not dealing with shadow-casting static props here
 	// This is for speed, although we can add it if it turns out to
@@ -634,20 +634,20 @@ static void ComputeAmbientLightingAtPoint( int iThread, const Vector &origin, Ve
 		color[j].Init( 0,0,0 );
 	}
 
-	float tanTheta = tan(VERTEXNORMAL_CONE_INNER_ANGLE);
-	for (int i = 0; i < NUMVERTEXNORMALS; i++)
+	float tanTheta = tan(g_fUnitSphereVectorVertexInnerAngle);
+	for (int i = 0; i < g_iUnitSpherePoints; i++)
 	{
 		VectorMA( origin, COORD_EXTENT * 1.74, g_anorms[i], upend );
 
 		// Now that we've got a ray, see what surface we've hit
 		CalcRayAmbientLighting( iThread, origin, upend, tanTheta, color );
 
-//		DumpRayToGlView( ray, surfEnum.m_HitFrac, &color[0], "test.out" );
+		//DumpRayToGlView( ray, surfEnum.m_HitFrac, &color[0], "test.out" );
 	}
 
 	for ( j = 0; j < MAX_LIGHTSTYLES; ++j)
 	{
-		VectorMultiply( color[j], 255.0f / (float)NUMVERTEXNORMALS, color[j] );
+		VectorMultiply( color[j], 255.0f / (float)g_iUnitSpherePoints, color[j] );
 	}
 }
 
@@ -664,7 +664,7 @@ void ComputeIndirectLightingAtPoint( Vector &position, Vector &normal, Vector &o
 	outColor.Init();
 
 	
-	int nSamples = NUMVERTEXNORMALS;
+	int nSamples = g_iUnitSpherePoints;
 	if ( do_fast || force_fast )
 		nSamples /= 4;
 	else
@@ -771,15 +771,15 @@ static void ComputeAmbientLighting( int iThread, DetailObjectLump_t& prop, Vecto
 		return;
 	}
 
-	Vector radcolor[NUMVERTEXNORMALS];
+	Vector* radcolor = new Vector[g_iUnitSpherePoints];
 	ComputeAmbientLightingAtPoint( iThread, origin, radcolor, color );
+	delete[] radcolor;
 }
 
 
 //-----------------------------------------------------------------------------
 // Computes lighting for a single detal prop
 //-----------------------------------------------------------------------------
-
 static void ComputeLighting( DetailObjectLump_t& prop, int iThread )
 {
 	// We're going to take the maximum of the ambient lighting and 
