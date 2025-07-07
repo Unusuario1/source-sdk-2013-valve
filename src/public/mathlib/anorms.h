@@ -13,9 +13,12 @@
 
 #include "mathlib/vector.h"
 
+
 extern Vector *g_anorms;
-void GenerateUnitSphereLookUpTable(const bool g_bGenerateUnitSphereVector, const bool g_bDumpGeneratedUnitSphereVectors,
-									const char* cSourceDir, int& g_iUnitSpherePoints, float& g_fUnitSphereVectorVertexInnerAngle);
+
+
+void GenerateUnitSphereLookUpTable(const bool g_bDumpGeneratedUnitSphereVectors, const char* cSourceDir,
+									int& g_iUnitSpherePoints, float& g_fUnitSphereVectorVertexInnerAngle);
 
 
 #endif // ANORMS_H
