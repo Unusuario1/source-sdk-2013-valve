@@ -23,9 +23,16 @@ Vector* g_anorms;
 // Note: This funtion uses the Fibonacci Sphere Algorithm: https://arxiv.org/pdf/0912.4540 
 //-----------------------------------------------------------------------------
 void GenerateUnitSphereLookUpTable(const bool g_bDumpGeneratedUnitSphereVectors, const char* cSourceDir, 
-									int &g_iUnitSpherePoints, float &g_fUnitSphereVectorVertexInnerAngle)
+								   const int g_iUnitSpherePoints, float &g_fUnitSphereVectorVertexInnerAngle)
 {
 	float start = Plat_FloatTime();
+
+	if (g_iUnitSpherePoints < 162) 
+	{
+		Warning("Using a low value in '-GenerateUnitSphereVector' (less than 162) might lead to unwanted side effects, such as:\n"
+				"\t -Harsh/hard prop_detail/ambient lighting.\n"
+				"\t -Lightmap artifacts.\n");
+	}
 
 	Msg("Generating unit sphere vector lookup table (LUT)... ");
 	

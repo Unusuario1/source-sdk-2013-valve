@@ -18,7 +18,7 @@ extern Vector *g_anorms;
 
 
 void GenerateUnitSphereLookUpTable(const bool g_bDumpGeneratedUnitSphereVectors, const char* cSourceDir,
-									int& g_iUnitSpherePoints, float& g_fUnitSphereVectorVertexInnerAngle);
+								   const int g_iUnitSpherePoints, float& g_fUnitSphereVectorVertexInnerAngle);
 
 
 #endif // ANORMS_H
