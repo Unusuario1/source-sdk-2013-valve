@@ -1324,12 +1324,8 @@ bool CanLeafTraceToSky( int iLeaf )
 
 	FourVectors center4, delta;
 	fltx4 fractionVisible;
-
-	// Since the user can set the number of g_iUnitSpherePoints, we want to keep the same 
-	// ratio as before, which was 162(sphere vectors)/ 4(increment) = 40.5 ~ 40 loop iterations
-	int ratio = static_cast<int>(floor(g_iUnitSpherePoints / 40.0));
 	
-	for ( int j = 0; j < g_iUnitSpherePoints; j+= ratio)
+	for ( int j = 0; j < g_iUnitSpherePoints; j+= 1)
 	{
 		// search back to see if we can hit a sky brush
 		delta.LoadAndSwizzle( g_anorms[j], g_anorms[min( j+1, g_iUnitSpherePoints-1 )],
