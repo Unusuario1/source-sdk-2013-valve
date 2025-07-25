@@ -1768,7 +1768,9 @@ void GatherSampleAmbientSkySSE( SSE_sampleLightOutput_t &out, directlight_t *dl,
 	}
 
 	DirectionalSampler_t sampler;
-	int nsky_samples = g_iUnitSpherePoints;
+	int nsky_samples = 162; // This should be in sync with g_iUnitSpherePoints, but if the user 
+							// sets the value too high this is going to make VRAD take forever to finish,
+							// so we hardcode nsky_samples to the older value, 162.
 	if (do_fast || force_fast )
 		nsky_samples /= 4;
 	else
