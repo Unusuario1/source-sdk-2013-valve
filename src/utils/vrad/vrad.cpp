@@ -119,6 +119,7 @@ bool		g_bStaticPropLighting = false;
 bool        g_bStaticPropPolys = false;
 bool        g_bTextureShadows = false;
 bool        g_bDisablePropSelfShadowing = false;
+bool		g_bDisableBounceCutoff = false;
 
 
 CUtlVector<byte> g_FacesVisibleToLights;
@@ -1700,6 +1701,12 @@ void BounceLight (void)
 	}
 #endif
 
+	float fBounceCutoff = 1.0;
+	if(g_bDisableBounceCutoff)
+	{
+		fBounceCutoff = 0.00001;
+	}
+
 	i = 0;
 	while ( bouncing )
 	{
@@ -1712,9 +1719,9 @@ void BounceLight (void)
 		// light is always received to leaf patches
 		CollectLight( added );
 
-		qprintf ("\tBounce #%i added RGB(%.0f, %.0f, %.0f)\n", i+1, added[0], added[1], added[2] );
+		qprintf ("\tBounce #%i added RGB(%f, %f, %f)\n", i+1, added[0], added[1], added[2] );
 
-		if ( i+1 == numbounce || (added[0] < 1.0 && added[1] < 1.0 && added[2] < 1.0) )
+		if ( i+1 == numbounce || (added[0] <= fBounceCutoff && added[1] <= fBounceCutoff && added[2] <= fBounceCutoff) )
 			bouncing = false;
 
 		i++;
@@ -2457,6 +2464,10 @@ int ParseCommandLine( int argc, char **argv, bool *onlydetail )
 				Warning("Error: expected a value after '-bounce'\n" );
 				return -1;
 			}
+		}
+		else if (!Q_stricmp(argv[i], "-DisableBounceCutOff"))
+		{
+			g_bDisableBounceCutoff = true;
 		}
 		else if (!Q_stricmp(argv[i],"-verbose") || !Q_stricmp(argv[i],"-v"))
 		{
