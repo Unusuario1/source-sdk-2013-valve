@@ -662,9 +662,11 @@ void ComputeIndirectLightingAtPoint( Vector &position, Vector &normal, Vector &o
 	CLightSurface	surfEnum(iThread);
 
 	outColor.Init();
-
 	
-	int nSamples = g_iUnitSpherePoints;
+	int nSamples = 162;	// This should be in sync with g_iUnitSpherePoints, but if the user 
+						// sets the value too high this is going to make VRAD take forever to finish,
+						// so we hardcode nSamples to the older value, 162.
+
 	if ( do_fast || force_fast )
 		nSamples /= 4;
 	else

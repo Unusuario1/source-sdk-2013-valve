@@ -13,9 +13,7 @@
 
 #include "mathlib/vector.h"
 
-
 extern Vector *g_anorms;
-
 
 void GenerateUnitSphereLookUpTable(const bool g_bDumpGeneratedUnitSphereVectors, const char* cSourceDir,
 								   const int g_iUnitSpherePoints, float& g_fUnitSphereVectorVertexInnerAngle);
