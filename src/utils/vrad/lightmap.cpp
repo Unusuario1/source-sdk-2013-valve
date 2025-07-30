@@ -2901,6 +2901,12 @@ static void BuildSupersampleFaceLights( lightinfo_t& l, SSE_SampleInfo_t& info, 
 	// until all the gradients are reasonable or until we hit a max number of passes
 	bool do_anotherpass = true;
 	int pass = 1;
+	float fSuperSamplingCutOff = 0.0625;
+	if(g_bDisableSuperSamplingCutOff)
+	{
+		fSuperSamplingCutOff = 0.00001;
+	}
+
 	while (do_anotherpass && pass <= extrapasses)
 	{
 		// Look for lighting discontinuities to see what we should be supersampling
@@ -2917,7 +2923,7 @@ static void BuildSupersampleFaceLights( lightinfo_t& l, SSE_SampleInfo_t& info, 
 				continue;
 
 			// Don't supersample if the lighting is pretty uniform near the sample
-			if (pGradient[i] < 0.0625)
+			if (pGradient[i] < fSuperSamplingCutOff)
 				continue;
 
 			// Joy! We're supersampling now, and we therefore must do another pass

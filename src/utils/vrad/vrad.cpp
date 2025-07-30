@@ -101,7 +101,7 @@ qboolean	do_extra = true;
 bool		debug_extra = false;
 qboolean	do_fast = false;
 qboolean	do_centersamples = false;
-int			extrapasses = 4;
+int			extrapasses = 128;
 float		smoothing_threshold = 0.7071067; // cos(45.0*(M_PI/180)) 
 // Cosine of smoothing angle(in radians)
 float		coring = 1.0;	// Light threshold to force to blackness(minimizes lightmaps)
@@ -119,6 +119,7 @@ bool		g_bStaticPropLighting = false;
 bool        g_bStaticPropPolys = false;
 bool        g_bTextureShadows = false;
 bool        g_bDisablePropSelfShadowing = false;
+bool		g_bDisableSuperSamplingCutOff = false;
 
 
 CUtlVector<byte> g_FacesVisibleToLights;
@@ -2602,6 +2603,10 @@ int ParseCommandLine( int argc, char **argv, bool *onlydetail )
 		else if ( stricmp( argv[i], "-StopOnExit" ) == 0 )
 		{
 			g_bStopOnExit = true;
+		}
+		else if (!Q_stricmp(argv[i], "-DisableSuperSamplingCutOff"))
+		{
+			g_bDisableSuperSamplingCutOff = true;
 		}
 		else if ( stricmp( argv[i], "-steam" ) == 0 )
 		{
