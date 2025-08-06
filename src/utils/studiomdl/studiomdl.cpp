@@ -1076,29 +1076,19 @@ void Cmd_Autocenter()
 */
 
 
-void Option_Studio( s_model_t *pmodel )
+void Option_Studio(s_model_t* pmodel)
 {
-	if (!GetToken (false)) 
+	if (!GetToken(false))
 		return;
-
+	
 	V_snprintf(pmodel->filename, sizeof(pmodel->filename), "%s", token);
 
 	// pmodel = (s_model_t *)kalloc( 1, sizeof( s_model_t ) );
 	// g_bodypart[g_numbodyparts].pmodel[g_bodypart[g_numbodyparts].nummodels] = pmodel;
 
-
 	flip_triangles = 1;
-
-	if (pmodel)
-	{
-		pmodel->scale = g_currentscale = g_defaultscale;
-	}
-	else
-	{
-		Error("pmodel == nullptr!\n");
-	}
-
-
+	pmodel->scale = g_defaultscale;
+	
 	while (TokenAvailable())
 	{
 		GetToken(false);
@@ -1113,8 +1103,8 @@ void Option_Studio( s_model_t *pmodel )
 		}
 		else if (stricmp( "faces", token ) == 0)
 		{
-			GetToken( false );
-			GetToken( false );
+			GetToken(false);
+			GetToken(false);
 		}
 		else if (stricmp( "bias", token ) == 0)
 		{
@@ -1122,7 +1112,7 @@ void Option_Studio( s_model_t *pmodel )
 		}
 		else if (stricmp("{", token ) == 0)
 		{
-			UnGetToken( );
+			UnGetToken();
 			break;
 		}
 		else
@@ -1140,7 +1130,8 @@ void Option_Studio( s_model_t *pmodel )
 }
 
 
-int Option_Blank( )
+
+int Option_Blank()
 {
 	g_model[g_nummodels] = (s_model_t *)kalloc( 1, sizeof( s_model_t ) );
 
@@ -1158,7 +1149,7 @@ int Option_Blank( )
 }
 
 
-void Cmd_Bodygroup( )
+void Cmd_Bodygroup()
 {
 	int is_started = 0;
 
