@@ -1425,7 +1425,7 @@ struct mstudiomodel_t
 	int					tangentsindex;		// tangents Vector
 
 	// These functions are defined in application-specific code:
-	const vertexFileHeader_t			*CacheVertexData(			void *pModelData );
+	virtual const vertexFileHeader_t			*CacheVertexData(			void *pModelData );
 
 	// Access thin/fat mesh vertex data (only one will return a non-NULL result)
 	const mstudio_modelvertexdata_t		*GetVertexData(		void *pModelData = NULL );
