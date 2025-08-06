@@ -4,7 +4,6 @@
 //
 // $NoKeywords: $
 //=====================================================================================//
-
 #include <windows.h>
 #include "HardwareMatrixState.h"
 #include <limits.h>
@@ -13,6 +12,9 @@
 #include "studio.h"
 #include "studiomdl.h"
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 CHardwareMatrixState::CHardwareMatrixState()
 {
 	m_LRUCounter = 0;
@@ -21,37 +23,45 @@ CHardwareMatrixState::CHardwareMatrixState()
 	m_savedMatrixState = NULL;
 }
 
-void CHardwareMatrixState::Init( int numHardwareMatrices )
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CHardwareMatrixState::Init(int numHardwareMatrices)
 {
 	m_NumMatrices = numHardwareMatrices;
-	delete [] m_matrixState;
+	delete[] m_matrixState;
 	m_matrixState = new MatrixState_t[m_NumMatrices];
-	Assert( m_matrixState );
-	delete [] m_savedMatrixState;
+	Assert(m_matrixState);
+	delete[] m_savedMatrixState;
 	m_savedMatrixState = new MatrixState_t[m_NumMatrices];
-	Assert( m_savedMatrixState );
+	Assert(m_savedMatrixState);
 	m_LRUCounter = 0;
 	m_AllocatedMatrices = 0;
 
 	int i;
-	for( i = 0; i < m_NumMatrices; i++ )
+	for (i = 0; i < m_NumMatrices; i++)
 	{
 		m_matrixState[i].allocated = false;
 	}
 }
 
-bool CHardwareMatrixState::AllocateMatrix( int globalMatrixID )
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CHardwareMatrixState::AllocateMatrix(int globalMatrixID)
 {
 	int i;
 
-	if( IsMatrixAllocated( globalMatrixID ) )
+	if (IsMatrixAllocated(globalMatrixID))
 	{
 		return true;
 	}
 
-	for( i = 0; i < m_NumMatrices; i++ )
+	for (i = 0; i < m_NumMatrices; i++)
 	{
-		if( !m_matrixState[i].allocated )
+		if (!m_matrixState[i].allocated)
 		{
 			m_matrixState[i].globalMatrixID = globalMatrixID;
 			m_matrixState[i].allocated = true;
@@ -65,30 +75,38 @@ bool CHardwareMatrixState::AllocateMatrix( int globalMatrixID )
 	return false;
 }
 
-int CHardwareMatrixState::FindLocalLRUIndex( void )
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+int CHardwareMatrixState::FindLocalLRUIndex(void)
 {
 	int oldestLRUCounter = INT_MAX;
 	int i;
 	int oldestID;
 
-	for( i = 0; i < m_NumMatrices; i++ )
+	for (i = 0; i < m_NumMatrices; i++)
 	{
-		if( !m_matrixState[i].allocated )
+		if (!m_matrixState[i].allocated)
 		{
 			continue;
 		}
-		if( m_matrixState[i].lastUsageID < oldestLRUCounter )
+		if (m_matrixState[i].lastUsageID < oldestLRUCounter)
 		{
 			oldestLRUCounter = m_matrixState[i].lastUsageID;
 			oldestID = i;
 		}
 	}
 
-	Assert( oldestLRUCounter != INT_MAX );
+	Assert(oldestLRUCounter != INT_MAX);
 	return oldestID;
 }
 
-void CHardwareMatrixState::DeallocateLRU( void )
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CHardwareMatrixState::DeallocateLRU(void)
 {
 	int id;
 
@@ -97,24 +115,32 @@ void CHardwareMatrixState::DeallocateLRU( void )
 	--m_AllocatedMatrices;
 }
 
-void CHardwareMatrixState::DeallocateLRU( int n )
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CHardwareMatrixState::DeallocateLRU(int n)
 {
 	int i;
 
-	for( i = 0; i < n; i++ )
+	for (i = 0; i < n; i++)
 	{
 		DeallocateLRU();
 	}
 }
 
-bool CHardwareMatrixState::IsMatrixAllocated( int globalMatrixID ) const
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CHardwareMatrixState::IsMatrixAllocated(int globalMatrixID) const
 {
 	int i;
 
-	for( i = 0; i < m_NumMatrices; i++ )
+	for (i = 0; i < m_NumMatrices; i++)
 	{
-		if( m_matrixState[i].globalMatrixID == globalMatrixID && 
-			m_matrixState[i].allocated )
+		if (m_matrixState[i].globalMatrixID == globalMatrixID &&
+			m_matrixState[i].allocated)
 		{
 			return true;
 		}
@@ -122,12 +148,16 @@ bool CHardwareMatrixState::IsMatrixAllocated( int globalMatrixID ) const
 	return false;
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void CHardwareMatrixState::DeallocateAll()
 {
 	int i;
 
 	DumpState();
-	for( i = 0; i < m_NumMatrices; i++ )
+	for (i = 0; i < m_NumMatrices; i++)
 	{
 		m_matrixState[i].allocated = false;
 		m_matrixState[i].globalMatrixID = INT_MAX;
@@ -137,96 +167,124 @@ void CHardwareMatrixState::DeallocateAll()
 	DumpState();
 }
 
-void CHardwareMatrixState::SaveState( void )
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CHardwareMatrixState::SaveState()
 {
 	int i;
 
-	for( i = 0; i < m_NumMatrices; i++ )
+	for (i = 0; i < m_NumMatrices; i++)
 	{
 		m_savedMatrixState[i] = m_matrixState[i];
 	}
 }
 
-void CHardwareMatrixState::RestoreState( void )
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CHardwareMatrixState::RestoreState()
 {
 	int i;
 
-	for( i = 0; i < m_NumMatrices; i++ )
+	for (i = 0; i < m_NumMatrices; i++)
 	{
 		m_matrixState[i] = m_savedMatrixState[i];
 	}
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 int CHardwareMatrixState::AllocatedMatrixCount() const
 {
 	return m_AllocatedMatrices;
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 int CHardwareMatrixState::FreeMatrixCount() const
 {
 	return m_NumMatrices - m_AllocatedMatrices;
 }
 
-int CHardwareMatrixState::GetNthBoneGlobalID( int n ) const
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+int CHardwareMatrixState::GetNthBoneGlobalID(int n) const
 {
 	int i;
 	int m = 0;
 
-	for( i = 0; i < m_NumMatrices; i++ )
+	for (i = 0; i < m_NumMatrices; i++)
 	{
-		if( m_matrixState[i].allocated )
+		if (m_matrixState[i].allocated)
 		{
-			if( n == m )
+			if (n == m)
 			{
 				return m_matrixState[i].globalMatrixID;
 			}
 			m++;
 		}
 	}
-	Assert( 0 );
-	MdlError( "GetNthBoneGlobalID() Failure\n" );
+	Assert(0);
+	MdlError("GetNthBoneGlobalID() Failure\n");
 	return 0;
 }
 
-void CHardwareMatrixState::DumpState( void )
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CHardwareMatrixState::DumpState(void)
 {
 	int i;
 	static char buf[256];
 
-//#ifndef _DEBUG
+	//#ifndef _DEBUG
 	return;
-//#endif
-	
-	OutputDebugString( "DumpState\n:" );
-	for( i = 0; i < m_NumMatrices; i++ )
+	//#endif
+
+	OutputDebugString("DumpState\n:");
+	for (i = 0; i < m_NumMatrices; i++)
 	{
-		if( m_matrixState[i].allocated )
+		if (m_matrixState[i].allocated)
 		{
-			sprintf( buf, "%d: allocated: %s lastUsageID: %d globalMatrixID: %d\n",
-				i, 
+			sprintf(buf, "%d: allocated: %s lastUsageID: %d globalMatrixID: %d\n",
+				i,
 				m_matrixState[i].allocated ? "true " : "false",
 				m_matrixState[i].lastUsageID,
-				m_matrixState[i].globalMatrixID );
-			OutputDebugString( buf );
+				m_matrixState[i].globalMatrixID);
+			OutputDebugString(buf);
 		}
 	}
 }
 
-int CHardwareMatrixState::FindHardwareMatrix( int globalMatrixID )
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+int CHardwareMatrixState::FindHardwareMatrix(int globalMatrixID)
 {
 	int i;
 
-	for( i = 0; i < m_NumMatrices; i++ )
+	for (i = 0; i < m_NumMatrices; i++)
 	{
-		if( m_matrixState[i].globalMatrixID == globalMatrixID )
+		if (m_matrixState[i].globalMatrixID == globalMatrixID)
 		{
 			return i;
 		}
 	}
 
-	Assert( 0 );
-	MdlError( "barfing in FindHardwareMatrix\n" );
+	Assert(0);
+	MdlError("barfing in FindHardwareMatrix\n");
 
 	return 0;
-}
+};
 

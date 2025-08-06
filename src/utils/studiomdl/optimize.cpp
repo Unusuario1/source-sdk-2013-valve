@@ -4,7 +4,6 @@
 //
 // $NoKeywords: $
 //=====================================================================================//
-
 #pragma warning( disable : 4786 )
 #pragma warning( disable : 4267 )
 // This file has tons of problems with global optimizations. . turn 'em off.
@@ -49,13 +48,16 @@ extern bool g_IHVTest;
 
 extern int FindMaterialByName( const char *pMaterialName );
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 namespace OptimizedModel
 {
 
 //-----------------------------------------------------------------------------
 // Defines which debugging output file we will see
 //-----------------------------------------------------------------------------
-
 enum 
 { 
 	WRITEGLVIEW_SHOWMESH			= 0x00000001,

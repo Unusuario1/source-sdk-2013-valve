@@ -5,30 +5,20 @@
 // $NoKeywords: $
 //
 //=====================================================================================//
-
-
-//
-// studiomdl.c: generates a studio .mdl file from a .qc script
-// models/<scriptname>.mdl.
-//
-
-
 #pragma warning( disable : 4244 )
 #pragma warning( disable : 4237 )
 #pragma warning( disable : 4305 )
-
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <math.h>
-
 #include "cmdlib.h"
 #include "scriplib.h"
 #include <mathlib/mathlib.h>
 #include "studio.h"
 #include "studiomdl.h"
-//#include "..\..\dlls\activity.h"
+
 
 bool IsEnd( char const* pLine );
 int SortAndBalanceBones( int iCount, int iMaxCount, int bones[], float weights[] );
@@ -42,6 +32,9 @@ void UnifyIndices( s_source_t *psource );
 void BuildIndividualMeshes( s_source_t *psource );
 
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 int Load_OBJ( s_source_t *psource )
 {
 	char	cmd[1024];
@@ -72,40 +65,40 @@ int Load_OBJ( s_source_t *psource )
 	psource->rawanim[0][0].rot.Init();
 	Build_Reference( psource );
 
-	while (fgets( g_szLine, sizeof( g_szLine ), g_fpInput ) != NULL) {
+	while (fgets(g_szLine, sizeof(g_szLine), g_fpInput) != NULL) {
 		g_iLinecount++;
 		//Vector tmp; // Unsuario2: Unused? 
 
-		if (strncmp( g_szLine, "v ", 2 ) == 0)
+		if (strncmp(g_szLine, "v ", 2) == 0)
 		{
 			i = g_numverts++;
 
-			sscanf( g_szLine, "v %f %f %f", &g_vertex[i].x, &g_vertex[i].y, &g_vertex[i].z );
+			sscanf(g_szLine, "v %f %f %f", &g_vertex[i].x, &g_vertex[i].y, &g_vertex[i].z);
 			g_bone[i].numbones = 1;
 			g_bone[i].bone[0] = 0;
 			g_bone[i].weight[0] = 1.0;
 		}
-		else if (strncmp( g_szLine, "vn ", 3 ) == 0)
+		else if (strncmp(g_szLine, "vn ", 3) == 0)
 		{
 			i = g_numnormals++;
-			sscanf( g_szLine, "vn %f %f %f", &g_normal[i].x, &g_normal[i].y, &g_normal[i].z );
+			sscanf(g_szLine, "vn %f %f %f", &g_normal[i].x, &g_normal[i].y, &g_normal[i].z);
 		}
-		else if (strncmp( g_szLine, "vt ", 3 ) == 0)
+		else if (strncmp(g_szLine, "vt ", 3) == 0)
 		{
 			i = g_numtexcoords++;
-			sscanf( g_szLine, "vt %f %f", &g_texcoord[i].x, &g_texcoord[i].y );
+			sscanf(g_szLine, "vt %f %f", &g_texcoord[i].x, &g_texcoord[i].y);
 			g_texcoord[i].y = 1.0 - g_texcoord[i].y;
 
 		}
-		else if (strncmp( g_szLine, "usemtl ", 7 ) == 0)
+		else if (strncmp(g_szLine, "usemtl ", 7) == 0)
 		{
-			sscanf( g_szLine, "usemtl %s", &cmd );
+			sscanf(g_szLine, "usemtl %s", &cmd);
 
-			int texture = lookup_texture( cmd, sizeof( cmd ) );
+			int texture = lookup_texture(cmd, sizeof(cmd));
 			psource->texmap[texture] = texture;	// hack, make it 1:1
-			material = use_texture_as_material( texture );
+			material = use_texture_as_material(texture);
 		}
-		else if (strncmp( g_szLine, "f ", 2 ) == 0)
+		else if (strncmp(g_szLine, "f ", 2) == 0)
 		{
 			int v0, n0, t0;
 			int v1, n1, t1;
@@ -116,16 +109,16 @@ int Load_OBJ( s_source_t *psource )
 
 			i = g_numfaces++;
 
-			j = sscanf( g_szLine, "f %d/%d/%d %d/%d/%d %d/%d/%d %d/%d/%d", &v0, &t0, &n0, &v1, &t1, &n1, &v2, &t2, &n2, &v3, &t3, &n3 );
+			j = sscanf(g_szLine, "f %d/%d/%d %d/%d/%d %d/%d/%d %d/%d/%d", &v0, &t0, &n0, &v1, &t1, &n1, &v2, &t2, &n2, &v3, &t3, &n3);
 
 			f.material = material;
 			f.a = v0 - 1; f.na = n0 - 1, f.ta = t0 - 1;
 			f.b = v2 - 1; f.nb = n2 - 1, f.tb = t2 - 1;
 			f.c = v1 - 1; f.nc = n1 - 1, f.tc = t1 - 1;
 
-			Assert( v0 <= g_numverts && v1 <= g_numverts && v2 <= g_numverts );
-			Assert( n0 <= g_numnormals && n1 <= g_numnormals && n2 <= g_numnormals );
-			Assert( t0 <= g_numtexcoords && t1 <= g_numtexcoords && t2 <= g_numtexcoords );
+			Assert(v0 <= g_numverts && v1 <= g_numverts && v2 <= g_numverts);
+			Assert(n0 <= g_numnormals && n1 <= g_numnormals && n2 <= g_numnormals);
+			Assert(t0 <= g_numtexcoords && t1 <= g_numtexcoords && t2 <= g_numtexcoords);
 
 			g_face[i] = f;
 
@@ -144,13 +137,15 @@ int Load_OBJ( s_source_t *psource )
 
 	BuildIndividualMeshes( psource );
 
-	fclose( g_fpInput );
+	fclose(g_fpInput);
 
 	return 1;
 }
 
 
-
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 int AppendVTAtoOBJ( s_source_t *psource, char *filename, int frame )
 {
 	char	cmd[1024];
@@ -176,16 +171,16 @@ int AppendVTAtoOBJ( s_source_t *psource, char *filename, int frame )
 
 	g_numverts = g_numnormals = g_numtexcoords = g_numfaces = 0;
 
-	while (fgets( g_szLine, sizeof( g_szLine ), g_fpInput ) != NULL) {
+	while (fgets(g_szLine, sizeof(g_szLine), g_fpInput) != NULL) {
 		g_iLinecount++;
 		Vector tmp;
 
-		if (strncmp( g_szLine, "v ", 2 ) == 0)
+		if (strncmp(g_szLine, "v ", 2) == 0)
 		{
 			i = g_numverts++;
 
-			sscanf( g_szLine, "v %f %f %f", &tmp.x, &tmp.y, &tmp.z );
-			VectorTransform( tmp, m, g_vertex[i] );
+			sscanf(g_szLine, "v %f %f %f", &tmp.x, &tmp.y, &tmp.z);
+			VectorTransform(tmp, m, g_vertex[i]);
 
 			// Msg("%f %f %f\n", g_vertex[i].x, g_vertex[i].y, g_vertex[i].z );
 
@@ -193,26 +188,26 @@ int AppendVTAtoOBJ( s_source_t *psource, char *filename, int frame )
 			g_bone[i].bone[0] = 0;
 			g_bone[i].weight[0] = 1.0;
 		}
-		else if (strncmp( g_szLine, "vn ", 3 ) == 0)
+		else if (strncmp(g_szLine, "vn ", 3) == 0)
 		{
 			i = g_numnormals++;
-			sscanf( g_szLine, "vn %f %f %f", &tmp.x, &tmp.y, &tmp.z );
-			VectorTransform( tmp, m, g_normal[i] );
+			sscanf(g_szLine, "vn %f %f %f", &tmp.x, &tmp.y, &tmp.z);
+			VectorTransform(tmp, m, g_normal[i]);
 		}
-		else if (strncmp( g_szLine, "vt ", 3 ) == 0)
+		else if (strncmp(g_szLine, "vt ", 3) == 0)
 		{
 			i = g_numtexcoords++;
-			sscanf( g_szLine, "vt %f %f", &g_texcoord[i].x, &g_texcoord[i].y );
+			sscanf(g_szLine, "vt %f %f", &g_texcoord[i].x, &g_texcoord[i].y);
 		}
-		else if (strncmp( g_szLine, "usemtl ", 7 ) == 0)
+		else if (strncmp(g_szLine, "usemtl ", 7) == 0)
 		{
-			sscanf( g_szLine, "usemtl %s", &cmd );
+			sscanf(g_szLine, "usemtl %s", &cmd);
 
-			int texture = lookup_texture( cmd, sizeof( cmd ) );
+			int texture = lookup_texture(cmd, sizeof(cmd));
 			psource->texmap[texture] = texture;	// hack, make it 1:1
-			material = use_texture_as_material( texture );
+			material = use_texture_as_material(texture);
 		}
-		else if (strncmp( g_szLine, "f ", 2 ) == 0)
+		else if (strncmp(g_szLine, "f ", 2) == 0)
 		{
 			int v0, n0, t0;
 			int v1, n1, t1;
@@ -223,15 +218,15 @@ int AppendVTAtoOBJ( s_source_t *psource, char *filename, int frame )
 
 			i = g_numfaces++;
 
-			j = sscanf( g_szLine, "f %d/%d/%d %d/%d/%d %d/%d/%d %d/%d/%d", &v0, &t0, &n0, &v1, &t1, &n1, &v2, &t2, &n2, &v3, &t3, &n3 );
+			j = sscanf(g_szLine, "f %d/%d/%d %d/%d/%d %d/%d/%d %d/%d/%d", &v0, &t0, &n0, &v1, &t1, &n1, &v2, &t2, &n2, &v3, &t3, &n3);
 
 			f.material = material;
 			f.a = v0 - 1; f.na = n0 - 1, f.ta = 0;
 			f.b = v2 - 1; f.nb = n2 - 1, f.tb = 0;
 			f.c = v1 - 1; f.nc = n1 - 1, f.tc = 0;
 
-			Assert( v0 <= g_numverts && v1 <= g_numverts && v2 <= g_numverts );
-			Assert( n0 <= g_numnormals && n1 <= g_numnormals && n2 <= g_numnormals );
+			Assert(v0 <= g_numverts && v1 <= g_numverts && v2 <= g_numverts);
+			Assert(n0 <= g_numnormals && n1 <= g_numnormals && n2 <= g_numnormals);
 
 			g_face[i] = f;
 
@@ -245,7 +240,6 @@ int AppendVTAtoOBJ( s_source_t *psource, char *filename, int frame )
 			}
 		}
 	}
-
 
 	UnifyIndices( psource );
 
@@ -284,3 +278,4 @@ int AppendVTAtoOBJ( s_source_t *psource, char *filename, int frame )
 
 	return 1;
 }
+

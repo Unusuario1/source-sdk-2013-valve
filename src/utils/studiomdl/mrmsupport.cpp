@@ -1,49 +1,45 @@
 //========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose: generates a studio .mdl file from a .qc script
 //
 // $NoKeywords: $
 //
 //=====================================================================================//
-
-
-//
-// studiomdl.c: generates a studio .mdl file from a .qc script
-// models/<scriptname>.mdl.
-//
-
-
 #pragma warning( disable : 4244 )
 #pragma warning( disable : 4237 )
 #pragma warning( disable : 4305 )
-
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <math.h>
-
 #include "cmdlib.h"
 #include "scriplib.h"
 #include <mathlib/mathlib.h>
 #include "studio.h"
 #include "studiomdl.h"
-//#include "..\..\dlls\activity.h"
 
-bool IsEnd( char const* pLine )
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool IsEnd(char const* pLine)
 {
-	if (strncmp( "end", pLine, 3 ) != 0) 
+	if (strncmp("end", pLine, 3) != 0)
 		return false;
 	return (pLine[3] == '\0') || (pLine[3] == '\n');
 }
 
 
-int SortAndBalanceBones( int iCount, int iMaxCount, int bones[], float weights[] )
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+int SortAndBalanceBones(int iCount, int iMaxCount, int bones[], float weights[])
 {
 	int i;
 
 	// collapse duplicate bone weights
-	for (i = 0; i < iCount-1; i++)
+	for (i = 0; i < iCount - 1; i++)
 	{
 		int j;
 		for (j = i + 1; j < iCount; j++)
@@ -60,19 +56,19 @@ int SortAndBalanceBones( int iCount, int iMaxCount, int bones[], float weights[]
 	int bShouldSort;
 	do {
 		bShouldSort = false;
-		for (i = 0; i < iCount-1; i++)
+		for (i = 0; i < iCount - 1; i++)
 		{
-			if (weights[i+1] > weights[i])
+			if (weights[i + 1] > weights[i])
 			{
-				int j = bones[i+1]; bones[i+1] = bones[i]; bones[i] = j;
-				float w = weights[i+1]; weights[i+1] = weights[i]; weights[i] = w;
+				int j = bones[i + 1]; bones[i + 1] = bones[i]; bones[i] = j;
+				float w = weights[i + 1]; weights[i + 1] = weights[i]; weights[i] = w;
 				bShouldSort = true;
 			}
 		}
 	} while (bShouldSort);
 
 	// throw away all weights less than 1/20th
-	while (iCount > 1 && weights[iCount-1] < 0.05)
+	while (iCount > 1 && weights[iCount - 1] < 0.05)
 	{
 		iCount--;
 	}
@@ -115,12 +111,14 @@ int SortAndBalanceBones( int iCount, int iMaxCount, int bones[], float weights[]
 }
 
 
-
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Grab_Vertexlist( s_source_t *psource )
 {
-	while (1) 
+	while (1)
 	{
-		if (fgets( g_szLine, sizeof( g_szLine ), g_fpInput ) != NULL) 
+		if (fgets(g_szLine, sizeof(g_szLine), g_fpInput) != NULL)
 		{
 			int j;
 			int bone;
@@ -131,36 +129,36 @@ void Grab_Vertexlist( s_source_t *psource )
 			g_iLinecount++;
 
 			// check for end
-			if (IsEnd(g_szLine)) 
+			if (IsEnd(g_szLine))
 				return;
 
 
-			int i = sscanf( g_szLine, "%d %d %f %f %f %d %d %f %d %f %d %f %d %f",
-				&j, 
-				&bone, 
+			int i = sscanf(g_szLine, "%d %d %f %f %f %d %d %f %d %f %d %f %d %f",
+				&j,
+				&bone,
 				&p[0], &p[1], &p[2],
 				&iCount,
-				&bones[0], &weights[0], &bones[1], &weights[1], &bones[2], &weights[2], &bones[3], &weights[3] );
-			
+				&bones[0], &weights[0], &bones[1], &weights[1], &bones[2], &weights[2], &bones[3], &weights[3]);
+
 			if (i == 5)
 			{
-				if (bone < 0 || bone >= psource->numbones) 
+				if (bone < 0 || bone >= psource->numbones)
 				{
-					MdlWarning( "bogus bone index\n" );
-					MdlWarning( "%d %s :\n%s", g_iLinecount, g_szFilename, g_szLine );
-					MdlError( "Exiting due to errors\n" );
+					MdlWarning("bogus bone index\n");
+					MdlWarning("%d %s :\n%s", g_iLinecount, g_szFilename, g_szLine);
+					MdlError("Exiting due to errors\n");
 				}
 
-				VectorCopy( p, g_vertex[j] );
+				VectorCopy(p, g_vertex[j]);
 				g_bone[j].numbones = 1;
 				g_bone[j].bone[0] = bone;
 				g_bone[j].weight[0] = 1.0;
-			} 
+			}
 			else if (i > 5)
 			{
-				iCount = SortAndBalanceBones( iCount, MAXSTUDIOBONEWEIGHTS, bones, weights );
+				iCount = SortAndBalanceBones(iCount, MAXSTUDIOBONEWEIGHTS, bones, weights);
 
-				VectorCopy( p, g_vertex[j] );
+				VectorCopy(p, g_vertex[j]);
 				g_bone[j].numbones = iCount;
 				for (i = 0; i < iCount; i++)
 				{
@@ -168,21 +166,23 @@ void Grab_Vertexlist( s_source_t *psource )
 					g_bone[j].weight[i] = weights[i];
 				}
 			}
-			else 
+			else
 			{
-				MdlError("%s: error on line %d: %s", g_szFilename, g_iLinecount, g_szLine );
+				MdlError("%s: error on line %d: %s", g_szFilename, g_iLinecount, g_szLine);
 			}
 		}
 	}
 }
 
 
-
-void Grab_Facelist( s_source_t *psource )
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void Grab_Facelist(s_source_t* psource)
 {
-	while (1) 
+	while (1)
 	{
-		if (fgets( g_szLine, sizeof( g_szLine ), g_fpInput ) != NULL) 
+		if (fgets(g_szLine, sizeof(g_szLine), g_fpInput) != NULL)
 		{
 			int j;
 			s_tmpface_t f;
@@ -190,30 +190,32 @@ void Grab_Facelist( s_source_t *psource )
 			g_iLinecount++;
 
 			// check for end
-			if (IsEnd(g_szLine)) 
+			if (IsEnd(g_szLine))
 				return;
 
-			if (sscanf( g_szLine, "%d %d %d %d",
-				&j, 
+			if (sscanf(g_szLine, "%d %d %d %d",
+				&j,
 				&f.a, &f.b, &f.c) == 4)
 			{
 				g_face[j] = f;
 			}
-			else 
+			else
 			{
-				MdlError("%s: error on line %d: %s", g_szFilename, g_iLinecount, g_szLine );
+				MdlError("%s: error on line %d: %s", g_szFilename, g_iLinecount, g_szLine);
 			}
 		}
 	}
 }
 
 
-
-void Grab_Materiallist( s_source_t *psource )
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void Grab_Materiallist(s_source_t* psource)
 {
-	while (1) 
+	while (1)
 	{
-		if (fgets( g_szLine, sizeof( g_szLine ), g_fpInput ) != NULL) 
+		if (fgets(g_szLine, sizeof(g_szLine), g_fpInput) != NULL)
 		{
 			// char name[256];
 			char path[256];
@@ -224,34 +226,37 @@ void Grab_Materiallist( s_source_t *psource )
 			g_iLinecount++;
 
 			// check for end
-			if (IsEnd(g_szLine)) 
+			if (IsEnd(g_szLine))
 				return;
 
-			if (sscanf( g_szLine, "%d  %f %f %f %f   %f %f %f %f  %f %f %f %f  %f \"%[^\"]s", 
-				&j, 
+			if (sscanf(g_szLine, "%d  %f %f %f %f   %f %f %f %f  %f %f %f %f  %f \"%[^\"]s",
+				&j,
 				&a.r, &a.g, &a.b, &a.a,
 				&d.r, &d.g, &d.b, &d.a,
 				&s.r, &s.g, &s.b, &s.a,
 				&g,
-				path ) == 15)
+				path) == 15)
 			{
 				if (path[0] == '\0')
 					psource->texmap[j] = -1;
 				else if (j < sizeof(psource->texmap))
-					psource->texmap[j] = lookup_texture( path, sizeof( path ) );
+					psource->texmap[j] = lookup_texture(path, sizeof(path));
 				else
-					MdlError( "Too many materials, max %d\n", sizeof(psource->texmap) );
+					MdlError("Too many materials, max %d\n", sizeof(psource->texmap));
 			}
 		}
 	}
 }
 
 
-void Grab_Texcoordlist( s_source_t *psource )
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void Grab_Texcoordlist(s_source_t* psource)
 {
-	while (1) 
+	while (1)
 	{
-		if (fgets( g_szLine, sizeof( g_szLine ), g_fpInput ) != NULL) 
+		if (fgets(g_szLine, sizeof(g_szLine), g_fpInput) != NULL)
 		{
 			int j;
 			Vector2D t;
@@ -259,34 +264,34 @@ void Grab_Texcoordlist( s_source_t *psource )
 			g_iLinecount++;
 
 			// check for end
-			if (IsEnd(g_szLine)) 
+			if (IsEnd(g_szLine))
 				return;
 
-			if (sscanf( g_szLine, "%d %f %f",
-				&j, 
+			if (sscanf(g_szLine, "%d %f %f",
+				&j,
 				&t[0], &t[1]) == 3)
 			{
 				t[1] = 1.0 - t[1];
 				g_texcoord[j][0] = t[0];
 				g_texcoord[j][1] = t[1];
 			}
-			else 
+			else
 			{
-				MdlError("%s: error on line %d: %s", g_szFilename, g_iLinecount, g_szLine );
+				MdlError("%s: error on line %d: %s", g_szFilename, g_iLinecount, g_szLine);
 			}
 		}
 	}
 }
 
 
-
-
-
-void Grab_Normallist( s_source_t *psource )
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void Grab_Normallist(s_source_t* psource)
 {
-	while (1) 
+	while (1)
 	{
-		if (fgets( g_szLine, sizeof( g_szLine ), g_fpInput ) != NULL) 
+		if (fgets(g_szLine, sizeof(g_szLine), g_fpInput) != NULL)
 		{
 			int j;
 			int bone;
@@ -295,39 +300,41 @@ void Grab_Normallist( s_source_t *psource )
 			g_iLinecount++;
 
 			// check for end
-			if (IsEnd(g_szLine)) 
+			if (IsEnd(g_szLine))
 				return;
 
 
-			if (sscanf( g_szLine, "%d %d %f %f %f",
-				&j, 
-				&bone, 
+			if (sscanf(g_szLine, "%d %d %f %f %f",
+				&j,
+				&bone,
 				&n[0], &n[1], &n[2]) == 5)
 			{
-				if (bone < 0 || bone >= psource->numbones) 
+				if (bone < 0 || bone >= psource->numbones)
 				{
-					MdlWarning( "bogus bone index\n" );
-					MdlWarning( "%d %s :\n%s", g_iLinecount, g_szFilename, g_szLine );
-					MdlError( "Exiting due to errors\n" );
+					MdlWarning("bogus bone index\n");
+					MdlWarning("%d %s :\n%s", g_iLinecount, g_szFilename, g_szLine);
+					MdlError("Exiting due to errors\n");
 				}
 
-				VectorCopy( n, g_normal[j] );
+				VectorCopy(n, g_normal[j]);
 			}
-			else 
+			else
 			{
-				MdlError("%s: error on line %d: %s", g_szFilename, g_iLinecount, g_szLine );
+				MdlError("%s: error on line %d: %s", g_szFilename, g_iLinecount, g_szLine);
 			}
 		}
 	}
 }
 
 
-
-void Grab_Faceattriblist( s_source_t *psource )
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void Grab_Faceattriblist(s_source_t* psource)
 {
-	while (1) 
+	while (1)
 	{
-		if (fgets( g_szLine, sizeof( g_szLine ), g_fpInput ) != NULL) 
+		if (fgets(g_szLine, sizeof(g_szLine), g_fpInput) != NULL)
 		{
 			int j;
 			int smooth;
@@ -338,11 +345,11 @@ void Grab_Faceattriblist( s_source_t *psource )
 			g_iLinecount++;
 
 			// check for end
-			if (IsEnd(g_szLine)) 
+			if (IsEnd(g_szLine))
 				return;
 
-			if (sscanf( g_szLine, "%d %d %d %d %d %d %d %d %d",
-				&j, 
+			if (sscanf(g_szLine, "%d %d %d %d %d %d %d %d %d",
+				&j,
 				&material,
 				&smooth,
 				&f.ta, &f.tb, &f.tc,
@@ -352,39 +359,42 @@ void Grab_Faceattriblist( s_source_t *psource )
 				f.b = g_face[j].b;
 				f.c = g_face[j].c;
 
-				f.material = use_texture_as_material( psource->texmap[material] );
+				f.material = use_texture_as_material(psource->texmap[material]);
 				if (f.material < 0)
-					MdlError( "face %d references NULL texture %d\n", j, material );
-				
+					MdlError("face %d references NULL texture %d\n", j, material);
+
 				if (flip_triangles)
 				{
-					s = f.b;  f.b  = f.c;  f.c  = s;
+					s = f.b;  f.b = f.c;  f.c = s;
 					s = f.tb; f.tb = f.tc; f.tc = s;
 					s = f.nb; f.nb = f.nc; f.nc = s;
 				}
 
 				g_face[j] = f;
 			}
-			else 
+			else
 			{
-				MdlError("%s: error on line %d: %s", g_szFilename, g_iLinecount, g_szLine );
+				MdlError("%s: error on line %d: %s", g_szFilename, g_iLinecount, g_szLine);
 			}
 		}
 	}
 }
 
 
-int closestNormal( int v, int n )
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+int closestNormal(int v, int n)
 {
 	float maxdot = -1.0;
 	float dot;
 	int	r = n;
 
-	v_unify_t *cur = v_list[v];
+	v_unify_t* cur = v_list[v];
 
 	while (cur)
 	{
-		dot = DotProduct( g_normal[cur->n], g_normal[n] );
+		dot = DotProduct(g_normal[cur->n], g_normal[n]);
 		if (dot > maxdot)
 		{
 			r = cur->n;
@@ -392,15 +402,18 @@ int closestNormal( int v, int n )
 		}
 		cur = cur->next;
 	}
-	
+
 	return r;
 }
 
 
-int vlistCompare( const void *elem1, const void *elem2 )
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+int vlistCompare(const void* elem1, const void* elem2)
 {
-	v_unify_t *u1 = &v_listdata[*(int *)elem1];
-	v_unify_t *u2 = &v_listdata[*(int *)elem2];
+	v_unify_t* u1 = &v_listdata[*(int*)elem1];
+	v_unify_t* u2 = &v_listdata[*(int*)elem2];
 
 	// sort by material
 	if (u1->m < u2->m)
@@ -418,11 +431,13 @@ int vlistCompare( const void *elem1, const void *elem2 )
 }
 
 
-
-int AddToVlist( int v, int m, int n, int t, int firstref )
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+int AddToVlist(int v, int m, int n, int t, int firstref)
 {
-	v_unify_t *prev = NULL;
-	v_unify_t *cur = v_list[v];
+	v_unify_t* prev = NULL;
+	v_unify_t* cur = v_list[v];
 
 	while (cur)
 	{
@@ -437,7 +452,7 @@ int AddToVlist( int v, int m, int n, int t, int firstref )
 
 	if (numvlist >= MAXSTUDIOVERTS)
 	{
-		MdlError( "Too many unified vertices\n");
+		MdlError("Too many unified vertices\n");
 	}
 
 	cur = &v_listdata[numvlist++];
@@ -461,10 +476,14 @@ int AddToVlist( int v, int m, int n, int t, int firstref )
 	return numvlist - 1;
 }
 
-void DecrementReferenceVlist( int uv, int numverts )
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void DecrementReferenceVlist(int uv, int numverts)
 {
 	if (uv < 0 || uv > MAXSTUDIOVERTS)
-		MdlError( "decrement outside of range\n");
+		MdlError("decrement outside of range\n");
 
 	v_listdata[uv].refcount--;
 
@@ -479,6 +498,9 @@ void DecrementReferenceVlist( int uv, int numverts )
 }
 
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 int faceCompare( const void *elem1, const void *elem2 )
 {
 	int i1 = *(int *)elem1;
@@ -499,7 +521,11 @@ int faceCompare( const void *elem1, const void *elem2 )
 	return 0;
 }
 
-void UnifyIndices( s_source_t *psource )
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void UnifyIndices(s_source_t* psource)
 {
 	int i;
 
@@ -508,17 +534,17 @@ void UnifyIndices( s_source_t *psource )
 
 	// clear v_list
 	numvlist = 0;
-	memset( v_list, 0, sizeof( v_list ) );
-	memset( v_listdata, 0, sizeof( v_listdata ) );
+	memset(v_list, 0, sizeof(v_list));
+	memset(v_listdata, 0, sizeof(v_listdata));
 
 	// create an list of all the 
 	for (i = 0; i < g_numfaces; i++)
 	{
 		tmpface[i] = g_face[i];
 
-		uface[i].a = AddToVlist( g_face[i].a, g_face[i].material, g_face[i].na, g_face[i].ta, g_numverts );
-		uface[i].b = AddToVlist( g_face[i].b, g_face[i].material, g_face[i].nb, g_face[i].tb, g_numverts );
-		uface[i].c = AddToVlist( g_face[i].c, g_face[i].material, g_face[i].nc, g_face[i].tc, g_numverts );
+		uface[i].a = AddToVlist(g_face[i].a, g_face[i].material, g_face[i].na, g_face[i].ta, g_numverts);
+		uface[i].b = AddToVlist(g_face[i].b, g_face[i].material, g_face[i].nb, g_face[i].tb, g_numverts);
+		uface[i].c = AddToVlist(g_face[i].c, g_face[i].material, g_face[i].nc, g_face[i].tc, g_numverts);
 
 		// keep an original copy
 		g_src_uface[i] = uface[i];
@@ -527,8 +553,16 @@ void UnifyIndices( s_source_t *psource )
 	// Msg("%d : %d %d %d\n", numvlist, g_numverts, g_numnormals, g_numtexcoords );
 }
 
-void CalcModelTangentSpaces( s_source_t *pSrc );
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CalcModelTangentSpaces(s_source_t* pSrc);
+
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void BuildIndividualMeshes( s_source_t *psource )
 {
 	int i, j, k;
@@ -558,26 +592,26 @@ void BuildIndividualMeshes( s_source_t *psource )
 	{
 		j = v_listsort[i];
 
-		VectorCopy( g_vertex[v_listdata[j].v], psource->vertex[i].position );
-		VectorCopy( g_normal[v_listdata[j].n], psource->vertex[i].normal );		
-		Vector2Copy( g_texcoord[v_listdata[j].t], psource->vertex[i].texcoord );
+		VectorCopy(g_vertex[v_listdata[j].v], psource->vertex[i].position);
+		VectorCopy(g_normal[v_listdata[j].n], psource->vertex[i].normal);
+		Vector2Copy(g_texcoord[v_listdata[j].t], psource->vertex[i].texcoord);
 
-		psource->localBoneweight[i].numbones		= g_bone[v_listdata[j].v].numbones;
+		psource->localBoneweight[i].numbones = g_bone[v_listdata[j].v].numbones;
 		int k;
-		for( k = 0; k < MAXSTUDIOBONEWEIGHTS; k++ )
+		for (k = 0; k < MAXSTUDIOBONEWEIGHTS; k++)
 		{
-			psource->localBoneweight[i].bone[k]		= g_bone[v_listdata[j].v].bone[k];
-			psource->localBoneweight[i].weight[k]	= g_bone[v_listdata[j].v].weight[k];
+			psource->localBoneweight[i].bone[k] = g_bone[v_listdata[j].v].bone[k];
+			psource->localBoneweight[i].weight[k] = g_bone[v_listdata[j].v].weight[k];
 		}
 
 		// store a bunch of other info
-		psource->vertex[i].material			= v_listdata[j].m;
-		
+		psource->vertex[i].material = v_listdata[j].m;
+
 		// always assume this is lod 1
-		psource->vertex[i].bLoD				= 1;
+		psource->vertex[i].bLoD = 1;
 #if 0
-		psource->vertexInfo[i].firstref		= v_listdata[j].firstref;
-		psource->vertexInfo[i].lastref		= v_listdata[j].lastref;
+		psource->vertexInfo[i].firstref = v_listdata[j].firstref;
+		psource->vertexInfo[i].lastref = v_listdata[j].lastref;
 #endif
 		// Msg("%4d : %2d :  %6.2f %6.2f %6.2f\n", i, psource->boneweight[i].bone[0], psource->vertex[i][0], psource->vertex[i][1], psource->vertex[i][2] );
 	}
@@ -648,8 +682,8 @@ void BuildIndividualMeshes( s_source_t *psource )
 				psource->face[i].a = v_ilistsort[g_src_uface[j].a] - psource->mesh[k].vertexoffset;
 				psource->face[i].b = v_ilistsort[g_src_uface[j].b] - psource->mesh[k].vertexoffset;
 				psource->face[i].c = v_ilistsort[g_src_uface[j].c] - psource->mesh[k].vertexoffset;
-				Assert( ((psource->face[i].a & 0xF0000000) == 0) && ((psource->face[i].b & 0xF0000000) == 0) && 
-					((psource->face[i].c & 0xF0000000) == 0) );
+				Assert(((psource->face[i].a & 0xF0000000) == 0) && ((psource->face[i].b & 0xF0000000) == 0) &&
+					((psource->face[i].c & 0xF0000000) == 0));
 				// Msg("%3d : %4d %4d %4d\n", i, psource->face[i].a, psource->face[i].b, psource->face[i].c );
 			}
 
@@ -657,124 +691,131 @@ void BuildIndividualMeshes( s_source_t *psource )
 		}
 	}
 
-	CalcModelTangentSpaces( psource );
+	CalcModelTangentSpaces(psource);
 }
 
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Grab_MRMFaceupdates( s_source_t *psource )
 {
-	while (1) 
+	while (1)
 	{
-		if (fgets( g_szLine, sizeof( g_szLine ), g_fpInput ) != NULL) 
+		if (fgets(g_szLine, sizeof(g_szLine), g_fpInput) != NULL)
 		{
 			g_iLinecount++;
 
 			// check for end
-			if (IsEnd(g_szLine)) 
+			if (IsEnd(g_szLine))
 				return;
 		}
 	}
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 int Load_VRM ( s_source_t *psource )
 {
 	char	cmd[1024];
 	int		option;
 
-	if (!OpenGlobalFile( psource->filename ))
-	{	
+	if (!OpenGlobalFile(psource->filename))
+	{
 		return 0;
 	}
 
-	if( !g_quiet )
+	if (!g_quiet)
 	{
-		Msg ("grabbing %s\n", psource->filename);
+		Msg("grabbing %s\n", psource->filename);
 	}
 
 	g_iLinecount = 0;
 
-	while (fgets( g_szLine, sizeof( g_szLine ), g_fpInput ) != NULL) {
+	while (fgets(g_szLine, sizeof(g_szLine), g_fpInput) != NULL) {
 		g_iLinecount++;
-		sscanf( g_szLine, "%1023s %d", cmd, &option );
-		if (stricmp( cmd, "version" ) == 0) {
+		sscanf(g_szLine, "%1023s %d", cmd, &option);
+		if (stricmp(cmd, "version") == 0) {
 			if (option != 2) {
 				MdlError("bad version\n");
 			}
 		}
-		else if (stricmp( cmd, "name" ) == 0) {
+		else if (stricmp(cmd, "name") == 0) {
 		}
-		else if (stricmp( cmd, "vertices" ) == 0) {
+		else if (stricmp(cmd, "vertices") == 0) {
 			g_numverts = option;
 		}
-		else if (stricmp( cmd, "faces" ) == 0) {
+		else if (stricmp(cmd, "faces") == 0) {
 			g_numfaces = option;
 		}
-		else if (stricmp( cmd, "materials" ) == 0) {
+		else if (stricmp(cmd, "materials") == 0) {
 			// doesn't matter;
 		}
-		else if (stricmp( cmd, "texcoords" ) == 0) {
+		else if (stricmp(cmd, "texcoords") == 0) {
 			g_numtexcoords = option;
 			if (option == 0)
-				MdlError( "model has no texture coordinates\n");
+				MdlError("model has no texture coordinates\n");
 		}
-		else if (stricmp( cmd, "normals" ) == 0) {
+		else if (stricmp(cmd, "normals") == 0) {
 			g_numnormals = option;
 		}
-		else if (stricmp( cmd, "tristrips" ) == 0) {
+		else if (stricmp(cmd, "tristrips") == 0) {
 			// should be 0;
 		}
 
-		else if (stricmp( cmd, "vertexlist" ) == 0) {
-			Grab_Vertexlist( psource );
+		else if (stricmp(cmd, "vertexlist") == 0) {
+			Grab_Vertexlist(psource);
 		}
-		else if (stricmp( cmd, "facelist" ) == 0) {
-			Grab_Facelist( psource );
+		else if (stricmp(cmd, "facelist") == 0) {
+			Grab_Facelist(psource);
 		}
-		else if (stricmp( cmd, "materiallist" ) == 0) {
-			Grab_Materiallist( psource );
+		else if (stricmp(cmd, "materiallist") == 0) {
+			Grab_Materiallist(psource);
 		}
-		else if (stricmp( cmd, "texcoordlist" ) == 0) {
-			Grab_Texcoordlist( psource );
+		else if (stricmp(cmd, "texcoordlist") == 0) {
+			Grab_Texcoordlist(psource);
 		}
-		else if (stricmp( cmd, "normallist" ) == 0) {
-			Grab_Normallist( psource );
+		else if (stricmp(cmd, "normallist") == 0) {
+			Grab_Normallist(psource);
 		}
-		else if (stricmp( cmd, "faceattriblist" ) == 0) {
-			Grab_Faceattriblist( psource );
-		}
-
-		else if (stricmp( cmd, "MRM" ) == 0) {
-		}
-		else if (stricmp( cmd, "MRMvertices" ) == 0) {
-		}
-		else if (stricmp( cmd, "MRMfaces" ) == 0) {
-		}
-		else if (stricmp( cmd, "MRMfaceupdates" ) == 0) 
-		{
-			Grab_MRMFaceupdates( psource );
+		else if (stricmp(cmd, "faceattriblist") == 0) {
+			Grab_Faceattriblist(psource);
 		}
 
-		else if (stricmp( cmd, "nodes" ) == 0) {
-			psource->numbones = Grab_Nodes( psource->localBone );
+		else if (stricmp(cmd, "MRM") == 0) {
 		}
-		else if (stricmp( cmd, "skeleton" ) == 0) {
-			Grab_Animation( psource );
+		else if (stricmp(cmd, "MRMvertices") == 0) {
 		}
-/*		
-		else if (stricmp( cmd, "triangles" ) == 0) {
-			Grab_Triangles( psource );
+		else if (stricmp(cmd, "MRMfaces") == 0) {
 		}
-*/
-		else 
+		else if (stricmp(cmd, "MRMfaceupdates") == 0)
 		{
-			MdlError("unknown VRM command : %s \n", cmd );
+			Grab_MRMFaceupdates(psource);
+		}
+
+		else if (stricmp(cmd, "nodes") == 0) {
+			psource->numbones = Grab_Nodes(psource->localBone);
+		}
+		else if (stricmp(cmd, "skeleton") == 0) {
+			Grab_Animation(psource);
+		}
+		/*
+				else if (stricmp( cmd, "triangles" ) == 0) {
+					Grab_Triangles( psource );
+				}
+		*/
+		else
+		{
+			MdlError("unknown VRM command : %s \n", cmd);
 		}
 	}
 
-	UnifyIndices( psource );
-	BuildIndividualMeshes( psource );
+	UnifyIndices(psource);
+	BuildIndividualMeshes(psource);
 
-	fclose( g_fpInput );
+	fclose(g_fpInput);
 
 	return 1;
 }

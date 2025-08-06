@@ -4,7 +4,6 @@
 //
 // $NoKeywords: $
 //===========================================================================//
-
 #include <windows.h>
 #include "materialsystem/IMaterialSystem.h"
 #include "materialsystem/MaterialSystem_Config.h"
