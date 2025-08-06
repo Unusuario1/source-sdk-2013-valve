@@ -30,7 +30,7 @@
 #include "phyfile.h"
 #include "utlvector.h"
 #include "vcollide_parse.h"
-#include "vstdlib/strtools.h"
+#include "strtools.h"
 #include "keyvalues.h"
 
 // these functions just wrap atoi/atof and check for NULL
@@ -2241,7 +2241,7 @@ void BuildRagdollConstraint( CPhysCollisionModel *pPhys, constraint_ragdollparam
 		}
 		else if ( index == ragdoll.childIndex )
 		{
-			float limitMin = 0, limitMax = 0;
+			//float limitMin = 0, limitMax = 0; // Unsuario2: Unused?
 			switch ( pList->m_jointType )
 			{
 			case JOINT_LIMIT:
@@ -2274,7 +2274,8 @@ void CollisionModel_ExpandBBox( Vector &mins, Vector &maxs )
 	{
 		Vector collideMins, collideMaxs;
 
-		physcollision->CollideGetAABB( collideMins, collideMaxs, g_JointedModel.m_pCollisionList->m_pCollisionData, vec3_origin, vec3_angle );
+		// Unsuario2: Refactor?
+		physcollision->CollideGetAABB( &collideMins, &collideMaxs, g_JointedModel.m_pCollisionList->m_pCollisionData, vec3_origin, vec3_angle );
 		
 		// add the 0.25 inch collision separation as well
 		const float radius = 0.25;

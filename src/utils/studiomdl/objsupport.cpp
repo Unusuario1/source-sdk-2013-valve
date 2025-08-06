@@ -74,7 +74,7 @@ int Load_OBJ( s_source_t *psource )
 
 	while (fgets( g_szLine, sizeof( g_szLine ), g_fpInput ) != NULL) {
 		g_iLinecount++;
-		Vector tmp;
+		//Vector tmp; // Unsuario2: Unused? 
 
 		if (strncmp( g_szLine, "v ", 2 ) == 0)
 		{
@@ -157,7 +157,7 @@ int AppendVTAtoOBJ( s_source_t *psource, char *filename, int frame )
 	int		i, j;
 	int		material = 0;
 
-	Vector tmp;
+	//Vector tmp; // Unsuario2: Unused?
 	matrix3x4_t m;
 
 	AngleMatrix( RadianEuler( 1.570796, 0, 0 ), m );

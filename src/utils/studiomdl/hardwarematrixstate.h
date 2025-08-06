@@ -3,11 +3,14 @@
 // Purpose: 
 //
 // $NoKeywords: $
-//=============================================================================//
-
+//=====================================================================================//
 #ifndef HARDWAREMATRIXSTATE_H
 #define HARDWAREMATRIXSTATE_H
+
+#ifdef _WIN32
 #pragma once
+#endif // _WIN32
+
 
 // This emulates the hardware matrix palette and keeps up with 
 // matrix usage, LRU's matrices, etc.
@@ -67,5 +70,6 @@ private:
 	MatrixState_t *m_matrixState;
 	MatrixState_t *m_savedMatrixState;
 };
+
 
 #endif // HARDWAREMATRIXSTATE_H

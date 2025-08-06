@@ -2,17 +2,21 @@
 //
 // Purpose: 
 //
-//=============================================================================//
-
+// $NoKeywords: $
+//=====================================================================================//
 #ifndef PERFSTATS_H
 #define PERFSTATS_H
+
 #ifdef _WIN32
 #pragma once
-#endif
+#endif // _WIN32
+
 
 #include "studio.h"
 #include "optimize.h"
 
+
 void SpewPerfStats( studiohdr_t *pStudioHdr, const char *pFilename );
+
 
 #endif // PERFSTATS_H

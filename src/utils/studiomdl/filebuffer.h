@@ -3,13 +3,14 @@
 // Purpose: 
 //
 // $NoKeywords: $
-//=============================================================================//
-
+//=====================================================================================//
 #ifndef FILEBUFFER_H
 #define FILEBUFFER_H
+
 #ifdef _WIN32
 #pragma once
-#endif
+#endif // _WIN32
+
 
 class CFileBuffer
 {

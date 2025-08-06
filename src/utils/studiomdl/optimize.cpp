@@ -6,6 +6,7 @@
 //=============================================================================//
 
 #pragma warning( disable : 4786 )
+#pragma warning( disable : 4267 )
 // This file has tons of problems with global optimizations. . turn 'em off.
 #pragma optimize( "g", off )
 
@@ -35,7 +36,7 @@
 #endif
 #include "optimize.h"
 #include <malloc.h>
-#include <mathlib/nvtristrip.h>
+#include "../nvtristriplib/nvtristrip.h"
 #include "FileBuffer.h"
 #include "UtlVector.h"
 #include "materialsystem/IMaterial.h"

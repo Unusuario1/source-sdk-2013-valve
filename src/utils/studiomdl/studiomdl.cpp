@@ -15,6 +15,7 @@
 
 #pragma warning( disable : 4244 )
 #pragma warning( disable : 4237 )
+#pragma warning( disable : 4267 )
 #pragma warning( disable : 4305 )
 
 #include <windows.h>
@@ -29,14 +30,13 @@
 #include "cmdlib.h"
 #include "scriplib.h"
 #include <mathlib/mathlib.h>
-#define EXTERN
 #include "studio.h"
 #include "studiomdl.h"
 #include "collisionmodel.h"
 #include "optimize.h"
-#include "vstdlib/strtools.h"
+#include "strtools.h"
 #include "bspflags.h"
-#include "vstdlib/icommandline.h"
+#include "icommandline.h"
 #include "utldict.h"
 
 

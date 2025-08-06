@@ -519,12 +519,14 @@ struct mstudioattachment_t
 	int					unused[8];
 };
 
-#define IK_SELF 1
-#define IK_WORLD 2
-#define IK_GROUND 3
-#define IK_RELEASE 4
-#define IK_ATTACHMENT 5
-#define IK_UNLATCH 6
+// TODO, Unsuario2: Use a enum??
+#define IK_SELF			1
+#define IK_WORLD		2
+#define IK_GROUND		3
+#define IK_RELEASE		4
+#define IK_ATTACHMENT	5
+#define IK_UNLATCH		6
+
 
 struct mstudioikerror_t
 {

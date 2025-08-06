@@ -10,7 +10,7 @@
 #include "basetypes.h"
 #include "utlvector.h"
 #include "utlsymbol.h"
-#include "vector.h"
+#include "mathlib/vector.h"
 #include "studio.h"
 
 struct LodScriptData_t;
@@ -22,6 +22,8 @@ struct LodScriptData_t;
 
 
 #define STUDIO_QUADRATIC_MOTION 0x00002000
+
+#define MAXSTUDIOBLENDS			32 // Unusuario2: this should go in public/studio.h!
 
 #define MAXSTUDIOANIMFRAMES		2000	// max frames per animation
 #define MAXSTUDIOANIMS			2000	// total animations
@@ -39,54 +41,50 @@ struct LodScriptData_t;
 #define MAXSTUDIOIKRULES		64
 #define MAXSTUDIONAME			128
 
-#ifndef EXTERN
-#define EXTERN extern
-#endif
+extern	char		outname[1024];
+//extern	char		g_pPlatformName[1024];
+extern  qboolean	cdset;
+extern  int			numdirs;
+extern	char		cddir[32][MAX_PATH];
+extern	int			numcdtextures;
+extern	char *		cdtextures[16];
+extern  char		fullpath[1024];
 
-EXTERN	char		outname[1024];
-//EXTERN	char		g_pPlatformName[1024];
-EXTERN  qboolean	cdset;
-EXTERN  int			numdirs;
-EXTERN	char		cddir[32][MAX_PATH];
-EXTERN	int			numcdtextures;
-EXTERN	char *		cdtextures[16];
-EXTERN  char		fullpath[1024];
-
-EXTERN	char		rootname[MAXSTUDIONAME];		// name of the root bone
-EXTERN	float		g_defaultscale;
-EXTERN  float		g_currentscale;
-EXTERN  RadianEuler	g_defaultrotation;
+extern	char		rootname[MAXSTUDIONAME];		// name of the root bone
+extern	float		g_defaultscale;
+extern  float		g_currentscale;
+extern  RadianEuler	g_defaultrotation;
 
 
-EXTERN	char		defaulttexture[16][MAX_PATH];
-EXTERN	char		sourcetexture[16][MAX_PATH];
+extern	char		defaulttexture[16][MAX_PATH];
+extern	char		sourcetexture[16][MAX_PATH];
 
-EXTERN	int			numrep;
+extern	int			numrep;
 
-EXTERN	int			tag_reversed;
-EXTERN	int			tag_normals;
-EXTERN	int			flip_triangles;
-EXTERN	float		normal_blend;
-EXTERN	int			dump_hboxes;
-EXTERN	int			ignore_warnings;
+extern	int			tag_reversed;
+extern	int			tag_normals;
+extern	int			flip_triangles;
+extern	float		normal_blend;
+extern	int			dump_hboxes;
+extern	int			ignore_warnings;
 
-EXTERN	Vector		eyeposition;
-EXTERN	Vector		illumposition;
-EXTERN	int			illumpositionset;
-EXTERN	int			gflags;
-EXTERN	Vector		bbox[2];
-EXTERN	Vector		cbox[2];
-EXTERN	bool		g_wrotebbox;
-EXTERN	bool		g_wrotecbox;
+extern	Vector		eyeposition;
+extern	Vector		illumposition;
+extern	int			illumpositionset;
+extern	int			gflags;
+extern	Vector		bbox[2];
+extern	Vector		cbox[2];
+extern	bool		g_wrotebbox;
+extern	bool		g_wrotecbox;
 
-EXTERN	int			clip_texcoords;
-EXTERN	bool		g_staticprop;
-EXTERN	bool		g_centerstaticprop;
+extern	int			clip_texcoords;
+extern	bool		g_staticprop;
+extern	bool		g_centerstaticprop;
 
-EXTERN	bool		g_realignbones;
-EXTERN	bool		g_definebones;
+extern	bool		g_realignbones;
+extern	bool		g_definebones;
 
-EXTERN  byte		g_constdirectionalightdot;
+extern  byte		g_constdirectionalightdot;
 
 // Methods associated with the key value text block
 extern CUtlVector< char >	g_KeyValueText;
@@ -149,7 +147,7 @@ struct s_bonefixup_t
 	matrix3x4_t m;	
 };
 
-EXTERN int g_numbones;
+extern int g_numbones;
 struct s_bonetable_t
 {
 	char			name[MAXSTUDIONAME];	// bone name for symbolic links
@@ -176,19 +174,19 @@ struct s_bonetable_t
 	bool			bDontCollapse;
 	Vector			posrange;
 };
-EXTERN	s_bonetable_t g_bonetable[MAXSTUDIOSRCBONES];
+extern	s_bonetable_t g_bonetable[MAXSTUDIOSRCBONES];
 extern int findGlobalBone( const char *name );	// finds a named bone in the global bone table
 
-EXTERN int g_numrenamedbones;
+extern int g_numrenamedbones;
 struct s_renamebone_t
 {
 	char			from[MAXSTUDIONAME];
 	char			to[MAXSTUDIONAME];
 };
-EXTERN s_renamebone_t g_renamedbone[MAXSTUDIOSRCBONES];
+extern s_renamebone_t g_renamedbone[MAXSTUDIOSRCBONES];
 const char *RenameBone( const char *pName ); // returns new name if available, else return pName.
 
-EXTERN int g_numimportbones;
+extern int g_numimportbones;
 struct s_importbone_t
 {
 	char			name[MAXSTUDIONAME];
@@ -197,15 +195,15 @@ struct s_importbone_t
 	bool			bPreAligned;
 	matrix3x4_t		srcRealign;
 };
-EXTERN s_importbone_t g_importbone[MAXSTUDIOSRCBONES];
+extern s_importbone_t g_importbone[MAXSTUDIOSRCBONES];
 
 
-EXTERN int g_numincludemodels;
+extern int g_numincludemodels;
 struct s_includemodel_t
 {
 	char			name[MAXSTUDIONAME];
 };
-EXTERN s_includemodel_t g_includemodel[128];
+extern s_includemodel_t g_includemodel[128];
 
 struct s_bbox_t
 {
@@ -230,14 +228,14 @@ struct s_hitboxset
 
 extern CUtlVector< s_hitboxset > g_hitboxsets;
 
-EXTERN int g_numhitgroups;
+extern int g_numhitgroups;
 struct s_hitgroup_t
 {
 	int				models;
 	int				group;
 	char			name[MAXSTUDIONAME];	// bone name
 };
-EXTERN s_hitgroup_t g_hitgroup[MAXSTUDIOSRCBONES];
+extern s_hitgroup_t g_hitgroup[MAXSTUDIOSRCBONES];
 
 
 struct s_bonecontroller_t
@@ -250,8 +248,8 @@ struct s_bonecontroller_t
 	float	end;
 };
 
-EXTERN s_bonecontroller_t g_bonecontroller[MAXSTUDIOSRCBONES];
-EXTERN int g_numbonecontrollers;
+extern s_bonecontroller_t g_bonecontroller[MAXSTUDIOSRCBONES];
+extern int g_numbonecontrollers;
 
 struct s_screenalignedbone_t
 {
@@ -259,8 +257,8 @@ struct s_screenalignedbone_t
 	int		flags;
 };
 
-EXTERN s_screenalignedbone_t g_screenalignedbone[MAXSTUDIOSRCBONES];
-EXTERN int g_numscreenalignedbones;
+extern s_screenalignedbone_t g_screenalignedbone[MAXSTUDIOSRCBONES];
+extern int g_numscreenalignedbones;
 
 struct s_attachment_t
 {
@@ -277,15 +275,15 @@ struct s_attachment_t
 #define IS_ABSOLUTE		0x0001
 #define IS_RIGID		0x0002
 
-EXTERN s_attachment_t g_attachment[MAXSTUDIOSRCBONES];
-EXTERN int g_numattachments;
+extern s_attachment_t g_attachment[MAXSTUDIOSRCBONES];
+extern int g_numattachments;
 
 struct s_bonemerge_t
 {
 	char	bonename[MAXSTUDIONAME];
 };
 
-EXTERN CUtlVector< s_bonemerge_t > g_BoneMerge;
+extern CUtlVector< s_bonemerge_t > g_BoneMerge;
 
 struct s_mouth_t
 {
@@ -295,8 +293,8 @@ struct s_mouth_t
 	int		flexdesc;
 };
 
-EXTERN s_mouth_t g_mouth[MAXSTUDIOSRCBONES]; // ?? skins?
-EXTERN int g_nummouths;
+extern s_mouth_t g_mouth[MAXSTUDIOSRCBONES]; // ?? skins?
+extern int g_nummouths;
 
 struct s_node_t
 {
@@ -495,7 +493,7 @@ struct s_ikrule_t
 
 
 struct s_source_t;
-EXTERN	int g_numani;
+extern	int g_numani;
 struct s_animation_t
 {
 	bool			isimplied;
@@ -561,17 +559,17 @@ struct s_animation_t
 	s_ikrule_t		ikrule[MAXSTUDIOIKRULES];
 	bool			noAutoIK;
 };
-EXTERN	s_animation_t *g_panimation[MAXSTUDIOANIMS];
+extern	s_animation_t *g_panimation[MAXSTUDIOANIMS];
 
 
-EXTERN  int	g_numcmdlists;
+extern  int	g_numcmdlists;
 struct s_cmdlist_t
 {
 	char			name[MAXSTUDIONAME];
 	int				numcmds;
 	s_animcmd_t		cmds[MAXSTUDIOCMDS];
 };
-EXTERN	s_cmdlist_t g_cmdlist[MAXSTUDIOANIMS];
+extern	s_cmdlist_t g_cmdlist[MAXSTUDIOANIMS];
 
 
 struct s_iklock_t
@@ -582,8 +580,8 @@ struct s_iklock_t
 	float			flLocalQWeight;
 };
 
-EXTERN	int g_numikautoplaylocks;
-EXTERN	s_iklock_t g_ikautoplaylock[16];
+extern	int g_numikautoplaylocks;
+extern	s_iklock_t g_ikautoplaylock[16];
 
 
 struct s_event_t
@@ -666,11 +664,11 @@ struct s_sequence_t
 
 	CUtlVector< char > KeyValue;
 };
-EXTERN	CUtlVector< s_sequence_t > g_sequence;
-//EXTERN	int g_numseq;
+extern	CUtlVector< s_sequence_t > g_sequence;
+//extern	int g_numseq;
 
 
-EXTERN int g_numanimblocks;
+extern int g_numanimblocks;
 struct s_animblock_t
 {
 	int		iStartAnim;
@@ -678,13 +676,13 @@ struct s_animblock_t
 	byte	*start;
 	byte	*end;
 };
-EXTERN s_animblock_t g_animblock[MAXSTUDIOANIMBLOCKS];
-EXTERN int g_animblocksize;
-EXTERN char g_animblockname[260];
+extern s_animblock_t g_animblock[MAXSTUDIOANIMBLOCKS];
+extern int g_animblocksize;
+extern char g_animblockname[260];
 
 
 
-EXTERN int g_numposeparameters;
+extern int g_numposeparameters;
 struct s_poseparameter_t
 {
 	char	name[MAXSTUDIONAME];
@@ -693,14 +691,14 @@ struct s_poseparameter_t
 	int		flags;
 	float	loop;
 };
-EXTERN s_poseparameter_t g_pose[32]; // FIXME: this shouldn't be hard coded
+extern s_poseparameter_t g_pose[32]; // FIXME: this shouldn't be hard coded
 
 
-EXTERN int g_numxnodes;
-EXTERN char *g_xnodename[100];
-EXTERN int g_xnode[100][100];
-EXTERN int g_numxnodeskips;
-EXTERN int g_xnodeskip[10000][2];
+extern int g_numxnodes;
+extern char *g_xnodename[100];
+extern int g_xnode[100][100];
+extern int g_numxnodeskips;
+extern int g_xnodeskip[10000][2];
 
 struct rgb_t
 {
@@ -724,19 +722,19 @@ struct s_texture_t
 	float	dPdu;
 	float	dPdv;
 };
-EXTERN	s_texture_t g_texture[MAXSTUDIOSKINS];
-EXTERN	int g_numtextures;
-EXTERN	int	g_material[MAXSTUDIOSKINS]; // link into texture array
-EXTERN  int g_nummaterials;
+extern	s_texture_t g_texture[MAXSTUDIOSKINS];
+extern	int g_numtextures;
+extern	int	g_material[MAXSTUDIOSKINS]; // link into texture array
+extern  int g_nummaterials;
 
-EXTERN  float g_gamma;
-EXTERN	int g_numskinref;
-EXTERN  int g_numskinfamilies;
-EXTERN  int g_skinref[256][MAXSTUDIOSKINS]; // [skin][skinref], returns texture index
-EXTERN	int g_numtexturegroups;
-EXTERN	int g_numtexturelayers[32];
-EXTERN	int g_numtexturereps[32];
-EXTERN  int g_texturegroup[32][32][32];
+extern  float g_gamma;
+extern	int g_numskinref;
+extern  int g_numskinfamilies;
+extern  int g_skinref[256][MAXSTUDIOSKINS]; // [skin][skinref], returns texture index
+extern	int g_numtexturegroups;
+extern	int g_numtexturelayers[32];
+extern	int g_numtexturereps[32];
+extern  int g_texturegroup[32][32][32];
 
 struct s_mesh_t
 {
@@ -827,8 +825,8 @@ struct s_source_t
 };
 
 
-EXTERN int g_numsources;
-EXTERN s_source_t *g_source[MAXSTUDIOSEQUENCES];
+extern int g_numsources;
+extern s_source_t *g_source[MAXSTUDIOSEQUENCES];
 
 struct s_eyeballvert_t
 {
@@ -888,17 +886,17 @@ struct s_model_t
 	int	numflexes;
 	int flexoffset;
 };
-EXTERN	int g_nummodels;
-EXTERN	int g_nummodelsbeforeLOD;
-EXTERN	s_model_t *g_model[MAXSTUDIOMODELS];
+extern	int g_nummodels;
+extern	int g_nummodelsbeforeLOD;
+extern	s_model_t *g_model[MAXSTUDIOMODELS];
 
 
 struct s_flexdesc_t
 {
 	char FACS[MAXSTUDIONAME];	// FACS identifier
 };
-EXTERN int g_numflexdesc;
-EXTERN s_flexdesc_t g_flexdesc[MAXSTUDIOFLEXDESC];
+extern int g_numflexdesc;
+extern s_flexdesc_t g_flexdesc[MAXSTUDIOFLEXDESC];
 
 
 struct s_flexcontroller_t
@@ -908,8 +906,8 @@ struct s_flexcontroller_t
 	float min;
 	float max;
 };
-EXTERN int g_numflexcontrollers;
-EXTERN s_flexcontroller_t g_flexcontroller[MAXSTUDIOFLEXCTRL];
+extern int g_numflexcontrollers;
+extern s_flexcontroller_t g_flexcontroller[MAXSTUDIOFLEXCTRL];
 
 
 struct s_flexkey_t
@@ -938,9 +936,9 @@ struct s_flexkey_t
 
 	int	weighttable;
 };
-EXTERN int g_numflexkeys;
-EXTERN s_flexkey_t g_flexkey[MAXSTUDIOFLEXKEYS];
-EXTERN s_flexkey_t *g_defaultflexkey;
+extern int g_numflexkeys;
+extern s_flexkey_t g_flexkey[MAXSTUDIOFLEXKEYS];
+extern s_flexkey_t *g_defaultflexkey;
 
 #define MAX_OPS 512
 
@@ -959,10 +957,10 @@ struct s_flexrule_t
 	int		numops;
 	s_flexop_t op[MAX_OPS];
 };
-EXTERN int g_numflexrules;
-EXTERN s_flexrule_t g_flexrule[MAXSTUDIOFLEXRULES];
+extern int g_numflexrules;
+extern s_flexrule_t g_flexrule[MAXSTUDIOFLEXRULES];
 
-EXTERN	Vector g_defaultadjust;
+extern	Vector g_defaultadjust;
 
 struct s_bodypart_t
 {
@@ -972,8 +970,8 @@ struct s_bodypart_t
 	s_model_t			*pmodel[MAXSTUDIOMODELS];
 };
 
-EXTERN	int g_numbodyparts;
-EXTERN	s_bodypart_t g_bodypart[MAXSTUDIOBODYPARTS];
+extern	int g_numbodyparts;
+extern	s_bodypart_t g_bodypart[MAXSTUDIOBODYPARTS];
 
 
 #define MAXWEIGHTLISTS	32
@@ -993,8 +991,8 @@ struct s_weightlist_t
 	float			posweight[MAXSTUDIOBONES];
 };
 
-EXTERN	int	g_numweightlist;
-EXTERN	s_weightlist_t g_weightlist[MAXWEIGHTLISTS];
+extern	int	g_numweightlist;
+extern	s_weightlist_t g_weightlist[MAXWEIGHTLISTS];
 
 struct s_iklink_t
 {
@@ -1016,8 +1014,8 @@ struct s_ikchain_t
 	Vector			center;
 };
 
-EXTERN	int g_numikchains;
-EXTERN	s_ikchain_t g_ikchain[16];
+extern	int g_numikchains;
+extern	s_ikchain_t g_ikchain[16];
 
 
 struct s_axisinterpbone_t
@@ -1032,9 +1030,9 @@ struct s_axisinterpbone_t
 	Quaternion		quat[6];
 };
 
-EXTERN int g_numaxisinterpbones;
-EXTERN s_axisinterpbone_t g_axisinterpbones[MAXSTUDIOBONES];
-EXTERN int g_axisinterpbonemap[MAXSTUDIOBONES]; // map used axisinterpbone's to source axisinterpbone's
+extern int g_numaxisinterpbones;
+extern s_axisinterpbone_t g_axisinterpbones[MAXSTUDIOBONES];
+extern int g_axisinterpbonemap[MAXSTUDIOBONES]; // map used axisinterpbone's to source axisinterpbone's
 
 struct s_quatinterpbone_t
 {
@@ -1057,9 +1055,9 @@ struct s_quatinterpbone_t
 	Quaternion		quat[32];
 };
 
-EXTERN int g_numquatinterpbones;
-EXTERN s_quatinterpbone_t g_quatinterpbones[MAXSTUDIOBONES];
-EXTERN int g_quatinterpbonemap[MAXSTUDIOBONES]; // map used quatinterpbone's to source axisinterpbone's
+extern int g_numquatinterpbones;
+extern s_quatinterpbone_t g_quatinterpbones[MAXSTUDIOBONES];
+extern int g_quatinterpbonemap[MAXSTUDIOBONES]; // map used quatinterpbone's to source axisinterpbone's
 
 
 struct s_aimatbone_t
@@ -1076,9 +1074,9 @@ struct s_aimatbone_t
 	Vector			basepos;
 };
 
-EXTERN int g_numaimatbones;
-EXTERN s_aimatbone_t g_aimatbones[MAXSTUDIOBONES];
-EXTERN int g_aimatbonemap[MAXSTUDIOBONES]; // map used aimatpbone's to source aimatpbone's (may be optimized out)
+extern int g_numaimatbones;
+extern s_aimatbone_t g_aimatbones[MAXSTUDIOBONES];
+extern int g_aimatbonemap[MAXSTUDIOBONES]; // map used aimatpbone's to source aimatpbone's (may be optimized out)
 
 
 struct s_forcedhierarchy_t
@@ -1088,16 +1086,16 @@ struct s_forcedhierarchy_t
 	char			subparentname[MAXSTUDIONAME];
 };
 
-EXTERN int g_numforcedhierarchy;
-EXTERN s_forcedhierarchy_t g_forcedhierarchy[MAXSTUDIOBONES];
+extern int g_numforcedhierarchy;
+extern s_forcedhierarchy_t g_forcedhierarchy[MAXSTUDIOBONES];
 
 struct s_forcedrealign_t
 {
 	char			name[MAXSTUDIONAME];
 	RadianEuler		rot;
 };
-EXTERN int g_numforcedrealign;
-EXTERN s_forcedrealign_t g_forcedrealign[MAXSTUDIOBONES];
+extern int g_numforcedrealign;
+extern s_forcedrealign_t g_forcedrealign[MAXSTUDIOBONES];
 
 struct s_limitrotation_t
 {
@@ -1106,8 +1104,8 @@ struct s_limitrotation_t
 	char			*sequencename[64];
 };
 
-EXTERN int g_numlimitrotation;
-EXTERN s_limitrotation_t g_limitrotation[MAXSTUDIOBONES];
+extern int g_numlimitrotation;
+extern s_limitrotation_t g_limitrotation[MAXSTUDIOBONES];
 
 extern int BuildTris (s_trianglevert_t (*x)[3], s_mesh_t *y, byte **ppdata );
 
@@ -1119,9 +1117,9 @@ struct s_bonesaveframe_t
 	bool		bSaveRot;
 };
 
-EXTERN CUtlVector< s_bonesaveframe_t > g_bonesaveframe;
+extern CUtlVector< s_bonesaveframe_t > g_bonesaveframe;
 
-EXTERN	int is_v1support;
+extern	int is_v1support;
 
 int OpenGlobalFile( char *src );
 s_source_t *Load_Source( char const *filename, const char *ext, bool reverse = false, bool isActiveModel = false );
@@ -1200,19 +1198,19 @@ extern int	g_iLinecount;
 extern int g_min_faces, g_max_faces;
 extern float g_min_resolution, g_max_resolution;
 
-EXTERN	int g_numverts;
-EXTERN	Vector g_vertex[MAXSTUDIOVERTS];
-EXTERN	s_boneweight_t g_bone[MAXSTUDIOVERTS];
+extern	int g_numverts;
+extern	Vector g_vertex[MAXSTUDIOVERTS];
+extern	s_boneweight_t g_bone[MAXSTUDIOVERTS];
 
-EXTERN	int g_numnormals;
-EXTERN	Vector g_normal[MAXSTUDIOVERTS];
+extern	int g_numnormals;
+extern	Vector g_normal[MAXSTUDIOVERTS];
 
-EXTERN	int g_numtexcoords;
-EXTERN	Vector2D g_texcoord[MAXSTUDIOVERTS];
+extern	int g_numtexcoords;
+extern	Vector2D g_texcoord[MAXSTUDIOVERTS];
 
-EXTERN	int g_numfaces;
-EXTERN	s_tmpface_t g_face[MAXSTUDIOTRIANGLES];
-EXTERN	s_face_t g_src_uface[MAXSTUDIOTRIANGLES];	// max res unified faces
+extern	int g_numfaces;
+extern	s_tmpface_t g_face[MAXSTUDIOTRIANGLES];
+extern	s_face_t g_src_uface[MAXSTUDIOTRIANGLES];	// max res unified faces
 
 struct v_unify_t
 {
@@ -1226,9 +1224,9 @@ struct v_unify_t
 	v_unify_t *next;
 };
 
-EXTERN	v_unify_t *v_list[MAXSTUDIOVERTS];
-EXTERN	v_unify_t v_listdata[MAXSTUDIOVERTS];
-EXTERN	int numvlist;
+extern	v_unify_t *v_list[MAXSTUDIOVERTS];
+extern	v_unify_t v_listdata[MAXSTUDIOVERTS];
+extern	int numvlist;
 
 int SortAndBalanceBones( int iCount, int iMaxCount, int bones[], float weights[] );
 void Grab_Vertexanimation( s_source_t *psource );
@@ -1316,7 +1314,7 @@ private:
 	bool m_bFacialAnimation;
 };
 
-EXTERN CUtlVector<LodScriptData_t> g_ScriptLODs;
+extern CUtlVector<LodScriptData_t> g_ScriptLODs;
 
 extern bool g_collapse_bones;
 extern bool g_quiet;
@@ -1336,8 +1334,8 @@ extern bool g_bOverridePreDefinedBones;
 extern bool g_bXbox;
 extern int g_minLod;
 
-EXTERN int g_numcollapse;
-EXTERN char *g_collapse[MAXSTUDIOSRCBONES];
+extern int g_numcollapse;
+extern char *g_collapse[MAXSTUDIOSRCBONES];
 
 extern float GetCollisionModelMass();
 

@@ -3,16 +3,16 @@
 // Purpose: 
 //
 // $NoKeywords: $
-//=============================================================================//
-
+//=====================================================================================//
 #ifndef HARDWAREVERTEXCACHE_H
 #define HARDWAREVERTEXCACHE_H
+
 #ifdef _WIN32
 #pragma once
 #endif
 
-// emulate a hardware post T&L vertex fifo
 
+// emulate a hardware post T&L vertex fifo
 class CHardwareVertexCache
 {
 public:
@@ -28,5 +28,6 @@ private:
 	int m_HeadIndex;
 	int m_NumEntries;
 };
+
 
 #endif // HARDWAREVERTEXCACHE_H
