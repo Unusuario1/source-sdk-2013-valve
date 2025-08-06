@@ -236,16 +236,20 @@ void SpewPerfStats( studiohdr_t *pStudioHdr, const char *pFilename )
 		drawModelInfo.m_pStudioHdr = pStudioHdr;
 		drawModelInfo.m_pHardwareData = &studioHWData;	
 		int i;
+
+		// TODO, Unusuario2: FIX THIS!!
+#if 0
 		for( i = studioHWData.m_RootLOD; i < studioHWData.m_NumLODs; i++ )
 		{
 			CUtlBuffer statsOutput( 0, 0, true /* text */ );
 			printf( "LOD: %d\n", i );
 			drawModelInfo.m_Lod = i;
-			g_pStudioRender->GetPerfStats( drawModelInfo, &statsOutput );
+			g_pStudioRender->GetPerfStats( &drawModelInfo, &statsOutput );
 			printf( "\tactual tris: %d\n", ( int )drawModelInfo.m_ActualTriCount );
 			printf( "\ttexture memory bytes: %d\n", ( int )drawModelInfo.m_TextureMemoryBytes );
 			printf( ( char * )statsOutput.Base() );
 		}
+#endif
 		g_pStudioRender->UnloadModel( &studioHWData );
 		free(pVtxHdr);
 	}

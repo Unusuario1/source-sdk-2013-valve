@@ -48,11 +48,14 @@ typedef void (*StudioRender_Printf_t)( PRINTF_FORMAT_STRING const char *fmt, ...
 
 struct StudioRenderConfig_t
 {
+	StudioRender_Printf_t pConPrintf;
+	StudioRender_Printf_t pConDPrintf;
 	float fEyeShiftX;	// eye X position
 	float fEyeShiftY;	// eye Y position
 	float fEyeShiftZ;	// eye Z position
 	float fEyeSize;		// adjustment to iris textures
 	float fEyeGlintPixelWidthLODThreshold;
+	int eyeGloss;		// wet eyes
 
 	int maxDecalsPerModel;
 	int drawEntities;
@@ -76,8 +79,62 @@ struct StudioRenderConfig_t
 
 	// Reserved for future use
 	int m_nReserved[4];
+
+	// Setters and getters for normals and tangent frame (now in one bitfield)
+	void SetNormals(bool bN);
+	void SetTangentFrame(bool bTF);
+	void SetZBufferedWireframe(bool bZ);
+	bool GetNormals(void);
+	bool GetTangentFrame(void);
+	bool GetZBufferedWireframe(void);
+private:
+	// Bitfield for normals, tangent frame and z buffered wireframe
+	// In earlier interfaces, this was just a bool for drawing normals
+	unsigned char bRenderFlags;
 };
 
+#define NORMAL_MASK				( 1 << 0 )
+#define TANGENT_FRAME_MASK		( 1 << 1 )
+#define ZBUFFER_WIREFRAME_MASK	( 1 << 2 )
+
+inline void StudioRenderConfig_t::SetNormals(bool bN)
+{
+	if (bN)
+		bRenderFlags |= NORMAL_MASK;
+	else
+		bRenderFlags &= ~NORMAL_MASK;
+}
+
+inline void StudioRenderConfig_t::SetTangentFrame(bool bTF)
+{
+	if (bTF)
+		bRenderFlags |= TANGENT_FRAME_MASK;
+	else
+		bRenderFlags &= ~TANGENT_FRAME_MASK;
+}
+
+inline void StudioRenderConfig_t::SetZBufferedWireframe(bool bZ)
+{
+	if (bZ)
+		bRenderFlags |= ZBUFFER_WIREFRAME_MASK;
+	else
+		bRenderFlags &= ~ZBUFFER_WIREFRAME_MASK;
+}
+
+inline bool StudioRenderConfig_t::GetNormals(void)
+{
+	return ((bRenderFlags & NORMAL_MASK) != 0);
+}
+
+inline bool StudioRenderConfig_t::GetTangentFrame(void)
+{
+	return ((bRenderFlags & TANGENT_FRAME_MASK) != 0);
+}
+
+inline bool StudioRenderConfig_t::GetZBufferedWireframe(void)
+{
+	return ((bRenderFlags & ZBUFFER_WIREFRAME_MASK) != 0);
+}
 
 
 //-----------------------------------------------------------------------------
@@ -202,19 +259,33 @@ struct ColorMeshInfo_t
 
 struct DrawModelInfo_t
 {
-	studiohdr_t		*m_pStudioHdr;
-	studiohwdata_t	*m_pHardwareData;
+	studiohdr_t* m_pStudioHdr;
+	studiohwdata_t* m_pHardwareData;
 	StudioDecalHandle_t m_Decals;
-	int				m_Skin;
-	int				m_Body;
-	int				m_HitboxSet;
-	void			*m_pClientEntity;
-	int				m_Lod;
-	ColorMeshInfo_t	*m_pColorMeshes;
+	int m_Skin;
+	int m_Body;
+	int m_HitboxSet;
+	void* m_pClientEntity;
+	int m_Lod;
+	IMesh** m_ppColorMeshes;
+	int m_ActualTriCount;
+	int m_TextureMemoryBytes;
+	int m_NumHardwareBones;
+	int m_NumBatches;
+	int m_NumMaterials;
+	CFastTimer m_RenderTime;
+	CUtlVectorFixed<IMaterial*, MAX_DRAW_MODEL_INFO_MATERIALS> m_Materials;
+
 	bool			m_bStaticLighting;
 	Vector			m_vecAmbientCube[6];		// ambient, and lights that aren't in locallight[]
 	int				m_nLocalLightCount;
 	LightDesc_t		m_LocalLightDescs[4];
+
+	DrawModelInfo_t() {}
+
+private:
+	// No copy constructors allowed (see LightDesc_t).
+	DrawModelInfo_t(const DrawModelInfo_t& vOther);
 };
 
 struct GetTriangles_Vertex_t
@@ -274,6 +345,10 @@ public:
 abstract_class IStudioRender : public IAppSystem
 {
 public:
+	// FIXME: For backward compatibility
+	virtual bool Init(CreateInterfaceFn materialSystemFactory, CreateInterfaceFn materialSystemHWConfigFactory,
+	CreateInterfaceFn convarFactory, CreateInterfaceFn studioDataCacheFactory) = 0;
+
 	virtual void BeginFrame( void ) = 0;
 	virtual void EndFrame( void ) = 0;
 

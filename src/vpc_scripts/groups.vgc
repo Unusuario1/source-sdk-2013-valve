@@ -60,6 +60,7 @@ $Group "everything"
 	"vvis_dll"
 	"vvis_launcher"
 	"studiomdl"
+	"nvtristriplib"
 
 	"game_shader_generic_example"
 

@@ -1337,23 +1337,23 @@ extern int g_minLod;
 extern int g_numcollapse;
 extern char *g_collapse[MAXSTUDIOSRCBONES];
 
-extern float GetCollisionModelMass();
+float GetCollisionModelMass();
 
 
 // the first time these are called, the name of the model/QC file is printed so that when 
 // running in batch mode, no echo, when dumping to a file, it can be determined which file is broke.
-extern void MdlError( char const *pMsg, ... );
-extern void MdlWarning( char const *pMsg, ... );
+void MdlError( char const *pMsg, ... );
+void MdlWarning( char const *pMsg, ... );
 
-extern void CreateMakefile_AddDependency( const char *pFileName );
+void CreateMakefile_AddDependency( const char *pFileName );
 
-extern bool ComparePath( const char *a, const char *b );
+bool ComparePath( const char *a, const char *b );
 
-extern byte IsByte( int val );
-extern char IsChar( int val );
-extern int IsInt24( int val );
-extern short IsShort( int val );
-extern unsigned short IsUShort( int val );
+byte IsByte( int val );
+char IsChar( int val );
+int IsInt24( int val );
+short IsShort( int val );
+unsigned short IsUShort( int val );
 
 
 

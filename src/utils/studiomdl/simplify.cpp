@@ -30,8 +30,8 @@
 #include "studio.h"
 #include "studiomdl.h"
 #include "bone_setup.h"
-#include "vstdlib/strtools.h"
-#include "vmatrix.h"
+#include "strtools.h"
+#include "mathlib/vmatrix.h"
 
 class CBoneRenderBounds
 {

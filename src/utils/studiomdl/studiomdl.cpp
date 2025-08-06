@@ -63,9 +63,173 @@ bool g_bNoWarnings = false;
 
 char g_path[1024];
 
+// Unusuario2: CHECK THIS!!
+char outname[1024];
+qboolean	cdset;
+int			numdirs;
+char		cddir[32][MAX_PATH];
+int			numcdtextures;
+char* cdtextures[16];
+char		fullpath[1024];
 
+char		rootname[MAXSTUDIONAME];		// name of the root bone
+float		g_defaultscale;
+float		g_currentscale;
+RadianEuler	g_defaultrotation;
+
+
+char		defaulttexture[16][MAX_PATH];
+char		sourcetexture[16][MAX_PATH];
+
+int			numrep;
+
+int			tag_reversed;
+int			tag_normals;
+int			flip_triangles;
+float		normal_blend;
+int			dump_hboxes;
+int			ignore_warnings;
+
+Vector		eyeposition;
+Vector		illumposition;
+int			illumpositionset;
+int			gflags;
+Vector		bbox[2];
+Vector		cbox[2];
+bool		g_wrotebbox;
+bool		g_wrotecbox;
+
+int			clip_texcoords;
+bool		g_staticprop;
+bool		g_centerstaticprop;
+
+bool		g_realignbones;
+bool		g_definebones;
+
+int g_numbones;
+s_bonetable_t g_bonetable[MAXSTUDIOSRCBONES];
+s_animation_t* g_panimation[MAXSTUDIOANIMS];
+s_texture_t g_texture[MAXSTUDIOSKINS];
+int g_numtextures;
+int	g_material[MAXSTUDIOSKINS]; // link into texture array
+int g_nummaterials;
+
+float g_gamma;
+int g_numskinref;
+int g_numskinfamilies;
+int g_skinref[256][MAXSTUDIOSKINS]; // [skin][skinref], returns texture index
+int g_numtexturegroups;
+int g_numtexturelayers[32];
+int g_numtexturereps[32];
+int g_texturegroup[32][32][32];
+
+int g_min_faces, g_max_faces;
+float g_min_resolution, g_max_resolution;
+
+int g_numverts;
+Vector g_vertex[MAXSTUDIOVERTS];
+s_boneweight_t g_bone[MAXSTUDIOVERTS];
+
+int g_numnormals;
+Vector g_normal[MAXSTUDIOVERTS];
+
+int g_numtexcoords;
+
+int g_numfaces;
+s_tmpface_t g_face[MAXSTUDIOTRIANGLES];
+s_face_t g_src_uface[MAXSTUDIOTRIANGLES];	// max res unified faces
+
+v_unify_t* v_list[MAXSTUDIOVERTS];
+v_unify_t v_listdata[MAXSTUDIOVERTS];
+int numvlist;
+
+CUtlVector<LodScriptData_t> g_ScriptLODs;
+
+int g_numcollapse;
+char* g_collapse[MAXSTUDIOSRCBONES];
+
+int g_numincludemodels;
+int g_numimportbones;
+int g_numrenamedbones;
+
+
+// Unusuario2: check this also!!
+byte		g_constdirectionalightdot;
+Vector2D g_texcoord[MAXSTUDIOVERTS];
+Vector g_defaultadjust;
+s_weightlist_t g_weightlist[MAXWEIGHTLISTS];
+s_model_t* g_model[MAXSTUDIOMODELS];
+s_iklock_t g_ikautoplaylock[16];
+s_ikchain_t g_ikchain[16];
+s_cmdlist_t g_cmdlist[MAXSTUDIOANIMS];
+s_bodypart_t g_bodypart[MAXSTUDIOBODYPARTS];
+int	g_numweightlist;
+int is_v1support;
+int g_nummodelsbeforeLOD;
+int g_nummodels;
+int g_numikchains;
+int g_numikautoplaylocks;
+int g_numbodyparts;
+int g_numani;
+CUtlVector< s_sequence_t > g_sequence;
+s_source_t* g_source[MAXSTUDIOSEQUENCES];
+s_screenalignedbone_t g_screenalignedbone[MAXSTUDIOSRCBONES];
+s_renamebone_t g_renamedbone[MAXSTUDIOSRCBONES];
+s_quatinterpbone_t g_quatinterpbones[MAXSTUDIOBONES];
+s_poseparameter_t g_pose[32]; // FIXME: this shouldn't be hard coded		
+s_mouth_t g_mouth[MAXSTUDIOSRCBONES]; // ?? skins?	
+s_limitrotation_t g_limitrotation[MAXSTUDIOBONES];
+s_includemodel_t g_includemodel[128];
+s_importbone_t g_importbone[MAXSTUDIOSRCBONES];
+s_hitgroup_t g_hitgroup[MAXSTUDIOSRCBONES];
+s_forcedrealign_t g_forcedrealign[MAXSTUDIOBONES];
+s_forcedhierarchy_t g_forcedhierarchy[MAXSTUDIOBONES];
+s_flexrule_t g_flexrule[MAXSTUDIOFLEXRULES];
+s_flexkey_t g_flexkey[MAXSTUDIOFLEXKEYS];
+s_flexkey_t* g_defaultflexkey;
+s_flexdesc_t g_flexdesc[MAXSTUDIOFLEXDESC];
+s_flexcontroller_t g_flexcontroller[MAXSTUDIOFLEXCTRL];
+s_bonecontroller_t g_bonecontroller[MAXSTUDIOSRCBONES];
+s_axisinterpbone_t g_axisinterpbones[MAXSTUDIOBONES];
+s_attachment_t g_attachment[MAXSTUDIOSRCBONES];
+s_animblock_t g_animblock[MAXSTUDIOANIMBLOCKS];
+s_aimatbone_t g_aimatbones[MAXSTUDIOBONES];
+int g_xnodeskip[10000][2];
+int g_xnode[100][100];
+int g_quatinterpbonemap[MAXSTUDIOBONES]; // map used quatinterpbone's to source axisinterpbone's		
+int g_numxnodeskips;
+int g_numxnodes;
+int g_numsources;
+int g_numscreenalignedbones;
+int g_numposeparameters;
+int g_nummouths;
+int g_numlimitrotation;
+int g_numhitgroups;
+int g_numforcedrealign;
+int g_numforcedhierarchy;
+int g_numflexrules;
+int g_numflexkeys;
+int g_numflexdesc;
+int g_numflexcontrollers;
+int g_numbonecontrollers;
+int g_numaxisinterpbones;
+int g_numattachments;
+int g_numanimblocks;
+int g_numaimatbones;
+int g_axisinterpbonemap[MAXSTUDIOBONES]; // map used axisinterpbone's to source axisinterpbone's		
+int g_animblocksize;
+int g_aimatbonemap[MAXSTUDIOBONES]; // map used aimatpbone's to source aimatpbone's (may be optimized out)		
 CUtlVector< s_hitboxset > g_hitboxsets;
+CUtlVector< s_bonesaveframe_t > g_bonesaveframe;
+CUtlVector< s_bonemerge_t > g_BoneMerge;
 CUtlVector< char >	g_KeyValueText;
+char g_animblockname[260];
+char* g_xnodename[100];
+bool g_bFast;
+int	g_numcmdlists;
+
+int g_numquatinterpbones;
+
 
 
 //-----------------------------------------------------------------------------

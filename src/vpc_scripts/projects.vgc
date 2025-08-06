@@ -155,3 +155,9 @@ $Project "studiomdl"
 {
 	"utils\studiomdl\studiomdl.vpc" [$WINDOWS]
 }
+
+
+$Project "nvtristriplib"
+{
+	"utils\nvtristriplib\nvtristriplib.vpc" [$WINDOWS]
+}

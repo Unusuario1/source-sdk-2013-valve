@@ -1503,7 +1503,7 @@ static void WriteModel( studiohdr_t *phdr )
 		AddToStringTable( pflexcontroller, &pflexcontroller->sztypeindex, g_flexcontroller[j].type );
 		pflexcontroller->min = g_flexcontroller[j].min;
 		pflexcontroller->max = g_flexcontroller[j].max;
-		pflexcontroller->link = -1;
+		pflexcontroller->localToGlobal = -1;
 		pflexcontroller++;
 	}
 
@@ -2249,7 +2249,8 @@ void WriteModelFiles(void)
 	}
 }
 
-const mstudio_modelvertexdata_t *mstudiomodel_t::GetVertexData()
+// Unusuario2: Remove??
+const mstudio_modelvertexdata_t *mstudiomodel_t::_GetVertexData()
 {
 	static vertexFileHeader_t	*pVertexHdr;
 	char						filename[260];

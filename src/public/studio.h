@@ -519,6 +519,7 @@ struct mstudioattachment_t
 	int					unused[8];
 };
 
+
 // TODO, Unsuario2: Use a enum??
 #define IK_SELF			1
 #define IK_WORLD		2
@@ -1252,9 +1253,9 @@ struct mstudioeyeball_t
 	Vector	forward;
 	int		texture;
 
-	int		unused1;
+	int		iris_material; // Unsuario2, Remove??
 	float	iris_scale;
-	int		unused2;
+	int		glint_material;// Unsuario2, Remove??
 
 	int		upperflexdesc[3];	// index of raiser, neutral, and lowerer flexdesc that is set by flex controllers
 	int		lowerflexdesc[3];
@@ -1429,6 +1430,7 @@ struct mstudiomodel_t
 	// Access thin/fat mesh vertex data (only one will return a non-NULL result)
 	const mstudio_modelvertexdata_t		*GetVertexData(		void *pModelData = NULL );
 	const thinModelVertices_t			*GetThinVertexData(	void *pModelData = NULL );
+	const mstudio_modelvertexdata_t*	mstudiomodel_t::_GetVertexData();
 
 	int					numattachments;
 	int					attachmentindex;
@@ -2364,6 +2366,10 @@ struct studiohdr_t
 	// implementation specific back pointer to virtual data. Relocated to studiohdr2_t
 	int					unused_pVertexBase;
 	int					unused_pIndexBase;
+
+	// Unsuario2: backported from sdk2006
+	void* pVertexBase;
+	void* pIndexBase;
 #else
 	mutable void		*pVertexBase;
 	mutable void		*pIndexBase;
@@ -2437,6 +2443,9 @@ struct studiohdr_t
 	// [and move all fields in studiohdr2_t into studiohdr_t and kill studiohdr2_t],
 	// or add your stuff to studiohdr2_t. See NumSrcBoneTransforms/SrcBoneTransform for the pattern to use.
 	int					unused2[1];
+
+	// Unusuario2: Backported from sdk2006
+	int					zeroframecacheindex;
 
 	studiohdr_t() = default;
 

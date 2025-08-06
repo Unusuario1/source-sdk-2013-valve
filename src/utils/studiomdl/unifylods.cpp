@@ -17,8 +17,8 @@
 #include "studio.h"
 #include "studiomdl.h"
 #include "bone_setup.h"
-#include "vstdlib/strtools.h"
-#include "vmatrix.h"
+#include "strtools.h"
+#include "mathlib/vmatrix.h"
 #include "optimize.h"
 
 // debugging only - enabling turns off remapping to create all lod vertexes as unique
