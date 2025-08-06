@@ -5,24 +5,15 @@
 // $NoKeywords: $
 //
 //=====================================================================================//
-
-//
-// studiomdl.c: generates a studio .mdl file from a .qc script
-// sources/<scriptname>.mdl.
-//
-
-
 #pragma warning( disable : 4244 )
 #pragma warning( disable : 4237 )
 #pragma warning( disable : 4305 )
 #pragma warning( disable : 4267 )
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <math.h>
-
 #include "cmdlib.h"
 #include "scriplib.h"
 #include <mathlib/mathlib.h>
@@ -30,15 +21,18 @@
 #include "studiomdl.h"
 
 
-int lookup_index( s_source_t *psource, int material, Vector& vertex, Vector& normal, Vector2D texcoord )
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+int lookup_index(s_source_t* psource, int material, Vector& vertex, Vector& normal, Vector2D texcoord)
 {
 	int i;
 
-	for (i = 0; i < numvlist; i++) 
+	for (i = 0; i < numvlist; i++)
 	{
 		if (v_listdata[i].m == material
-			&& DotProduct( g_normal[i], normal ) > normal_blend
-			&& VectorCompare( g_vertex[i], vertex )
+			&& DotProduct(g_normal[i], normal) > normal_blend
+			&& VectorCompare(g_vertex[i], vertex)
 			&& g_texcoord[i][0] == texcoord[0]
 			&& g_texcoord[i][1] == texcoord[1])
 		{
@@ -47,12 +41,12 @@ int lookup_index( s_source_t *psource, int material, Vector& vertex, Vector& nor
 		}
 	}
 	if (i >= MAXSTUDIOVERTS) {
-		MdlError( "too many indices in source: \"%s\"\n", psource->filename);
+		MdlError("too many indices in source: \"%s\"\n", psource->filename);
 	}
 
-	VectorCopy( vertex, g_vertex[i] );
-	VectorCopy( normal, g_normal[i] );
-	Vector2Copy( texcoord, g_texcoord[i] );
+	VectorCopy(vertex, g_vertex[i]);
+	VectorCopy(normal, g_normal[i]);
+	Vector2Copy(texcoord, g_texcoord[i]);
 
 	v_listdata[i].v = i;
 	v_listdata[i].m = material;
@@ -67,6 +61,10 @@ int lookup_index( s_source_t *psource, int material, Vector& vertex, Vector& nor
 }
 
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void ParseFaceData( s_source_t *psource, int material, s_face_t *pFace )
 {
 	int index[3];
@@ -196,6 +194,10 @@ void ParseFaceData( s_source_t *psource, int material, s_face_t *pFace )
 	}
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Grab_Triangles( s_source_t *psource )
 {
 	int		i;
@@ -292,86 +294,69 @@ void Grab_Triangles( s_source_t *psource )
 }
 
 
-int Load_SMD ( s_source_t *psource )
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+int Load_SMD(s_source_t* psource)
 {
 	char	cmd[1024];
 	int		option;
 
-	if (!OpenGlobalFile( psource->filename ))
+	if (!OpenGlobalFile(psource->filename))
 		return 0;
 
-	if( !g_quiet )
+	if (!g_quiet)
 	{
-		Msg ("SMD MODEL %s\n", psource->filename);
+		Msg("SMD MODEL %s\n", psource->filename);
 	}
 
 	g_iLinecount = 0;
 
-	while (fgets( g_szLine, sizeof( g_szLine ), g_fpInput ) != NULL) 
+	while (fgets(g_szLine, sizeof(g_szLine), g_fpInput) != NULL)
 	{
 		g_iLinecount++;
-		int numRead = sscanf( g_szLine, "%s %d", cmd, &option );
+		int numRead = sscanf(g_szLine, "%s %d", cmd, &option);
 
 		// Blank line
 		if ((numRead == EOF) || (numRead == 0))
 			continue;
 
-		if (stricmp( cmd, "version" ) == 0) 
+		if (stricmp(cmd, "version") == 0)
 		{
-			if (option != 1) 
+			if (option != 1)
 			{
 				MdlError("bad version\n");
 			}
 		}
-		else if (stricmp( cmd, "nodes" ) == 0) 
+		else if (stricmp(cmd, "nodes") == 0)
 		{
-			psource->numbones = Grab_Nodes( psource->localBone );
+			psource->numbones = Grab_Nodes(psource->localBone);
 		}
-		else if (stricmp( cmd, "skeleton" ) == 0) 
+		else if (stricmp(cmd, "skeleton") == 0)
 		{
-			Grab_Animation( psource );
+			Grab_Animation(psource);
 		}
-		else if (stricmp( cmd, "triangles" ) == 0) 
+		else if (stricmp(cmd, "triangles") == 0)
 		{
-			Grab_Triangles( psource );
+			Grab_Triangles(psource);
 		}
-		else if (stricmp( cmd, "vertexanimation" ) == 0) 
+		else if (stricmp(cmd, "vertexanimation") == 0)
 		{
-			Grab_Vertexanimation( psource );
+			Grab_Vertexanimation(psource);
 		}
-		else if ((strncmp( cmd, "//", 2 ) == 0) || (strncmp( cmd, ";", 1 ) == 0) || (strncmp( cmd, "#", 1 ) == 0))
+		else if ((strncmp(cmd, "//", 2) == 0) || (strncmp(cmd, ";", 1) == 0) || (strncmp(cmd, "#", 1) == 0))
 		{
 			continue;
 		}
-		else 
+		else
 		{
-			MdlWarning("unknown studio command \"%s\"\n", cmd );
+			MdlWarning("unknown studio command \"%s\"\n", cmd);
 		}
 	}
-	fclose( g_fpInput );
+	fclose(g_fpInput);
 
 	is_v1support = true;
 
 	return 1;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

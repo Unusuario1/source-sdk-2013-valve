@@ -10,7 +10,6 @@
 #include <sys/stat.h>
 #include <math.h>
 #include <float.h>
-
 #include "cmdlib.h"
 #include "scriplib.h"
 #include <mathlib/mathlib.h>
@@ -25,12 +24,17 @@
 // to ensure remapping logic does not introduce collapse anomalies
 //#define UNIQUE_VERTEXES_FOR_LOD
 
+
 //-----------------------------------------------------------------------------
 // Forward declarations local to this file
 //-----------------------------------------------------------------------------
 class CVertexDictionary;
 struct VertexInfo_t;
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void ValidateBoneWeights( const s_source_t *pSrc );
 void ValidateBoneWeight( const s_boneweight_t &boneWeight );
 void SortBoneWeightByIndex( s_boneweight_t &boneWeight );
@@ -105,6 +109,9 @@ inline VertexInfo_t &CVertexDictionary::Vertex( int i )
 	return m_Verts[i];
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 inline const VertexInfo_t &CVertexDictionary::Vertex( int i ) const
 {
 	return m_Verts[i];
@@ -120,12 +127,18 @@ inline int CVertexDictionary::PrevLODVertexCount() const
 }
 
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 inline int CVertexDictionary::RootLODVertexStart() const
 {
 	return m_nRootLODStart;
 }
 
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 inline int CVertexDictionary::RootLODVertexEnd() const
 {
 	return m_nRootLODEnd;
@@ -141,6 +154,9 @@ void CVertexDictionary::StartNewLOD()
 }
 
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void CVertexDictionary::SetRootVertexRange( int start, int end )
 {
 	m_nRootLODStart = start;
@@ -195,6 +211,9 @@ int CVertexDictionary::VertexCount() const
 }
 
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 s_source_t* GetModelLODSource( const char *pModelName, 
 								const LodScriptData_t& scriptLOD, bool* pFound )
 {
@@ -240,6 +259,7 @@ s_source_t* GetModelLODSource( const char *pModelName,
 
 #define UNMATCHED_BONE_WEIGHT 1.0f
 
+
 //-----------------------------------------------------------------------------
 // Computes error between two positions; returns false if the error is too great
 //-----------------------------------------------------------------------------
@@ -269,6 +289,7 @@ bool CompareNormalFuzzy( const Vector &n1, const Vector &n2, float &flError )
 	return ( flDot >= flEpsilon );
 }
 
+
 //-----------------------------------------------------------------------------
 // Computes error between two tangentS vectors; returns false if the error is too great
 //-----------------------------------------------------------------------------
@@ -296,6 +317,7 @@ bool CompareTangentSFuzzy( const Vector4D &n1, const Vector4D &n2, float &flErro
 
 	return ( flDot >= flEpsilon );
 }
+
 
 //-----------------------------------------------------------------------------
 // Computes error between two texcoords; returns false if the error is too great
@@ -403,6 +425,10 @@ int FindMaterialByName( const char *pMaterialName )
 	return -1;
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 static void GetLODSources( CUtlVector<s_source_t *> &lods, const s_model_t *pSrcModel )
 {
 	int lodID;
@@ -425,6 +451,10 @@ static void GetLODSources( CUtlVector<s_source_t *> &lods, const s_model_t *pSrc
 	}
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 static s_mesh_t *FindMeshByMaterial( s_source_t *pSrc, int nMaterialID )
 {
 	int m;
@@ -441,6 +471,9 @@ static s_mesh_t *FindMeshByMaterial( s_source_t *pSrc, int nMaterialID )
 }
 
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 static s_mesh_t *FindOrCullMesh( int nLodID, s_source_t *pSrc, int nMaterialID )
 {
 	char	baseMeshName[MAX_PATH];
@@ -522,6 +555,9 @@ void ValidateBoneWeights( const s_source_t *pSrc )
 }
 
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 static void CopyVerts( int nLodID, const s_source_t *pSrc, const s_mesh_t *pSrcMesh, CVertexDictionary &vertexDict, s_mesh_t *pDstMesh, int *pMeshVertIndexMap )
 {
 	// populate the dictionary with the verts
@@ -534,6 +570,10 @@ static void CopyVerts( int nLodID, const s_source_t *pSrc, const s_mesh_t *pSrcM
 	pDstMesh->numvertices = pSrcMesh->numvertices;
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 static void CopyFaces( const s_source_t *pSrc, const s_mesh_t *pSrcMesh, CUtlVector<s_face_t> &faces, s_mesh_t *pDstMesh )
 {
 	int srcFaceID;
@@ -549,11 +589,16 @@ static void CopyFaces( const s_source_t *pSrc, const s_mesh_t *pSrcMesh, CUtlVec
 	}
 }
 
+// Unsuario2, TODO: Move this to a enum?
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 #define IGNORE_POSITION		0x01
 #define IGNORE_TEXCOORD		0x02
 #define IGNORE_BONEWEIGHT	0x04
 #define IGNORE_NORMAL		0x08
 #define IGNORE_TANGENTS		0x10
+
 
 //-----------------------------------------------------------------------------
 // return -1 if there is no match. The index returned is used to index into vertexDict.
@@ -908,6 +953,7 @@ static void CalculateBoneWeightFromRootLod( const VertexInfo_t &searchVertex, CV
 	FindBoneWeightWithinModel( searchVertex, pRootLODSrc, idealVertex.m_BoneWeight, IGNORE_BONEWEIGHT|IGNORE_TANGENTS );
 }
 
+
 //-----------------------------------------------------------------------------
 // Find a matching vertex
 //-----------------------------------------------------------------------------
@@ -935,6 +981,9 @@ static void CalculateIdealVert( const VertexInfo_t &searchVertex, CVertexDiction
 }
 
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 static bool FuzzyFloatCompare( float f1, float f2, float epsilon )
 {
 	if( fabs( f1 - f2 ) < epsilon )
@@ -1058,6 +1107,10 @@ static int FindOrCreateExactVertexInDictionary( CVertexDictionary &vertexDict,
 	return nMeshVertID - pDstMesh->vertexoffset;
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 static void PrintBonesUsedInLOD( s_source_t *pSrc )
 {
 	Msg( "PrintBonesUsedInLOD\n" );
@@ -1098,6 +1151,9 @@ static void	MarkBonesUsedByLod( const s_boneweight_t &boneWeight, int nLodID )
 }
 
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 static void PrintSBoneWeight( s_boneweight_t *pBoneWeight, const s_source_t *pSrc )
 {
 	int j;
@@ -1110,7 +1166,6 @@ static void PrintSBoneWeight( s_boneweight_t *pBoneWeight, const s_source_t *pSr
 			( float )pBoneWeight->weight[j], pBoneName );
 	}
 }
-
 
 
 //-----------------------------------------------------------------------------
@@ -1184,6 +1239,10 @@ static void CreateLODVertsInDictionary( int nLodID, const s_source_t *pRootLODSr
 	}
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 static void PrintSourceVerts( s_source_t *pSrc )
 {
 	int i;
@@ -1302,6 +1361,10 @@ static void BuildBoneLODMapping( CUtlVector<int> &boneMap, int lodID )
 	}
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 static void MarkRootLODBones( CVertexDictionary &vertexDictionary )
 {
 	// should result in an identity mapping
@@ -1321,6 +1384,7 @@ static void MarkRootLODBones( CVertexDictionary &vertexDictionary )
 		MarkBonesUsedByLod( boneWeight, 0 );
 	}
 }
+
 
 //-----------------------------------------------------------------------------
 // Computes LOD vertices for a model piece.
@@ -1442,6 +1506,10 @@ void UnifyLODs( void )
 
 static int g_NumBonesInLOD[MAX_NUM_LODS];
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 static void PrintSpaces( int numSpaces )
 {
 	int i;
@@ -1451,6 +1519,10 @@ static void PrintSpaces( int numSpaces )
 	}
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 static void SpewBoneInfo( int globalBoneID, int depth )
 {
 	s_bonetable_t *pBone = &g_bonetable[globalBoneID];
@@ -1487,6 +1559,10 @@ static void SpewBoneInfo( int globalBoneID, int depth )
 	}
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void SpewBoneUsageStats( void )
 {
 	memset( g_NumBonesInLOD, 0, sizeof( int ) * MAX_NUM_LODS );
@@ -1505,6 +1581,10 @@ void SpewBoneUsageStats( void )
 	}
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void MarkParentBoneLODs( void )
 {
 	int i;
@@ -1521,6 +1601,10 @@ void MarkParentBoneLODs( void )
 	}
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 static void LoadModelLODSource( s_model_t *pSrcModel )
 {
 	CUtlVector<s_source_t *> lods;
@@ -1535,6 +1619,10 @@ static void LoadModelLODSource( s_model_t *pSrcModel )
 	GetLODSources( lods, pSrcModel );
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void LoadLODSources( void )
 {
 	g_nummodelsbeforeLOD = g_nummodels;
@@ -1544,6 +1632,10 @@ void LoadLODSources( void )
 	}
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 static void ReplaceBonesRecursive( int globalBoneID, bool replaceThis, 
 								   CUtlVector<CLodScriptReplacement_t> &boneReplacements, 
 								   const char *replacementName )
@@ -1566,6 +1658,10 @@ static void ReplaceBonesRecursive( int globalBoneID, bool replaceThis,
 	}
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 static void ConvertSingleBoneTreeCollapseToReplaceBones( CLodScriptReplacement_t &boneTreeCollapse, 
 														 CUtlVector<CLodScriptReplacement_t> &boneReplacements )
 {
@@ -1579,6 +1675,10 @@ static void ConvertSingleBoneTreeCollapseToReplaceBones( CLodScriptReplacement_t
 	MdlWarning( "Couldn't find bone %s for bonetreecollapse, skipping\n", boneTreeCollapse.GetSrcName() );
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void ConvertBoneTreeCollapsesToReplaceBones( void )
 {
 	int i;
@@ -1607,6 +1707,10 @@ static void PrintReplacedBones( LodScriptData_t &lod )
 }
 */
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void FixupReplacedBonesForLOD( LodScriptData_t &lod )
 {
 /*
@@ -1641,6 +1745,10 @@ void FixupReplacedBonesForLOD( LodScriptData_t &lod )
 */
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void FixupReplacedBones( void )
 {
 	int i;

@@ -5,14 +5,6 @@
 // $NoKeywords: $
 //
 //=====================================================================================//
-
-
-//
-// studiomdl.c: generates a studio .mdl file from a .qc script
-// models/<scriptname>.mdl.
-//
-
-
 #pragma warning( disable : 4244 )
 #pragma warning( disable : 4237 )
 #pragma warning( disable : 4267 )
@@ -39,7 +31,6 @@
 #include "icommandline.h"
 #include "utldict.h"
 
-
 bool g_collapse_bones	= false;
 bool g_quiet			= false;
 bool g_badCollide		= false;
@@ -59,7 +50,7 @@ bool g_bLockBoneLengths = false;
 bool g_bOverridePreDefinedBones = true;
 bool g_bXbox			= false;
 bool g_bNoWarnings		= false;
-int  g_minLod = 0;
+int  g_minLod			= 0;
 
 char g_path[1024];
 
@@ -231,12 +222,15 @@ int	g_numcmdlists;
 int g_numquatinterpbones;
 
 
-
 //-----------------------------------------------------------------------------
 //  Stuff for writing a makefile to build models incrementally.
 //-----------------------------------------------------------------------------
 CUtlVector<CUtlSymbol> m_CreateMakefileDependencies;
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void CreateMakefile_AddDependency( const char *pFileName )
 {
 	if( !g_bCreateMakefile )
@@ -255,6 +249,10 @@ void CreateMakefile_AddDependency( const char *pFileName )
 	m_CreateMakefileDependencies.AddToTail( sym );
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void CreateMakefile_OutputMakefile( void )
 {
 	if( !g_bHasModelName )
@@ -295,9 +293,6 @@ void CreateMakefile_OutputMakefile( void )
 	fclose( fp );
 }
 
-//-----------------------------------------------------------------------------
-// 
-//-----------------------------------------------------------------------------
 
 static bool g_bFirstWarning = true;
 
@@ -405,6 +400,10 @@ void MdlWarning( const char *fmt, ... )
 
 #ifndef _DEBUG
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void MdlHandleCrash( const char *pMessage, bool bAssert )
 {
 	static LONG crashHandlerCount = 0;
@@ -417,7 +416,9 @@ void MdlHandleCrash( const char *pMessage, bool bAssert )
 }
 
 
-// This is called if we crash inside our crash handler. It just terminates the process immediately.
+//-----------------------------------------------------------------------------
+// Purpose: This is called if we crash inside our crash handler. It just terminates the process immediately.
+//-----------------------------------------------------------------------------
 LONG __stdcall MdlSecondExceptionFilter( struct _EXCEPTION_POINTERS *ExceptionInfo )
 {
 	TerminateProcess( GetCurrentProcess(), 2 );
@@ -425,6 +426,9 @@ LONG __stdcall MdlSecondExceptionFilter( struct _EXCEPTION_POINTERS *ExceptionIn
 }
 
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void MdlExceptionFilter( unsigned long code )
 {
 	// This is called if we crash inside our crash handler. It just terminates the process immediately.
@@ -477,10 +481,10 @@ void MdlExceptionFilter( unsigned long code )
 
 	TerminateProcess( GetCurrentProcess(), 1 );
 }
+#endif // _DEBUG
 
-#endif
 
-
+// Unusuario2, TODO: REMOVE THIS!
 int k_memtotal;
 void *kalloc( int num, int size )
 {
@@ -493,6 +497,8 @@ void *kalloc( int num, int size )
 	return ptr;
 }
 
+
+// Unusuario2, TODO: REMOVE THIS!
 void kmemset( void *ptr, int value, int size )
 {
 	// Msg( "kmemset( %x, %d, %d )\n", ptr, value, size );
@@ -500,6 +506,7 @@ void kmemset( void *ptr, int value, int size )
 	return;
 }
 
+// Unusuario2, TODO: REMOVE THIS!
 
 int verify_atoi( const char *token )
 {
@@ -510,6 +517,8 @@ int verify_atoi( const char *token )
 	return atoi( token );
 }
 
+
+// Unusuario2, TODO: REMOVE THIS!
 float verify_atof( const char *token )
 {
 	if (token[0] != '-' && token[0] != '.' && (token[0] < '0' || token[0] > '9'))
@@ -518,6 +527,8 @@ float verify_atof( const char *token )
 	}
 	return atof( token );
 }
+
+
 //-----------------------------------------------------------------------------
 // Key value block
 //-----------------------------------------------------------------------------
@@ -528,32 +539,34 @@ static void AppendKeyValueText( CUtlVector< char > *pKeyValue, const char *pStri
 	memcpy( pKeyValue->Base() + nFirst, pString, nLen );
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 int	KeyValueTextSize( CUtlVector< char > *pKeyValue )
 {
 	return pKeyValue->Count();
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 const char *KeyValueText( CUtlVector< char > *pKeyValue )
 {
 	return pKeyValue->Base();
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Option_KeyValues( CUtlVector< char > *pKeyValue );
 
-/*
-=================
-=================
-*/
 
-
-/*
-=================
-=================
-*/
-
-
-
-
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 int lookupControl( char *string )
 {
 	if (stricmp(string,"X")==0) return STUDIO_X;
@@ -577,12 +590,9 @@ int lookupControl( char *string )
 }
 
 
-
-/*
-=================
-=================
-*/
-
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 int LookupPoseParameter( char *name )
 {
 	int i;
@@ -604,6 +614,10 @@ int LookupPoseParameter( char *name )
 	return i;
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_PoseParameter( )
 {
 	if (g_numposeparameters >= MAXSTUDIOPOSEPARAM)
@@ -650,12 +664,9 @@ void Cmd_PoseParameter( )
 }
 
 
-/*
-=================
-=================
-*/
-
-// search case-insensitive for string2 in string
+//-----------------------------------------------------------------------------
+// Purpose: search case-insensitive for string2 in string
+//-----------------------------------------------------------------------------
 char *stristr( const char *string, const char *string2 )
 {
 	int c, len;
@@ -677,12 +688,10 @@ char *stristr( const char *string, const char *string2 )
 	return (char *)string;
 }
 
-/*
-=================
-=================
-*/
 
-
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 int lookup_texture( char *texturename, int maxlen )
 {
 	int i;
@@ -717,7 +726,10 @@ int lookup_texture( char *texturename, int maxlen )
 }
 
 
-void Cmd_RenameMaterial( void )
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void Cmd_RenameMaterial()
 {
 	char from[256];
 	char to[256];
@@ -741,7 +753,10 @@ void Cmd_RenameMaterial( void )
 }
 
 
-int use_texture_as_material( int textureindex )
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+int use_texture_as_material(int textureindex)
 {
 	if (g_texture[textureindex].material == -1)
 	{
@@ -753,7 +768,11 @@ int use_texture_as_material( int textureindex )
 	return g_texture[textureindex].material;
 }
 
-int material_to_texture( int material )
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+int material_to_texture(int material)
 {
 	int i;
 	for (i = 0; i < g_numtextures; i++)
@@ -766,8 +785,12 @@ int material_to_texture( int material )
 	return -1;
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 //Wrong name for the use of it.
-void scale_vertex( Vector &org )
+void scale_vertex(Vector& org)
 {
 	org[0] = org[0] * g_currentscale;
 	org[1] = org[1] * g_currentscale;
@@ -775,8 +798,10 @@ void scale_vertex( Vector &org )
 }
 
 
-
-void SetSkinValues( )
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void SetSkinValues()
 {
 	int			i, j;
 	int			index;
@@ -786,38 +811,38 @@ void SetSkinValues( )
 		char szName[256];
 
 		// strip down till it finds "models"
-		strcpyn( szName, fullpath );
-		while (szName[0] != '\0' && strnicmp( "models", szName, 6 ) != 0)
+		strcpyn(szName, fullpath);
+		while (szName[0] != '\0' && strnicmp("models", szName, 6) != 0)
 		{
-			strcpy( &szName[0], &szName[1] );
+			strcpy(&szName[0], &szName[1]);
 		}
 		if (szName[0] != '\0')
 		{
-			Q_StripFilename( szName );
-			strcat( szName, "/" );
+			Q_StripFilename(szName);
+			strcat(szName, "/");
 		}
 		else
 		{
-//			if( *g_pPlatformName )
-//			{
-//				strcat( szName, "platform_" );
-//				strcat( szName, g_pPlatformName );
-//				strcat( szName, "/" );	
-//			}
-			strcpy( szName, "models/" );	
-			strcat( szName, outname );
-			Q_StripExtension( szName, szName, sizeof( szName ) );
-			strcat( szName, "/" );
+			//			if( *g_pPlatformName )
+			//			{
+			//				strcat( szName, "platform_" );
+			//				strcat( szName, g_pPlatformName );
+			//				strcat( szName, "/" );	
+			//			}
+			strcpy(szName, "models/");
+			strcat(szName, outname);
+			Q_StripExtension(szName, szName, sizeof(szName));
+			strcat(szName, "/");
 		}
-		cdtextures[0] = strdup( szName );
+		cdtextures[0] = strdup(szName);
 		numcdtextures = 1;
 	}
 
 	for (i = 0; i < g_numtextures; i++)
 	{
 		char szName[256];
-		Q_StripExtension( g_texture[i].name, szName, sizeof( szName ) );
-		Q_strncpy( g_texture[i].name, szName, sizeof( g_texture[i].name ) );
+		Q_StripExtension(g_texture[i].name, szName, sizeof(szName));
+		Q_strncpy(g_texture[i].name, szName, sizeof(g_texture[i].name));
 	}
 
 	// build texture groups
@@ -854,12 +879,10 @@ void SetSkinValues( )
 	*/
 }
 
-/*
-=================
-=================
-*/
 
-
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 int LookupXNode( char *name )
 {
 	int i;
@@ -875,19 +898,15 @@ int LookupXNode( char *name )
 	return i;
 }
 
-
-/*
-=================
-=================
-*/
-
 char	g_szFilename[1024];
 FILE	*g_fpInput;
 char	g_szLine[4096];
 int		g_iLinecount;
 
-
-void Build_Reference( s_source_t *psource)
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void Build_Reference(s_source_t* psource)
 {
 	int		i, parent;
 	Vector	angle;
@@ -895,23 +914,23 @@ void Build_Reference( s_source_t *psource)
 	for (i = 0; i < psource->numbones; i++)
 	{
 		matrix3x4_t m;
-		AngleMatrix( psource->rawanim[0][i].rot, m );
+		AngleMatrix(psource->rawanim[0][i].rot, m);
 		m[0][3] = psource->rawanim[0][i].pos[0];
 		m[1][3] = psource->rawanim[0][i].pos[1];
 		m[2][3] = psource->rawanim[0][i].pos[2];
 
 		parent = psource->localBone[i].parent;
-		if (parent == -1) 
+		if (parent == -1)
 		{
 			// scale the done pos.
 			// calc rotational matrices
-			MatrixCopy( m, psource->boneToPose[i] );
+			MatrixCopy(m, psource->boneToPose[i]);
 		}
-		else 
+		else
 		{
 			// calc compound rotational matrices
 			// FIXME : Hey, it's orthogical so inv(A) == transpose(A)
-			ConcatTransforms( psource->boneToPose[parent], m, psource->boneToPose[i] );
+			ConcatTransforms(psource->boneToPose[parent], m, psource->boneToPose[i]);
 		}
 		// Msg("%3d %f %f %f\n", i, psource->bonefixup[i].worldorg[0], psource->bonefixup[i].worldorg[1], psource->bonefixup[i].worldorg[2] );
 		/*
@@ -924,8 +943,9 @@ void Build_Reference( s_source_t *psource)
 }
 
 
-
-
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 int Grab_Nodes( s_node_t *pnodes )
 {
 	int index;
@@ -968,42 +988,44 @@ int Grab_Nodes( s_node_t *pnodes )
 }
 
 
-
-
-void clip_rotations( RadianEuler& rot )
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void clip_rotations(RadianEuler& rot)
 {
 	int j;
 	// clip everything to : -M_PI <= x < M_PI
 
 	for (j = 0; j < 3; j++) {
-		while (rot[j] >= M_PI) 
-			rot[j] -= M_PI*2;
-		while (rot[j] < -M_PI) 
-			rot[j] += M_PI*2;
+		while (rot[j] >= M_PI)
+			rot[j] -= M_PI * 2;
+		while (rot[j] < -M_PI)
+			rot[j] += M_PI * 2;
 	}
 }
 
 
-void clip_rotations( Vector& rot )
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void clip_rotations(Vector& rot)
 {
 	int j;
 	// clip everything to : -180 <= x < 180
 
 	for (j = 0; j < 3; j++) {
-		while (rot[j] >= 180) 
-			rot[j] -= 180*2;
-		while (rot[j] < -180) 
-			rot[j] += 180*2;
+		while (rot[j] >= 180)
+			rot[j] -= 180 * 2;
+		while (rot[j] < -180)
+			rot[j] += 180 * 2;
 	}
 }
 
 
 
-/*
-=================
-Cmd_Eyeposition
-=================
-*/
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_Eyeposition (void)
 {
 // rotate points into frame of reference so g_model points down the positive x
@@ -1020,12 +1042,9 @@ void Cmd_Eyeposition (void)
 }
 
 
-
-/*
-=================
-Cmd_Eyeposition
-=================
-*/
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_Illumposition (void)
 {
 // rotate points into frame of reference so g_model points down the positive x
@@ -1044,11 +1063,9 @@ void Cmd_Illumposition (void)
 }
 
 
-/*
-=================
-Cmd_Modelname
-=================
-*/
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_Modelname (void)
 {
 	g_bHasModelName = true;
@@ -1065,22 +1082,24 @@ void Cmd_Modelname (void)
 	}
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_Autocenter()
 {
 	g_centerstaticprop = true;
 }
 
-/*
-===============
-===============
-*/
 
-
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Option_Studio(s_model_t* pmodel)
 {
 	if (!GetToken(false))
 		return;
-	
+
 	V_snprintf(pmodel->filename, sizeof(pmodel->filename), "%s", token);
 
 	// pmodel = (s_model_t *)kalloc( 1, sizeof( s_model_t ) );
@@ -1088,41 +1107,41 @@ void Option_Studio(s_model_t* pmodel)
 
 	flip_triangles = 1;
 	pmodel->scale = g_defaultscale;
-	
+
 	while (TokenAvailable())
 	{
 		GetToken(false);
-		if (stricmp( "reverse", token ) == 0)
+		if (stricmp("reverse", token) == 0)
 		{
 			flip_triangles = 0;
 		}
-		else if (stricmp( "scale", token ) == 0)
+		else if (stricmp("scale", token) == 0)
 		{
 			GetToken(false);
-			pmodel->scale = g_currentscale = verify_atof( token );
+			pmodel->scale = g_currentscale = verify_atof(token);
 		}
-		else if (stricmp( "faces", token ) == 0)
+		else if (stricmp("faces", token) == 0)
 		{
 			GetToken(false);
 			GetToken(false);
 		}
-		else if (stricmp( "bias", token ) == 0)
+		else if (stricmp("bias", token) == 0)
 		{
-			GetToken( false );
+			GetToken(false);
 		}
-		else if (stricmp("{", token ) == 0)
+		else if (stricmp("{", token) == 0)
 		{
 			UnGetToken();
 			break;
 		}
 		else
 		{
-			MdlError("unknown command \"%s\"\n", token );
+			MdlError("unknown command \"%s\"\n", token);
 		}
 	}
 
 	// load source
-	pmodel->source = Load_Source( pmodel->filename, "", false, true );
+	pmodel->source = Load_Source(pmodel->filename, "", false, true);
 
 	//Reset currentscale to whatever global we currently have set
 	//g_defaultscale gets set in Cmd_ScaleUp everytime the $scale command is used.
@@ -1130,18 +1149,20 @@ void Option_Studio(s_model_t* pmodel)
 }
 
 
-
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 int Option_Blank()
 {
-	g_model[g_nummodels] = (s_model_t *)kalloc( 1, sizeof( s_model_t ) );
+	g_model[g_nummodels] = (s_model_t*)kalloc(1, sizeof(s_model_t));
 
-	g_source[g_numsources] = (s_source_t *)kalloc( 1, sizeof( s_source_t ) );
+	g_source[g_numsources] = (s_source_t*)kalloc(1, sizeof(s_source_t));
 	g_model[g_nummodels]->source = g_source[g_numsources];
 	g_numsources++;
 
 	g_bodypart[g_numbodyparts].pmodel[g_bodypart[g_numbodyparts].nummodels] = g_model[g_nummodels];
 
-	strcpyn( g_model[g_nummodels]->name, "blank" );
+	strcpyn(g_model[g_nummodels]->name, "blank");
 
 	g_bodypart[g_numbodyparts].nummodels++;
 	g_nummodels++;
@@ -1149,6 +1170,9 @@ int Option_Blank()
 }
 
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_Bodygroup()
 {
 	int is_started = 0;
@@ -1159,33 +1183,33 @@ void Cmd_Bodygroup()
 		g_bodypart[g_numbodyparts].base = 1;
 	}
 	else {
-		g_bodypart[g_numbodyparts].base = g_bodypart[g_numbodyparts-1].base * g_bodypart[g_numbodyparts-1].nummodels;
+		g_bodypart[g_numbodyparts].base = g_bodypart[g_numbodyparts - 1].base * g_bodypart[g_numbodyparts - 1].nummodels;
 	}
-	strcpyn( g_bodypart[g_numbodyparts].name, token );
+	strcpyn(g_bodypart[g_numbodyparts].name, token);
 
 	do
 	{
-		GetToken (true);
+		GetToken(true);
 		if (endofscript)
 			return;
 		else if (token[0] == '{')
 			is_started = 1;
 		else if (token[0] == '}')
 			break;
-		else if (stricmp("studio", token ) == 0)
+		else if (stricmp("studio", token) == 0)
 		{
-			g_model[g_nummodels] = (s_model_t *)kalloc( 1, sizeof( s_model_t ) );
+			g_model[g_nummodels] = (s_model_t*)kalloc(1, sizeof(s_model_t));
 			g_bodypart[g_numbodyparts].pmodel[g_bodypart[g_numbodyparts].nummodels] = g_model[g_nummodels];
 			g_bodypart[g_numbodyparts].nummodels++;
-		
-			Option_Studio( g_model[g_nummodels] );
+
+			Option_Studio(g_model[g_nummodels]);
 			g_nummodels++;
 		}
-		else if (stricmp("blank", token ) == 0)
-			Option_Blank( );
+		else if (stricmp("blank", token) == 0)
+			Option_Blank();
 		else
 		{
-			MdlError("unknown bodygroup option: \"%s\"\n", token );
+			MdlError("unknown bodygroup option: \"%s\"\n", token);
 		}
 	} while (1);
 
@@ -1194,7 +1218,10 @@ void Cmd_Bodygroup()
 }
 
 
-void Cmd_Body( )
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void Cmd_Body()
 {
 	int is_started = 0;
 
@@ -1204,28 +1231,25 @@ void Cmd_Body( )
 		g_bodypart[g_numbodyparts].base = 1;
 	}
 	else {
-		g_bodypart[g_numbodyparts].base = g_bodypart[g_numbodyparts-1].base * g_bodypart[g_numbodyparts-1].nummodels;
+		g_bodypart[g_numbodyparts].base = g_bodypart[g_numbodyparts - 1].base * g_bodypart[g_numbodyparts - 1].nummodels;
 	}
-	strcpyn(g_bodypart[g_numbodyparts].name, token );
+	strcpyn(g_bodypart[g_numbodyparts].name, token);
 
-	g_model[g_nummodels] = (s_model_t *)kalloc( 1, sizeof( s_model_t ) );
+	g_model[g_nummodels] = (s_model_t*)kalloc(1, sizeof(s_model_t));
 	g_bodypart[g_numbodyparts].pmodel[g_bodypart[g_numbodyparts].nummodels] = g_model[g_nummodels];
 	g_bodypart[g_numbodyparts].nummodels = 1;
 
-	Option_Studio( g_model[g_nummodels] );
+	Option_Studio(g_model[g_nummodels]);
 
 	g_nummodels++;
 	g_numbodyparts++;
 }
 
 
-
-/*
-===============
-===============
-*/
-
-void Grab_Animation( s_source_t *psource )
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void Grab_Animation(s_source_t* psource)
 {
 	Vector pos;
 	RadianEuler rot;
@@ -1236,27 +1260,27 @@ void Grab_Animation( s_source_t *psource )
 
 	psource->startframe = -1;
 
-	size = psource->numbones * sizeof( s_bone_t );
+	size = psource->numbones * sizeof(s_bone_t);
 
-	while (fgets( g_szLine, sizeof( g_szLine ), g_fpInput ) != NULL) 
+	while (fgets(g_szLine, sizeof(g_szLine), g_fpInput) != NULL)
 	{
 		g_iLinecount++;
-		if (sscanf( g_szLine, "%d %f %f %f %f %f %f", &index, &pos[0], &pos[1], &pos[2], &rot[0], &rot[1], &rot[2] ) == 7)
+		if (sscanf(g_szLine, "%d %f %f %f %f %f %f", &index, &pos[0], &pos[1], &pos[2], &rot[0], &rot[1], &rot[2]) == 7)
 		{
 			if (psource->startframe < 0)
 			{
-				MdlError( "Missing frame start(%d) : %s", g_iLinecount, g_szLine );
+				MdlError("Missing frame start(%d) : %s", g_iLinecount, g_szLine);
 			}
 
-			scale_vertex( pos );
-			VectorCopy( pos, psource->rawanim[t][index].pos );
-			VectorCopy( rot, psource->rawanim[t][index].rot );
+			scale_vertex(pos);
+			VectorCopy(pos, psource->rawanim[t][index].pos);
+			VectorCopy(rot, psource->rawanim[t][index].rot);
 
-			clip_rotations( rot ); // !!!
+			clip_rotations(rot); // !!!
 		}
-		else if (sscanf( g_szLine, "%1023s %d", cmd, &index ))
+		else if (sscanf(g_szLine, "%1023s %d", cmd, &index))
 		{
-			if (stricmp( cmd, "time" ) == 0) 
+			if (stricmp(cmd, "time") == 0)
 			{
 				t = index;
 				if (psource->startframe == -1)
@@ -1265,7 +1289,7 @@ void Grab_Animation( s_source_t *psource )
 				}
 				if (t < psource->startframe)
 				{
-					MdlError( "Frame MdlError(%d) : %s", g_iLinecount, g_szLine );
+					MdlError("Frame MdlError(%d) : %s", g_iLinecount, g_szLine);
 				}
 				if (t > psource->endframe)
 				{
@@ -1275,15 +1299,15 @@ void Grab_Animation( s_source_t *psource )
 
 				if (psource->rawanim[t] == NULL)
 				{
-					psource->rawanim[t] = (s_bone_t *)kalloc( 1, size );
+					psource->rawanim[t] = (s_bone_t*)kalloc(1, size);
 
 					// duplicate previous frames keys
-					if (t > 0 && psource->rawanim[t-1])
+					if (t > 0 && psource->rawanim[t - 1])
 					{
 						for (int j = 0; j < psource->numbones; j++)
 						{
-							VectorCopy( psource->rawanim[t-1][j].pos, psource->rawanim[t][j].pos );
-							VectorCopy( psource->rawanim[t-1][j].rot, psource->rawanim[t][j].rot );
+							VectorCopy(psource->rawanim[t - 1][j].pos, psource->rawanim[t][j].pos);
+							VectorCopy(psource->rawanim[t - 1][j].rot, psource->rawanim[t][j].rot);
 						}
 					}
 				}
@@ -1292,7 +1316,7 @@ void Grab_Animation( s_source_t *psource )
 					// MdlError( "%s has duplicated frame %d\n", psource->filename, t );
 				}
 			}
-			else if (stricmp( cmd, "end") == 0) 
+			else if (stricmp(cmd, "end") == 0)
 			{
 				psource->numframes = psource->endframe - psource->startframe + 1;
 
@@ -1300,39 +1324,39 @@ void Grab_Animation( s_source_t *psource )
 				{
 					if (psource->rawanim[t] == NULL)
 					{
-						MdlError( "%s is missing frame %d\n", psource->filename, t + psource->startframe );
+						MdlError("%s is missing frame %d\n", psource->filename, t + psource->startframe);
 					}
 				}
 
-				Build_Reference( psource );
+				Build_Reference(psource);
 				return;
 			}
 			else
 			{
-				MdlError( "MdlError(%d) : %s", g_iLinecount, g_szLine );
+				MdlError("MdlError(%d) : %s", g_iLinecount, g_szLine);
 			}
 		}
 		else
 		{
-			MdlError( "MdlError(%d) : %s", g_iLinecount, g_szLine );
+			MdlError("MdlError(%d) : %s", g_iLinecount, g_szLine);
 		}
 	}
 
-	MdlError( "unexpected EOF: %s\n", psource->filename );
+	MdlError("unexpected EOF: %s\n", psource->filename);
 }
 
 
-
-
-
-int Option_Activity( s_sequence_t *psequence )
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+int Option_Activity(s_sequence_t* psequence)
 {
 	qboolean found;
 
 	found = false;
 
 	GetToken(false);
-	strcpy( psequence->activityname, token );
+	strcpy(psequence->activityname, token);
 
 	GetToken(false);
 	psequence->actweight = verify_atoi(token);
@@ -1341,44 +1365,42 @@ int Option_Activity( s_sequence_t *psequence )
 }
 
 
-
-/*
-===============
-===============
-*/
-
-
-int Option_Event ( s_sequence_t *psequence )
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+int Option_Event(s_sequence_t* psequence)
 {
 	if (psequence->numevents + 1 >= MAXSTUDIOEVENTS)
 	{
 		TokenError("too many events\n");
 	}
 
-	GetToken (false);
-	
-	strcpy( psequence->event[psequence->numevents].eventname, token );
+	GetToken(false);
 
-	GetToken( false );
-	psequence->event[psequence->numevents].frame = verify_atoi( token );
+	strcpy(psequence->event[psequence->numevents].eventname, token);
+
+	GetToken(false);
+	psequence->event[psequence->numevents].frame = verify_atoi(token);
 
 	psequence->numevents++;
 
 	// option token
 	if (TokenAvailable())
 	{
-		GetToken( false );
+		GetToken(false);
 		if (token[0] == '}') // opps, hit the end
 			return 1;
 		// found an option
-		strcpyn( psequence->event[psequence->numevents-1].options, token );
+		strcpyn(psequence->event[psequence->numevents - 1].options, token);
 	}
 
 	return 0;
 }
 
 
-
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Option_IKRule( s_ikrule_t *pRule )
 {
 	// chain
@@ -1547,25 +1569,23 @@ void Option_IKRule( s_ikrule_t *pRule )
 }
 
 
-/*
-=================
-Cmd_Origin
-=================
-*/
-void Cmd_Origin (void)
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void Cmd_Origin(void)
 {
-	GetToken (false);
-	g_defaultadjust.x = verify_atof (token);
+	GetToken(false);
+	g_defaultadjust.x = verify_atof(token);
 
-	GetToken (false);
-	g_defaultadjust.y = verify_atof (token);
+	GetToken(false);
+	g_defaultadjust.y = verify_atof(token);
 
-	GetToken (false);
-	g_defaultadjust.z = verify_atof (token);
+	GetToken(false);
+	g_defaultadjust.z = verify_atof(token);
 
 	if (TokenAvailable()) {
-		GetToken (false);
-		g_defaultrotation.z = DEG2RAD( verify_atof( token ) + 90);
+		GetToken(false);
+		g_defaultrotation.z = DEG2RAD(verify_atof(token) + 90);
 	}
 }
 
@@ -1573,43 +1593,43 @@ void Cmd_Origin (void)
 //-----------------------------------------------------------------------------
 // Purpose: Set the default root rotation so that the Y axis is up instead of the Z axis (for Maya)
 //-----------------------------------------------------------------------------
-void Cmd_UpAxis( void )
+void Cmd_UpAxis(void)
 {
 	// We want to create a rotation that rotates from the art space
 	// (specified by the up direction) to a z up space
 	// Note: x, -x, -y are untested
-	GetToken (false);
-	if (!stricmp( token, "x" ))
+	GetToken(false);
+	if (!stricmp(token, "x"))
 	{
 		// rotate 90 degrees around y to move x into z
 		g_defaultrotation.x = 0.0f;
 		g_defaultrotation.y = M_PI / 2.0f;
 	}
-	else if (!stricmp( token, "-x" ))
+	else if (!stricmp(token, "-x"))
 	{
 		// untested
 		g_defaultrotation.x = 0.0f;
 		g_defaultrotation.y = -M_PI / 2.0f;
 	}
-	else if (!stricmp( token, "y" ))
+	else if (!stricmp(token, "y"))
 	{
 		// rotate 90 degrees around x to move y into z
 		g_defaultrotation.x = M_PI / 2.0f;
 		g_defaultrotation.y = 0.0f;
 	}
-	else if (!stricmp( token, "-y" ))
+	else if (!stricmp(token, "-y"))
 	{
 		// untested
 		g_defaultrotation.x = -M_PI / 2.0f;
 		g_defaultrotation.y = 0.0f;
 	}
-	else if (!stricmp( token, "z" ))
+	else if (!stricmp(token, "z"))
 	{
 		// there's still a built in 90 degree Z rotation :(
 		g_defaultrotation.x = 0.0f;
 		g_defaultrotation.y = 0.0f;
 	}
-	else if (!stricmp( token, "-z" ))
+	else if (!stricmp(token, "-z"))
 	{
 		// there's still a built in 90 degree Z rotation :(
 		g_defaultrotation.x = 0.0f;
@@ -1617,15 +1637,14 @@ void Cmd_UpAxis( void )
 	}
 	else
 	{
-		TokenError( "unknown $upaxis option: \"%s\"\n", token );
+		TokenError("unknown $upaxis option: \"%s\"\n", token);
 	}
 }
 
 
-/*
-=================
-=================
-*/
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_ScaleUp (void)
 {
 
@@ -1635,10 +1654,10 @@ void Cmd_ScaleUp (void)
 	g_currentscale = g_defaultscale;
 }
 
+
 //-----------------------------------------------------------------------------
 // Purpose: Sets how what size chunks to cut the animations into
 //-----------------------------------------------------------------------------
-
 void Cmd_AnimBlockSize( void )
 {
 	GetToken( false );
@@ -1651,22 +1670,20 @@ void Cmd_AnimBlockSize( void )
 
 
 //-----------------------------------------------------------------------------
-// 
+// Purpose: 
 //-----------------------------------------------------------------------------
-
-
-static void FlipFacing( s_source_t *pSrc )
+static void FlipFacing(s_source_t* pSrc)
 {
 	unsigned short tmp;
 
 	int i, j;
-	for( i = 0; i < pSrc->nummeshes; i++ )
+	for (i = 0; i < pSrc->nummeshes; i++)
 	{
-		s_mesh_t *pMesh = &pSrc->mesh[i];
-		for( j = 0; j < pMesh->numfaces; j++ )
+		s_mesh_t* pMesh = &pSrc->mesh[i];
+		for (j = 0; j < pMesh->numfaces; j++)
 		{
-			s_face_t &f = pSrc->face[pMesh->faceoffset + j];
-			tmp = f.b;  f.b  = f.c;  f.c  = tmp;
+			s_face_t& f = pSrc->face[pMesh->faceoffset + j];
+			tmp = f.b;  f.b = f.c;  f.c = tmp;
 		}
 	}
 }
@@ -1675,33 +1692,33 @@ static void FlipFacing( s_source_t *pSrc )
 //-----------------------------------------------------------------------------
 // Checks to see if the model source was already loaded
 //-----------------------------------------------------------------------------
-static s_source_t *FindCachedSource( char const* name, char const* xext )
+static s_source_t* FindCachedSource(char const* name, char const* xext)
 {
 	int i;
 
-	if( xext[0] )
+	if (xext[0])
 	{
 		// we know what extension is necessary. . look for it.
-		sprintf (g_szFilename, "%s%s.%s", cddir[numdirs], name, xext );
+		sprintf(g_szFilename, "%s%s.%s", cddir[numdirs], name, xext);
 		for (i = 0; i < g_numsources; i++)
 		{
-			if (stricmp( g_szFilename, g_source[i]->filename ) == 0)
+			if (stricmp(g_szFilename, g_source[i]->filename) == 0)
 				return g_source[i];
 		}
 	}
 	else
 	{
 		// we don't know what extension to use, so look for all of 'em.
-		sprintf (g_szFilename, "%s%s.vrm", cddir[numdirs], name );
+		sprintf(g_szFilename, "%s%s.vrm", cddir[numdirs], name);
 		for (i = 0; i < g_numsources; i++)
 		{
-			if (stricmp( g_szFilename, g_source[i]->filename ) == 0)
+			if (stricmp(g_szFilename, g_source[i]->filename) == 0)
 				return g_source[i];
 		}
-		sprintf (g_szFilename, "%s%s.smd", cddir[numdirs], name );
+		sprintf(g_szFilename, "%s%s.smd", cddir[numdirs], name);
 		for (i = 0; i < g_numsources; i++)
 		{
-			if (stricmp( g_szFilename, g_source[i]->filename ) == 0)
+			if (stricmp(g_szFilename, g_source[i]->filename) == 0)
 				return g_source[i];
 		}
 		/*
@@ -1722,31 +1739,30 @@ static s_source_t *FindCachedSource( char const* name, char const* xext )
 //-----------------------------------------------------------------------------
 // Loads an animation/model source
 //-----------------------------------------------------------------------------
-
-s_source_t *Load_Source( char const *name, const char *ext, bool reverse, bool isActiveModel )
+s_source_t* Load_Source(char const* name, const char* ext, bool reverse, bool isActiveModel)
 {
-	if ( g_numsources >= MAXSTUDIOSEQUENCES )
-		TokenError( "Load_Source( %s ) - overflowed g_numsources.", name );
+	if (g_numsources >= MAXSTUDIOSEQUENCES)
+		TokenError("Load_Source( %s ) - overflowed g_numsources.", name);
 
 	Assert(name);
 	int namelen = strlen(name) + 1;
-	char* pTempName = (char*)_alloca( namelen );
+	char* pTempName = (char*)_alloca(namelen);
 	char xext[32];
 	int result = false;
 
-	strcpy( pTempName, name );
-	Q_ExtractFileExtension( pTempName, xext, sizeof( xext ) );
+	strcpy(pTempName, name);
+	Q_ExtractFileExtension(pTempName, xext, sizeof(xext));
 
 	if (xext[0] == '\0')
 	{
-		strcpyn( xext, ext );
+		strcpyn(xext, ext);
 	}
 	else
 	{
-		Q_StripExtension( pTempName, pTempName, namelen );
+		Q_StripExtension(pTempName, pTempName, namelen);
 	}
 
-	s_source_t* pSource = FindCachedSource( pTempName, xext );
+	s_source_t* pSource = FindCachedSource(pTempName, xext);
 	if (pSource)
 	{
 		if (isActiveModel)
@@ -1754,8 +1770,8 @@ s_source_t *Load_Source( char const *name, const char *ext, bool reverse, bool i
 		return pSource;
 	}
 
-	g_source[g_numsources] = (s_source_t *)kalloc( 1, sizeof( s_source_t ) );
-	strcpyn( g_source[g_numsources]->filename, g_szFilename );
+	g_source[g_numsources] = (s_source_t*)kalloc(1, sizeof(s_source_t));
+	strcpyn(g_source[g_numsources]->filename, g_szFilename);
 
 
 	if (isActiveModel)
@@ -1763,63 +1779,66 @@ s_source_t *Load_Source( char const *name, const char *ext, bool reverse, bool i
 		g_source[g_numsources]->isActiveModel = true;
 	}
 
-	if ( xext[0] == '\0' || stricmp( xext, "vrm" ) == 0)
+	if (xext[0] == '\0' || stricmp(xext, "vrm") == 0)
 	{
-		sprintf (g_szFilename, "%s%s.vrm", cddir[numdirs], pTempName );
-		strcpyn( g_source[g_numsources]->filename, g_szFilename );
-		result = Load_VRM( g_source[g_numsources] );
+		sprintf(g_szFilename, "%s%s.vrm", cddir[numdirs], pTempName);
+		strcpyn(g_source[g_numsources]->filename, g_szFilename);
+		result = Load_VRM(g_source[g_numsources]);
 	}
-	if ( ( !result && xext[0] == '\0' ) || stricmp( xext, "smd" ) == 0)
+	if ((!result && xext[0] == '\0') || stricmp(xext, "smd") == 0)
 	{
-		sprintf (g_szFilename, "%s%s.smd", cddir[numdirs], pTempName );
-		strcpyn( g_source[g_numsources]->filename, g_szFilename );
-		result = Load_SMD( g_source[g_numsources] );
+		sprintf(g_szFilename, "%s%s.smd", cddir[numdirs], pTempName);
+		strcpyn(g_source[g_numsources]->filename, g_szFilename);
+		result = Load_SMD(g_source[g_numsources]);
 	}
-	if ( ( !result && xext[0] == '\0' ) || stricmp( xext, "sma" ) == 0)
+	if ((!result && xext[0] == '\0') || stricmp(xext, "sma") == 0)
 	{
-		sprintf (g_szFilename, "%s%s.sma", cddir[numdirs], pTempName );
-		strcpyn( g_source[g_numsources]->filename, g_szFilename );
-		result = Load_SMD( g_source[g_numsources] );
+		sprintf(g_szFilename, "%s%s.sma", cddir[numdirs], pTempName);
+		strcpyn(g_source[g_numsources]->filename, g_szFilename);
+		result = Load_SMD(g_source[g_numsources]);
 	}
-	if ( ( !result && xext[0] == '\0' ) || stricmp( xext, "phys" ) == 0)
+	if ((!result && xext[0] == '\0') || stricmp(xext, "phys") == 0)
 	{
-		sprintf (g_szFilename, "%s%s.phys", cddir[numdirs], pTempName );
-		strcpyn( g_source[g_numsources]->filename, g_szFilename );
-		result = Load_SMD( g_source[g_numsources] );
+		sprintf(g_szFilename, "%s%s.phys", cddir[numdirs], pTempName);
+		strcpyn(g_source[g_numsources]->filename, g_szFilename);
+		result = Load_SMD(g_source[g_numsources]);
 	}
-	if (( !result && xext[0] == '\0' ) || stricmp( xext, "vta" ) == 0)
+	if ((!result && xext[0] == '\0') || stricmp(xext, "vta") == 0)
 	{
-		sprintf (g_szFilename, "%s%s.vta", cddir[numdirs], pTempName );
-		strcpyn( g_source[g_numsources]->filename, g_szFilename );
-		result = Load_VTA( g_source[g_numsources] );
+		sprintf(g_szFilename, "%s%s.vta", cddir[numdirs], pTempName);
+		strcpyn(g_source[g_numsources]->filename, g_szFilename);
+		result = Load_VTA(g_source[g_numsources]);
 	}
-	if (( !result && xext[0] == '\0' ) || stricmp( xext, "obj" ) == 0)
+	if ((!result && xext[0] == '\0') || stricmp(xext, "obj") == 0)
 	{
-		sprintf (g_szFilename, "%s%s.obj", cddir[numdirs], pTempName );
-		strcpyn( g_source[g_numsources]->filename, g_szFilename );
-		result = Load_OBJ( g_source[g_numsources] );
+		sprintf(g_szFilename, "%s%s.obj", cddir[numdirs], pTempName);
+		strcpyn(g_source[g_numsources]->filename, g_szFilename);
+		result = Load_OBJ(g_source[g_numsources]);
 	}
 
 	if (!g_bCreateMakefile && !result)
 	{
-		TokenError( "could not load file '%s'\n", g_source[g_numsources]->filename );
+		TokenError("could not load file '%s'\n", g_source[g_numsources]->filename);
 	}
 
-	if ( g_source[g_numsources]->numbones == 0 )
+	if (g_source[g_numsources]->numbones == 0)
 	{
-		TokenError( "missing all bones in file '%s'\n", g_source[g_numsources]->filename );
+		TokenError("missing all bones in file '%s'\n", g_source[g_numsources]->filename);
 	}
 
 	g_numsources++;
-	if( reverse )
+	if (reverse)
 	{
-		FlipFacing( g_source[g_numsources-1] );
+		FlipFacing(g_source[g_numsources - 1]);
 	}
 
-	return g_source[g_numsources-1];
+	return g_source[g_numsources - 1];
 }
 
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 s_sequence_t *LookupSequence( char *name )
 {
 	int i;
@@ -1834,18 +1853,21 @@ s_sequence_t *LookupSequence( char *name )
 }
 
 
-s_animation_t *LookupAnimation( char *name )
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+s_animation_t* LookupAnimation(char* name)
 {
 	int i;
-	for ( i = 0; i < g_numani; i++)
+	for (i = 0; i < g_numani; i++)
 	{
-		if (stricmp( g_panimation[i]->name, token ) == 0)
+		if (stricmp(g_panimation[i]->name, token) == 0)
 		{
 			return g_panimation[i];
 		}
 	}
 
-	s_sequence_t *pseq = LookupSequence( name );
+	s_sequence_t* pseq = LookupSequence(name);
 	if (pseq)
 	{
 		return pseq->panim[0][0];
@@ -1854,10 +1876,10 @@ s_animation_t *LookupAnimation( char *name )
 	return NULL;
 }
 
+
 //-----------------------------------------------------------------------------
 // Purpose: parse order dependant s_animcmd_t token for $animations
 //-----------------------------------------------------------------------------
-
 int ParseCmdlistToken( int &numcmds, s_animcmd_t *cmds )
 {
 	if (numcmds >= MAXSTUDIOCMDS)
@@ -2316,7 +2338,6 @@ int ParseCmdlistToken( int &numcmds, s_animcmd_t *cmds )
 //-----------------------------------------------------------------------------
 // Purpose: parse order independant s_animation_t token for $animations
 //-----------------------------------------------------------------------------
-
 int ParseAnimationToken( s_animation_t *panim )
 {
 	if (stricmp("if", token ) == 0)
@@ -2476,33 +2497,32 @@ int ParseAnimationToken( s_animation_t *panim )
 //-----------------------------------------------------------------------------
 // Purpose: create named order dependant s_animcmd_t blocks, used as replicated token list for $animations
 //-----------------------------------------------------------------------------
-
-void Cmd_Cmdlist( )
+void Cmd_Cmdlist()
 {
 	int depth = 0;
 
 	// name
 	GetToken(false);
-	strcpyn( g_cmdlist[g_numcmdlists].name, token );
+	strcpyn(g_cmdlist[g_numcmdlists].name, token);
 
 	while (1)
 	{
 		if (depth > 0)
 		{
-			if(!GetToken(true)) 
+			if (!GetToken(true))
 			{
 				break;
 			}
 		}
 		else
 		{
-			if (!TokenAvailable()) 
+			if (!TokenAvailable())
 			{
 				break;
 			}
-			else 
+			else
 			{
-				GetToken (false);
+				GetToken(false);
 			}
 		}
 
@@ -2510,25 +2530,25 @@ void Cmd_Cmdlist( )
 		{
 			if (depth != 0)
 			{
-				TokenError("missing }\n" );
+				TokenError("missing }\n");
 			}
 			return;
 		}
-		if (stricmp("{", token ) == 0)
+		if (stricmp("{", token) == 0)
 		{
 			depth++;
 		}
-		else if (stricmp("}", token ) == 0)
+		else if (stricmp("}", token) == 0)
 		{
 			depth--;
 		}
-		else if (ParseCmdlistToken( g_cmdlist[g_numcmdlists].numcmds, g_cmdlist[g_numcmdlists].cmds ))
+		else if (ParseCmdlistToken(g_cmdlist[g_numcmdlists].numcmds, g_cmdlist[g_numcmdlists].cmds))
 		{
 
 		}
 		else
 		{
-			TokenError( "unknown command: %s\n", token );
+			TokenError("unknown command: %s\n", token);
 		}
 
 		if (depth < 0)
@@ -2540,25 +2560,29 @@ void Cmd_Cmdlist( )
 	g_numcmdlists++;
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 int ParseAnimation( s_animation_t *panim, bool isAppend );
 int ParseEmpty( void );
+
 
 //-----------------------------------------------------------------------------
 // Purpose: allocate an entry for $animation
 //-----------------------------------------------------------------------------
-
-void Cmd_Animation( )
+void Cmd_Animation()
 {
 	// name
 	GetToken(false);
 
-	s_animation_t *panim = LookupAnimation( token );
+	s_animation_t* panim = LookupAnimation(token);
 
 	if (panim != NULL)
 	{
 		if (!panim->isOverride)
 		{
-			TokenError( "Duplicate animation name \"%s\"\n", token );
+			TokenError("Duplicate animation name \"%s\"\n", token);
 		}
 		else
 		{
@@ -2569,40 +2593,40 @@ void Cmd_Animation( )
 	}
 
 	// allocate animation entry
-	g_panimation[g_numani] = (s_animation_t *)kalloc( 1, sizeof( s_animation_t ) );
+	g_panimation[g_numani] = (s_animation_t*)kalloc(1, sizeof(s_animation_t));
 	g_panimation[g_numani]->index = g_numani;
 	panim = g_panimation[g_numani];
-	strcpyn( panim->name, token );
+	strcpyn(panim->name, token);
 	g_numani++;
 
 	// filename
 	GetToken(false);
-	strcpyn( panim->filename, token );
+	strcpyn(panim->filename, token);
 
 	// panim->animgroup = g_currentanimgroup;
 
 	//panim->source = Load_Source( panim->filename, "smd" );
-	panim->source = Load_Source( panim->filename, "" );
+	panim->source = Load_Source(panim->filename, "");
 	panim->startframe = panim->source->startframe;
 	panim->endframe = panim->source->endframe;
 
-	VectorCopy( g_defaultadjust, panim->adjust );
+	VectorCopy(g_defaultadjust, panim->adjust);
 	panim->rotation = g_defaultrotation;
 	panim->scale = 1.0f;
 	panim->fps = 30.0;
 
-	ParseAnimation( panim, false );
+	ParseAnimation(panim, false);
 
 	panim->numframes = panim->endframe - panim->startframe + 1;
 
 	//CheckAutoShareAnimationGroup( panim->name );
 }
 
+
 //-----------------------------------------------------------------------------
 // Purpose: wrapper for parsing $animation tokens
 //-----------------------------------------------------------------------------
-
-int ParseAnimation( s_animation_t *panim, bool isAppend )
+int ParseAnimation(s_animation_t* panim, bool isAppend)
 {
 	int depth = 0;
 
@@ -2610,20 +2634,20 @@ int ParseAnimation( s_animation_t *panim, bool isAppend )
 	{
 		if (depth > 0)
 		{
-			if(!GetToken(true)) 
+			if (!GetToken(true))
 			{
 				break;
 			}
 		}
 		else
 		{
-			if (!TokenAvailable()) 
+			if (!TokenAvailable())
 			{
 				break;
 			}
-			else 
+			else
 			{
-				GetToken (false);
+				GetToken(false);
 			}
 		}
 
@@ -2631,25 +2655,25 @@ int ParseAnimation( s_animation_t *panim, bool isAppend )
 		{
 			if (depth != 0)
 			{
-				TokenError("missing }\n" );
+				TokenError("missing }\n");
 			}
 			return 1;
 		}
-		if (stricmp("{", token ) == 0)
+		if (stricmp("{", token) == 0)
 		{
 			depth++;
 		}
-		else if (stricmp("}", token ) == 0)
+		else if (stricmp("}", token) == 0)
 		{
 			depth--;
 		}
-		else if (ParseAnimationToken( panim ))
+		else if (ParseAnimationToken(panim))
 		{
 
 		}
 		else
 		{
-			TokenError( "Unknown animation option\'%s\'\n", token );
+			TokenError("Unknown animation option\'%s\'\n", token);
 		}
 
 		if (depth < 0)
@@ -2665,7 +2689,6 @@ int ParseAnimation( s_animation_t *panim, bool isAppend )
 //-----------------------------------------------------------------------------
 // Purpose: create a virtual $animation command from a $sequence reference
 //-----------------------------------------------------------------------------
-
 s_animation_t *Cmd_ImpliedAnimation( s_sequence_t *psequence, char *filename )
 {
 	// allocate animation entry
@@ -2713,12 +2736,11 @@ s_animation_t *Cmd_ImpliedAnimation( s_sequence_t *psequence, char *filename )
 //-----------------------------------------------------------------------------
 // Purpose: copy globally reavent $animation options from one $animation to another
 //-----------------------------------------------------------------------------
-
-void CopyAnimationSettings( s_animation_t *pdest, s_animation_t *psrc )
+void CopyAnimationSettings(s_animation_t* pdest, s_animation_t* psrc)
 {
 	pdest->fps = psrc->fps;
 
-	VectorCopy( psrc->adjust, pdest->adjust );
+	VectorCopy(psrc->adjust, pdest->adjust);
 	pdest->scale = psrc->scale;
 	pdest->rotation = psrc->rotation;
 
@@ -2727,10 +2749,10 @@ void CopyAnimationSettings( s_animation_t *pdest, s_animation_t *psrc )
 	//Adrian - Hey! Revisit me later.
 	/*if (pdest->startframe < psrc->startframe)
 		pdest->startframe = psrc->startframe;
-	
+
 	if (pdest->endframe > psrc->endframe)
 		pdest->endframe = psrc->endframe;
-	
+
 	if (pdest->endframe < pdest->startframe)
 		TokenError( "fixedup end frame before start frame in %s", pdest->name );
 
@@ -2740,54 +2762,57 @@ void CopyAnimationSettings( s_animation_t *pdest, s_animation_t *psrc )
 	{
 		if (pdest->numcmds >= MAXSTUDIOCMDS)
 		{
-			TokenError("Too many cmds in %s\n", pdest->name );
+			TokenError("Too many cmds in %s\n", pdest->name);
 		}
 		pdest->cmds[pdest->numcmds++] = psrc->cmds[i];
 	}
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 int ParseSequence( s_sequence_t *pseq, bool isAppend );
 
 
 //-----------------------------------------------------------------------------
 // Purpose: allocate an entry for $sequence
 //-----------------------------------------------------------------------------
-
-void Cmd_Sequence( )
+void Cmd_Sequence()
 {
 	int depth = 0;
 	int numblends = 0;
 
-	if (!GetToken(false)) 
+	if (!GetToken(false))
 		return;
 
-	s_animation_t *panim = LookupAnimation( token );
+	s_animation_t* panim = LookupAnimation(token);
 
 	// allocate sequence
 	if (panim != NULL)
 	{
 		if (!panim->isOverride)
 		{
-			TokenError( "Duplicate sequence name \"%s\"\n", token );
+			TokenError("Duplicate sequence name \"%s\"\n", token);
 		}
 		else
 		{
 			panim->doesOverride = true;
-			ParseEmpty( );
+			ParseEmpty();
 			return;
 		}
 	}
 
 	if (g_sequence.Count() >= MAXSTUDIOSEQUENCES)
 	{
-		TokenError("Too many sequences (%d max)\n", MAXSTUDIOSEQUENCES );
+		TokenError("Too many sequences (%d max)\n", MAXSTUDIOSEQUENCES);
 	}
 
-	s_sequence_t *pseq = &g_sequence[ g_sequence.AddToTail() ];
-	memset( pseq, 0, sizeof( s_sequence_t ) );
+	s_sequence_t* pseq = &g_sequence[g_sequence.AddToTail()];
+	memset(pseq, 0, sizeof(s_sequence_t));
 
 	// initialize sequence
-	strcpyn( pseq->name, token );
+	strcpyn(pseq->name, token);
 
 	pseq->actweight = 0;
 	pseq->activityname[0] = '\0';
@@ -2802,14 +2827,13 @@ void Cmd_Sequence( )
 	pseq->fadeintime = 0.2;
 	pseq->fadeouttime = 0.2;
 
-	ParseSequence( pseq, false );
+	ParseSequence(pseq, false);
 }
 
 
 //-----------------------------------------------------------------------------
 // Purpose: parse options unique to $sequence
 //-----------------------------------------------------------------------------
-
 int ParseSequence( s_sequence_t *pseq, bool isAppend )
 {
 	int depth = 0;
@@ -3205,11 +3229,11 @@ int ParseSequence( s_sequence_t *pseq, bool isAppend )
 	return 0;
 }
 
+
 //-----------------------------------------------------------------------------
 // Purpose: throw away all the options for a specific sequence or animation
 //-----------------------------------------------------------------------------
-
-int ParseEmpty( )
+int ParseEmpty()
 {
 	int depth = 0;
 
@@ -3217,20 +3241,20 @@ int ParseEmpty( )
 	{
 		if (depth > 0)
 		{
-			if(!GetToken(true)) 
+			if (!GetToken(true))
 			{
 				break;
 			}
 		}
 		else
 		{
-			if (!TokenAvailable()) 
+			if (!TokenAvailable())
 			{
 				break;
 			}
-			else 
+			else
 			{
-				GetToken (false);
+				GetToken(false);
 			}
 		}
 
@@ -3238,15 +3262,15 @@ int ParseEmpty( )
 		{
 			if (depth != 0)
 			{
-				TokenError("missing }\n" );
+				TokenError("missing }\n");
 			}
 			return 1;
 		}
-		if (stricmp("{", token ) == 0)
+		if (stricmp("{", token) == 0)
 		{
 			depth++;
 		}
-		else if (stricmp("}", token ) == 0)
+		else if (stricmp("}", token) == 0)
 		{
 			depth--;
 		}
@@ -3264,55 +3288,54 @@ int ParseEmpty( )
 //-----------------------------------------------------------------------------
 // Purpose: append commands to either a sequence or an animation
 //-----------------------------------------------------------------------------
-void Cmd_Append( )
+void Cmd_Append()
 {
 	GetToken(false);
 
 
-	s_sequence_t *pseq = LookupSequence( token );
+	s_sequence_t* pseq = LookupSequence(token);
 
 	if (pseq)
 	{
-		ParseSequence( pseq, true );
+		ParseSequence(pseq, true);
 		return;
 	}
 	else
 	{
-		s_animation_t *panim = LookupAnimation( token );
+		s_animation_t* panim = LookupAnimation(token);
 
 		if (panim)
 		{
-			ParseAnimation( panim, true );
+			ParseAnimation(panim, true);
 			return;
 		}
 	}
-	TokenError( "unknown append animation %s\n", token );
+	TokenError("unknown append animation %s\n", token);
 }
 
 
-
-void Cmd_Prepend( )
+void Cmd_Prepend()
 {
 	GetToken(false);
 
-	s_sequence_t *pseq = LookupSequence( token );
+	s_sequence_t* pseq = LookupSequence(token);
 	int count = 0;
-	s_animation_t *panim = NULL;
-	int iRet =  false;
+	s_animation_t* panim = NULL;
+	int iRet = false;
 
 	if (pseq)
 	{
 		panim = pseq->panim[0][0];
 		count = panim->numcmds;
-		iRet = ParseSequence( pseq, true );
+		iRet = ParseSequence(pseq, true);
 	}
 	else
 	{
-		panim = LookupAnimation( token );
+		panim = LookupAnimation(token);
 		if (panim)
 		{
 			count = panim->numcmds;
-			iRet = ParseAnimation( panim, true );
+			iRet = ParseAnimation(panim, true);
 		}
 	}
 	if (panim && count != panim->numcmds)
@@ -3322,86 +3345,89 @@ void Cmd_Prepend( )
 		int i;
 		for (i = panim->numcmds - 1; i > 0; i--)
 		{
-			panim->cmds[i] = panim->cmds[i-1];
+			panim->cmds[i] = panim->cmds[i - 1];
 		}
 		panim->cmds[0] = tmp;
 		return;
 	}
-	TokenError( "unknown prepend animation \"%s\"\n", token );
+	TokenError("unknown prepend animation \"%s\"\n", token);
 }
 
-void Cmd_Continue( )
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void Cmd_Continue()
 {
 	GetToken(false);
 
-	s_sequence_t *pseq = LookupSequence( token );
+	s_sequence_t* pseq = LookupSequence(token);
 
 	if (pseq)
 	{
 		GetToken(true);
 		UnGetToken();
 		if (token[0] != '$')
-			ParseSequence( pseq, true );
+			ParseSequence(pseq, true);
 		return;
 	}
 	else
 	{
-		s_animation_t *panim = LookupAnimation( token );
+		s_animation_t* panim = LookupAnimation(token);
 
 		if (panim)
 		{
 			GetToken(true);
 			UnGetToken();
 			if (token[0] != '$')
-				ParseAnimation( panim, true );
+				ParseAnimation(panim, true);
 			return;
 		}
 	}
-	TokenError( "unknown continue animation %s\n", token );
+	TokenError("unknown continue animation %s\n", token);
 }
+
 
 //-----------------------------------------------------------------------------
 // Purpose: foward declare an empty sequence
 //-----------------------------------------------------------------------------
-
-void Cmd_DeclareSequence( void )
+void Cmd_DeclareSequence()
 {
 	if (g_sequence.Count() >= MAXSTUDIOSEQUENCES)
 	{
-		TokenError("Too many sequences (%d max)\n", MAXSTUDIOSEQUENCES );
+		TokenError("Too many sequences (%d max)\n", MAXSTUDIOSEQUENCES);
 	}
 
-	s_sequence_t *pseq = &g_sequence[ g_sequence.AddToTail() ];
-	memset( pseq, 0, sizeof( s_sequence_t ) );
+	s_sequence_t* pseq = &g_sequence[g_sequence.AddToTail()];
+	memset(pseq, 0, sizeof(s_sequence_t));
 	pseq->flags = STUDIO_OVERRIDE;
 
 	// initialize sequence
-	GetToken( false );
-	strcpyn( pseq->name, token );
+	GetToken(false);
+	strcpyn(pseq->name, token);
 }
 
 
 //-----------------------------------------------------------------------------
 // Purpose: foward declare an empty sequence
 //-----------------------------------------------------------------------------
-
-void Cmd_DeclareAnimation( void )
+void Cmd_DeclareAnimation(void)
 {
 	if (g_numani >= MAXSTUDIOANIMS)
 	{
-		TokenError("Too many animations (%d max)\n", MAXSTUDIOANIMS );
+		TokenError("Too many animations (%d max)\n", MAXSTUDIOANIMS);
 	}
 
 	// allocate animation entry
-	s_animation_t *panim = (s_animation_t *)kalloc( 1, sizeof( s_animation_t ) );
+	s_animation_t* panim = (s_animation_t*)kalloc(1, sizeof(s_animation_t));
 	g_panimation[g_numani] = panim;
 	panim->index = g_numani;
 	panim->flags = STUDIO_OVERRIDE;
 	g_numani++;
-	
+
 	// initialize animation
-	GetToken( false );
-	strcpyn( panim->name, token );
+	GetToken(false);
+	strcpyn(panim->name, token);
 }
 
 
@@ -3488,6 +3514,9 @@ void Option_Weightlist( s_weightlist_t *pweightlist )
 }
 
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_Weightlist( )
 {
 	int i;
@@ -3515,15 +3544,18 @@ void Cmd_Weightlist( )
 	g_numweightlist++;
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_DefaultWeightlist( )
 {
 	Option_Weightlist( &g_weightlist[0] );
 }
 
+
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-
 void Option_Eyeball( s_model_t *pmodel )
 {
 	Vector	tmp;
@@ -3623,7 +3655,6 @@ void Option_Eyeball( s_model_t *pmodel )
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-
 void Option_Spherenormals( s_source_t *psource )
 {
 	Vector	pos;
@@ -3685,10 +3716,10 @@ void Option_Spherenormals( s_source_t *psource )
 	}
 }
 
+
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-
 int Add_Flexdesc( const char *name )
 {
 	int flexdesc;
@@ -3718,7 +3749,6 @@ int Add_Flexdesc( const char *name )
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-
 void Option_Flex( char *name, char *vtafile, int imodel, float pairsplit )
 {
 	if (g_numflexkeys >= MAXSTUDIOFLEXKEYS)
@@ -3801,10 +3831,10 @@ void Option_Flex( char *name, char *vtafile, int imodel, float pairsplit )
 	// this needs to be per model.
 }
 
+
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-
 void Option_Eyelid( int imodel )
 {
 	char type[256];
@@ -3964,10 +3994,10 @@ void Option_Eyelid( int imodel )
 	}
 }
 
-/*
-=================
-=================
-*/
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 int Option_Mouth( s_model_t *pmodel )
 {
 	// index
@@ -3995,7 +4025,9 @@ int Option_Mouth( s_model_t *pmodel )
 }
 
 
-
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Option_Flexcontroller( s_model_t *pmodel )
 {
 	char type[256];
@@ -4037,6 +4069,10 @@ void Option_Flexcontroller( s_model_t *pmodel )
 	// this needs to be per model.
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Option_Flexrule( s_model_t *pmodel, char *name )
 {
 	int precedence[32];
@@ -4383,11 +4419,10 @@ void Option_Flexrule( s_model_t *pmodel, char *name )
 	}
 }
 
+
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-
-
 void Cmd_Model( )
 {
 	g_model[g_nummodels] = (s_model_t *)kalloc( 1, sizeof( s_model_t ) );
@@ -4551,35 +4586,38 @@ void Cmd_Model( )
 }
 
 
-void Cmd_FakeVTA( void )
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void Cmd_FakeVTA(void)
 {
 	int depth = 0;
 
-	GetToken( false );
+	GetToken(false);
 
-	s_source_t *psource = (s_source_t *)kalloc( 1, sizeof( s_source_t ) );
+	s_source_t* psource = (s_source_t*)kalloc(1, sizeof(s_source_t));
 	g_source[g_numsources] = psource;
-	strcpyn( g_source[g_numsources]->filename, token );
+	strcpyn(g_source[g_numsources]->filename, token);
 	g_numsources++;
 
 	while (1)
 	{
 		if (depth > 0)
 		{
-			if(!GetToken(true)) 
+			if (!GetToken(true))
 			{
 				break;
 			}
 		}
 		else
 		{
-			if (!TokenAvailable()) 
+			if (!TokenAvailable())
 			{
 				break;
 			}
-			else 
+			else
 			{
-				GetToken (false);
+				GetToken(false);
 			}
 		}
 
@@ -4587,29 +4625,29 @@ void Cmd_FakeVTA( void )
 		{
 			if (depth != 0)
 			{
-				TokenError("missing }\n" );
+				TokenError("missing }\n");
 			}
 			return;
 		}
-		if (stricmp("{", token ) == 0)
+		if (stricmp("{", token) == 0)
 		{
 			depth++;
 		}
-		else if (stricmp("}", token ) == 0)
+		else if (stricmp("}", token) == 0)
 		{
 			depth--;
 		}
-		else if (stricmp("appendvta", token ) == 0)
+		else if (stricmp("appendvta", token) == 0)
 		{
 			char filename[256];
 			// file
-			GetToken (false);
-			strcpy( filename, token );
-			
-			GetToken( false );
-			int frame = verify_atoi( token );
+			GetToken(false);
+			strcpy(filename, token);
 
-			AppendVTAtoOBJ( psource, filename, frame );
+			GetToken(false);
+			int frame = verify_atoi(token);
+
+			AppendVTAtoOBJ(psource, filename, frame);
 		}
 	}
 }
@@ -4618,16 +4656,15 @@ void Cmd_FakeVTA( void )
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-
-void Cmd_IKChain( )
+void Cmd_IKChain()
 {
-	if (!GetToken(false)) 
+	if (!GetToken(false))
 		return;
 
 	int i;
-	for ( i = 0; i < g_numikchains; i++)
+	for (i = 0; i < g_numikchains; i++)
 	{
-		if (stricmp( token, g_ikchain[i].name ) == 0)
+		if (stricmp(token, g_ikchain[i].name) == 0)
 		{
 			break;
 		}
@@ -4636,7 +4673,7 @@ void Cmd_IKChain( )
 	{
 		if (!g_quiet)
 		{
-			Msg("duplicate ikchain \"%s\" ignored\n", token );
+			Msg("duplicate ikchain \"%s\" ignored\n", token);
 		}
 		while (TokenAvailable())
 		{
@@ -4645,10 +4682,10 @@ void Cmd_IKChain( )
 		return;
 	}
 
-	strcpyn( g_ikchain[g_numikchains].name, token );
+	strcpyn(g_ikchain[g_numikchains].name, token);
 
 	GetToken(false);
-	strcpyn( g_ikchain[g_numikchains].bonename, token );
+	strcpyn(g_ikchain[g_numikchains].bonename, token);
 
 	g_ikchain[g_numikchains].axis = STUDIO_Z;
 	g_ikchain[g_numikchains].value = 0.0;
@@ -4660,44 +4697,44 @@ void Cmd_IKChain( )
 	{
 		GetToken(false);
 
-		if (lookupControl( token ) != -1)
+		if (lookupControl(token) != -1)
 		{
-			g_ikchain[g_numikchains].axis = lookupControl( token );
+			g_ikchain[g_numikchains].axis = lookupControl(token);
 			GetToken(false);
-			g_ikchain[g_numikchains].value = verify_atof( token );
+			g_ikchain[g_numikchains].value = verify_atof(token);
 		}
-		else if (stricmp( "height", token ) == 0)
+		else if (stricmp("height", token) == 0)
 		{
 			GetToken(false);
-			g_ikchain[g_numikchains].height = verify_atof( token );
+			g_ikchain[g_numikchains].height = verify_atof(token);
 		}
-		else if (stricmp( "pad", token ) == 0)
+		else if (stricmp("pad", token) == 0)
 		{
 			GetToken(false);
-			g_ikchain[g_numikchains].radius = verify_atof( token ) / 2.0;
+			g_ikchain[g_numikchains].radius = verify_atof(token) / 2.0;
 		}
-		else if (stricmp( "floor", token ) == 0)
+		else if (stricmp("floor", token) == 0)
 		{
 			GetToken(false);
-			g_ikchain[g_numikchains].floor = verify_atof( token );
+			g_ikchain[g_numikchains].floor = verify_atof(token);
 		}
-		else if (stricmp( "knee", token ) == 0)
+		else if (stricmp("knee", token) == 0)
 		{
 			GetToken(false);
-			g_ikchain[g_numikchains].link[0].kneeDir.x = verify_atof( token );
+			g_ikchain[g_numikchains].link[0].kneeDir.x = verify_atof(token);
 			GetToken(false);
-			g_ikchain[g_numikchains].link[0].kneeDir.y = verify_atof( token );
+			g_ikchain[g_numikchains].link[0].kneeDir.y = verify_atof(token);
 			GetToken(false);
-			g_ikchain[g_numikchains].link[0].kneeDir.z = verify_atof( token );
+			g_ikchain[g_numikchains].link[0].kneeDir.z = verify_atof(token);
 		}
-		else if (stricmp( "center", token ) == 0)
+		else if (stricmp("center", token) == 0)
 		{
 			GetToken(false);
-			g_ikchain[g_numikchains].center.x = verify_atof( token );
+			g_ikchain[g_numikchains].center.x = verify_atof(token);
 			GetToken(false);
-			g_ikchain[g_numikchains].center.y = verify_atof( token );
+			g_ikchain[g_numikchains].center.y = verify_atof(token);
 			GetToken(false);
-			g_ikchain[g_numikchains].center.z = verify_atof( token );
+			g_ikchain[g_numikchains].center.z = verify_atof(token);
 		}
 	}
 	g_numikchains++;
@@ -4707,8 +4744,6 @@ void Cmd_IKChain( )
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-
-
 void Cmd_IKAutoplayLock( )
 {
 	GetToken(false);
@@ -4727,7 +4762,6 @@ void Cmd_IKAutoplayLock( )
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-
 void Cmd_Root ()
 {
 	if (GetToken (false))
@@ -4740,12 +4774,11 @@ void Cmd_Root ()
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-
-void Cmd_Controller (void)
+void Cmd_Controller(void)
 {
-	if (GetToken (false))
+	if (GetToken(false))
 	{
-		if (!stricmp("mouth",token))
+		if (!stricmp("mouth", token))
 		{
 			g_bonecontroller[g_numbonecontrollers].inputfield = 4;
 		}
@@ -4755,17 +4788,17 @@ void Cmd_Controller (void)
 		}
 		if (GetToken(false))
 		{
-			strcpyn( g_bonecontroller[g_numbonecontrollers].name, token );
+			strcpyn(g_bonecontroller[g_numbonecontrollers].name, token);
 			GetToken(false);
-			if ((g_bonecontroller[g_numbonecontrollers].type = lookupControl(token)) == -1) 
+			if ((g_bonecontroller[g_numbonecontrollers].type = lookupControl(token)) == -1)
 			{
-				MdlWarning("unknown g_bonecontroller type '%s'\n", token );
+				MdlWarning("unknown g_bonecontroller type '%s'\n", token);
 				return;
 			}
 			GetToken(false);
-			g_bonecontroller[g_numbonecontrollers].start = verify_atof( token );
+			g_bonecontroller[g_numbonecontrollers].start = verify_atof(token);
 			GetToken(false);
-			g_bonecontroller[g_numbonecontrollers].end = verify_atof( token );
+			g_bonecontroller[g_numbonecontrollers].end = verify_atof(token);
 
 			if (g_bonecontroller[g_numbonecontrollers].type & (STUDIO_XR | STUDIO_YR | STUDIO_ZR))
 			{
@@ -4783,7 +4816,6 @@ void Cmd_Controller (void)
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-
 // Debugging function that enumerate all a models bones to stdout.
 static void SpewBones()
 {
@@ -4795,44 +4827,45 @@ static void SpewBones()
 	}
 }
 
+
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-
-void Cmd_ScreenAlign ( void )
+void Cmd_ScreenAlign()
 {
-	if (GetToken (false))
+	if (GetToken(false))
 	{
-		
-		Assert( g_numscreenalignedbones < MAXSTUDIOSRCBONES );
 
-		strcpyn( g_screenalignedbone[g_numscreenalignedbones].name, token );
+		Assert(g_numscreenalignedbones < MAXSTUDIOSRCBONES);
+
+		strcpyn(g_screenalignedbone[g_numscreenalignedbones].name, token);
 		g_screenalignedbone[g_numscreenalignedbones].flags = BONE_SCREEN_ALIGN_SPHERE;
 
-		if( GetToken( false ) )
+		if (GetToken(false))
 		{
-			if( !stricmp( "sphere", token )  )
+			if (!stricmp("sphere", token))
 			{
-				g_screenalignedbone[g_numscreenalignedbones].flags = BONE_SCREEN_ALIGN_SPHERE;				
+				g_screenalignedbone[g_numscreenalignedbones].flags = BONE_SCREEN_ALIGN_SPHERE;
 			}
-			else if( !stricmp( "cylinder", token ) )
+			else if (!stricmp("cylinder", token))
 			{
-				g_screenalignedbone[g_numscreenalignedbones].flags = BONE_SCREEN_ALIGN_CYLINDER;				
+				g_screenalignedbone[g_numscreenalignedbones].flags = BONE_SCREEN_ALIGN_CYLINDER;
 			}
 		}
 
 		g_numscreenalignedbones++;
 
-	} else
+	}
+	else
 	{
-		TokenError( "$screenalign: expected bone name\n" );
+		TokenError("$screenalign: expected bone name\n");
 	}
 }
+
 
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-
 void Cmd_BBox (void)
 {
 	GetToken (false);
@@ -4856,10 +4889,10 @@ void Cmd_BBox (void)
 	g_wrotebbox = true;
 }
 
+
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-
 void Cmd_CBox (void)
 {
 	GetToken (false);
@@ -4888,7 +4921,6 @@ void Cmd_CBox (void)
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-
 void Cmd_Gamma (void)
 {
 	GetToken (false);
@@ -4899,10 +4931,9 @@ void Cmd_Gamma (void)
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-
-void Cmd_TextureGroup( )
+void Cmd_TextureGroup()
 {
-	if( g_bCreateMakefile )
+	if (g_bCreateMakefile)
 	{
 		return;
 	}
@@ -4912,9 +4943,9 @@ void Cmd_TextureGroup( )
 	int group = 0;
 
 	if (g_numtextures == 0)
-		TokenError( "texturegroups must follow model loading\n");
+		TokenError("texturegroups must follow model loading\n");
 
-	if (!GetToken(false)) 
+	if (!GetToken(false))
 		return;
 
 	if (g_numskinref == 0)
@@ -4922,7 +4953,7 @@ void Cmd_TextureGroup( )
 
 	while (1)
 	{
-		if(!GetToken(true)) 
+		if (!GetToken(true))
 		{
 			break;
 		}
@@ -4931,7 +4962,7 @@ void Cmd_TextureGroup( )
 		{
 			if (depth != 0)
 			{
-				TokenError("missing }\n" );
+				TokenError("missing }\n");
 			}
 			return;
 		}
@@ -4949,7 +4980,7 @@ void Cmd_TextureGroup( )
 		}
 		else if (depth == 2)
 		{
-			i = use_texture_as_material( lookup_texture( token, sizeof( token ) ) );
+			i = use_texture_as_material(lookup_texture(token, sizeof(token)));
 			g_texturegroup[g_numtexturegroups][group][index] = i;
 			if (group != 0)
 				g_texture[i].parent = g_texturegroup[g_numtexturegroups][0][index];
@@ -4967,13 +4998,12 @@ void Cmd_TextureGroup( )
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-
-void Cmd_Hitgroup( )
+void Cmd_Hitgroup()
 {
-	GetToken (false);
-	g_hitgroup[g_numhitgroups].group = verify_atoi( token );
-	GetToken (false);
-	strcpyn( g_hitgroup[g_numhitgroups].name, token );
+	GetToken(false);
+	g_hitgroup[g_numhitgroups].group = verify_atoi(token);
+	GetToken(false);
+	strcpyn(g_hitgroup[g_numhitgroups].name, token);
 	g_numhitgroups++;
 }
 
@@ -4981,74 +5011,72 @@ void Cmd_Hitgroup( )
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-
-void Cmd_Hitbox( )
+void Cmd_Hitbox()
 {
 	bool autogenerated = false;
-	if ( g_hitboxsets.Size() == 0 )
+	if (g_hitboxsets.Size() == 0)
 	{
 		g_hitboxsets.AddToTail();
 		autogenerated = true;
 	}
 
 	// Last one
-	s_hitboxset *set = &g_hitboxsets[ g_hitboxsets.Size() - 1 ];
-	if ( autogenerated )
+	s_hitboxset* set = &g_hitboxsets[g_hitboxsets.Size() - 1];
+	if (autogenerated)
 	{
-		memset( set, 0, sizeof( *set ) );
+		memset(set, 0, sizeof(*set));
 
 		// fill in name if it wasn't specified in the .qc
-		strcpy( set->hitboxsetname, "default" );
+		strcpy(set->hitboxsetname, "default");
 	}
 
-	GetToken (false);
-	set->hitbox[set->numhitboxes].group = verify_atoi( token );
-	
-	// Grab the bone name:
-	GetToken (false);
-	strcpyn( set->hitbox[set->numhitboxes].name, token );
+	GetToken(false);
+	set->hitbox[set->numhitboxes].group = verify_atoi(token);
 
-	GetToken (false);
-	set->hitbox[set->numhitboxes].bmin[0] = verify_atof( token );
-	GetToken (false);
-	set->hitbox[set->numhitboxes].bmin[1] = verify_atof( token );
-	GetToken (false);
-	set->hitbox[set->numhitboxes].bmin[2] = verify_atof( token );
-	GetToken (false);
-	set->hitbox[set->numhitboxes].bmax[0] = verify_atof( token );
-	GetToken (false);
-	set->hitbox[set->numhitboxes].bmax[1] = verify_atof( token );
-	GetToken (false);
-	set->hitbox[set->numhitboxes].bmax[2] = verify_atof( token );
+	// Grab the bone name:
+	GetToken(false);
+	strcpyn(set->hitbox[set->numhitboxes].name, token);
+
+	GetToken(false);
+	set->hitbox[set->numhitboxes].bmin[0] = verify_atof(token);
+	GetToken(false);
+	set->hitbox[set->numhitboxes].bmin[1] = verify_atof(token);
+	GetToken(false);
+	set->hitbox[set->numhitboxes].bmin[2] = verify_atof(token);
+	GetToken(false);
+	set->hitbox[set->numhitboxes].bmax[0] = verify_atof(token);
+	GetToken(false);
+	set->hitbox[set->numhitboxes].bmax[1] = verify_atof(token);
+	GetToken(false);
+	set->hitbox[set->numhitboxes].bmax[2] = verify_atof(token);
 
 	//Scale hitboxes
-	scale_vertex( set->hitbox[set->numhitboxes].bmin );
-	scale_vertex( set->hitbox[set->numhitboxes].bmax );
+	scale_vertex(set->hitbox[set->numhitboxes].bmin);
+	scale_vertex(set->hitbox[set->numhitboxes].bmax);
 	// clear out the hitboxname:
-	memset( set->hitbox[set->numhitboxes].hitboxname, 0, sizeof( set->hitbox[set->numhitboxes].hitboxname ) );
+	memset(set->hitbox[set->numhitboxes].hitboxname, 0, sizeof(set->hitbox[set->numhitboxes].hitboxname));
 
 	// Grab the hit box name if present:
-	if( TokenAvailable() )
+	if (TokenAvailable())
 	{
-		GetToken (false);
-		strcpyn( set->hitbox[set->numhitboxes].hitboxname, token );
+		GetToken(false);
+		strcpyn(set->hitbox[set->numhitboxes].hitboxname, token);
 	}
-
 
 	set->numhitboxes++;
 }
 
+
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-
-void Cmd_HitboxSet( void )
+void Cmd_HitboxSet(void)
 {
 	// Add a new hitboxset
-	s_hitboxset *set = &g_hitboxsets[ g_hitboxsets.AddToTail() ];
-	GetToken( false );
-	memset( set, 0, sizeof( *set ) );
-	strcpy( set->hitboxsetname, token );
+	s_hitboxset* set = &g_hitboxsets[g_hitboxsets.AddToTail()];
+	GetToken(false);
+	memset(set, 0, sizeof(*set));
+	strcpy(set->hitboxsetname, token);
 }
 
 
@@ -5063,6 +5091,7 @@ struct SurfacePropName_t
 
 static char								s_pDefaultSurfaceProp[128] = {"default"};
 static CUtlVector<SurfacePropName_t>	s_JointSurfaceProp;
+
 
 //-----------------------------------------------------------------------------
 // Assigns a default surface property to the entire model
@@ -5190,6 +5219,7 @@ struct ContentsName_t
 	char m_pJointName[128];
 	int m_nContents;
 };
+
 
 static int s_nDefaultContents = CONTENTS_SOLID;
 static CUtlVector<ContentsName_t>	s_JointContents;
@@ -5510,7 +5540,6 @@ void Cmd_Renamebone( )
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-
 void Cmd_Skiptransition( )
 {
 	int nskips = 0;
@@ -5546,7 +5575,6 @@ void Cmd_Skiptransition( )
 //-----------------------------------------------------------------------------
 // Parse replacemodel command, causes an LOD to use a new model
 //-----------------------------------------------------------------------------
-
 static void Cmd_ReplaceModel( LodScriptData_t& lodData )
 {
 	int i = lodData.modelReplacements.AddToTail();
@@ -5599,10 +5627,10 @@ static void Cmd_ReplaceModel( LodScriptData_t& lodData )
 		"smd", reverse, false ); 
 }
 
+
 //-----------------------------------------------------------------------------
 // Parse removemodel command, causes an LOD to stop using a model
 //-----------------------------------------------------------------------------
-
 static void Cmd_RemoveModel( LodScriptData_t& lodData )
 {
 	int i = lodData.modelReplacements.AddToTail();
@@ -5629,10 +5657,10 @@ static void Cmd_RemoveModel( LodScriptData_t& lodData )
 	}
 }
 
+
 //-----------------------------------------------------------------------------
 // Parse replacebone command, causes a part of an LOD model to use a different bone
 //-----------------------------------------------------------------------------
-
 static void Cmd_ReplaceBone( LodScriptData_t& lodData )
 {
 	int i = lodData.boneReplacements.AddToTail();
@@ -5647,10 +5675,10 @@ static void Cmd_ReplaceBone( LodScriptData_t& lodData )
 	newReplacement.SetDstName( token );
 }
 
+
 //-----------------------------------------------------------------------------
 // Parse bonetreecollapse command, causes the entire subtree to use the same bone as the node
 //-----------------------------------------------------------------------------
-
 static void Cmd_BoneTreeCollapse( LodScriptData_t& lodData )
 {
 	int i = lodData.boneTreeCollapses.AddToTail();
@@ -5661,10 +5689,10 @@ static void Cmd_BoneTreeCollapse( LodScriptData_t& lodData )
 	newCollapse.SetSrcName( token );
 }
 
+
 //-----------------------------------------------------------------------------
 // Parse replacematerial command, causes a material to be used in place of another
 //-----------------------------------------------------------------------------
-
 static void Cmd_ReplaceMaterial( LodScriptData_t& lodData )
 {
 	int i = lodData.materialReplacements.AddToTail();
@@ -5682,10 +5710,10 @@ static void Cmd_ReplaceMaterial( LodScriptData_t& lodData )
 	use_texture_as_material( lookup_texture( token, sizeof( token ) ) );
 }
 
+
 //-----------------------------------------------------------------------------
 // Parse removemesh command, causes a mesh to not be used anymore
 //-----------------------------------------------------------------------------
-
 static void Cmd_RemoveMesh( LodScriptData_t& lodData )
 {
 	int i = lodData.meshRemovals.AddToTail();
@@ -5697,6 +5725,10 @@ static void Cmd_RemoveMesh( LodScriptData_t& lodData )
 	newReplacement.SetSrcName( token );
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 static void Cmd_LOD( char const *cmdname )
 {
 	if ( gflags & STUDIOHDR_FLAGS_HASSHADOWLOD )
@@ -5811,6 +5843,10 @@ static void Cmd_LOD( char const *cmdname )
 	}
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_ShadowLOD( void )
 {
 	if (!g_quiet)
@@ -5837,6 +5873,10 @@ void Cmd_Opaque( )
 	gflags &= ~STUDIOHDR_FLAGS_TRANSLUCENT_TWOPASS;
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_TranslucentTwoPass( )
 {
 	// Force Opaque has precedence
@@ -5846,6 +5886,7 @@ void Cmd_TranslucentTwoPass( )
 	}
 }
 
+
 //-----------------------------------------------------------------------------
 // Indicates the model be rendered with ambient boost heuristic (first used on Alyx in Episode 1)
 //-----------------------------------------------------------------------------
@@ -5853,6 +5894,7 @@ void Cmd_AmbientBoost()
 {
 	gflags |= STUDIOHDR_FLAGS_AMBIENT_BOOST;
 }
+
 
 //-----------------------------------------------------------------------------
 // Indicates the model should not fade out even if the level or fallback settings say to
@@ -5880,6 +5922,7 @@ void Cmd_ForcePhonemeCrossfade()
 	gflags |= STUDIOHDR_FLAGS_FORCE_PHONEME_CROSSFADE;
 }
 
+
 //-----------------------------------------------------------------------------
 // Indicates the model should keep pre-defined bone lengths regardless of animation changes
 //-----------------------------------------------------------------------------
@@ -5887,6 +5930,7 @@ void Cmd_LockBoneLengths()
 {
 	g_bLockBoneLengths = true;
 }
+
 
 //-----------------------------------------------------------------------------
 // Indicates the model should keep pre-defined bone lengths regardless of animation changes
@@ -5896,15 +5940,15 @@ void Cmd_LockDefineBones()
 	g_bOverridePreDefinedBones = false;
 }
 
+
 //-----------------------------------------------------------------------------
 // Mark this model as obsolete so that it'll show the obsolete material in game.
 //-----------------------------------------------------------------------------
-void Cmd_Obsolete( )
+void Cmd_Obsolete()
 {
 	// Force Opaque has precedence
 	gflags |= STUDIOHDR_FLAGS_OBSOLETE;
 }
-
 
 
 //-----------------------------------------------------------------------------
@@ -5965,11 +6009,9 @@ void Option_KeyValues( CUtlVector< char > *pKeyValue )
 }
 
 
-
 //-----------------------------------------------------------------------------
 // Purpose: force a specific parent child relationship
 //-----------------------------------------------------------------------------
-
 void Cmd_ForcedHierarchy( )
 {
 	// child name
@@ -5987,7 +6029,6 @@ void Cmd_ForcedHierarchy( )
 //-----------------------------------------------------------------------------
 // Purpose: insert a virtual bone between a child and parent (currently unsupported)
 //-----------------------------------------------------------------------------
-
 void Cmd_InsertHierarchy( )
 {
 	// child name
@@ -6009,7 +6050,6 @@ void Cmd_InsertHierarchy( )
 //-----------------------------------------------------------------------------
 // Purpose: rotate a specific bone
 //-----------------------------------------------------------------------------
-
 void Cmd_ForceRealign( )
 {
 	// bone name
@@ -6038,7 +6078,6 @@ void Cmd_ForceRealign( )
 //-----------------------------------------------------------------------------
 // Purpose: specify a bone to allow > 180 but < 360 rotation (forces a calculated "mid point" to rotation)
 //-----------------------------------------------------------------------------
-
 void Cmd_LimitRotation( )
 {
 	// bone name
@@ -6059,7 +6098,6 @@ void Cmd_LimitRotation( )
 //-----------------------------------------------------------------------------
 // Purpose: specify bones to store, even if nothing references them
 //-----------------------------------------------------------------------------
-
 void Cmd_DefineBone( )
 {
 	// bone name
@@ -6116,11 +6154,9 @@ void Cmd_DefineBone( )
 }
 
 
-
 //-----------------------------------------------------------------------------
 // Purpose: specify bones to store, even if nothing references them
 //-----------------------------------------------------------------------------
-
 void Cmd_IncludeModel( )
 {
 	GetToken( false );
@@ -6130,11 +6166,9 @@ void Cmd_IncludeModel( )
 }
 
 
-/*
-=================
-=================
-*/
-
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Grab_Vertexanimation( s_source_t *psource )
 {
 	char	cmd[1024];
@@ -6224,6 +6258,10 @@ void Grab_Vertexanimation( s_source_t *psource )
 	MdlError( "unexpected EOF: %s\n", psource->filename );
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 int OpenGlobalFile( char *src )
 {
 	int		time1;
@@ -6286,7 +6324,9 @@ int OpenGlobalFile( char *src )
 }
 
 
-
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 int Load_VTA( s_source_t *psource )
 {
 	char	cmd[1024];
@@ -6335,6 +6375,9 @@ int Load_VTA( s_source_t *psource )
 }
 
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Grab_AxisInterpBones( )
 {
 	char	cmd[1024], tmp[1025];
@@ -6387,6 +6430,9 @@ void Grab_AxisInterpBones( )
 }
 
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 bool Grab_AimAtBones( )
 {
 	s_aimatbone_t *pAimAtBone( &g_aimatbones[g_numaimatbones] );
@@ -6457,6 +6503,9 @@ bool Grab_AimAtBones( )
 }
 
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Grab_QuatInterpBones( )
 {
 	char	cmd[1024];
@@ -6593,6 +6642,9 @@ void Grab_QuatInterpBones( )
 }
 
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Load_ProceduralBones( )
 {
 	char	filename[256];
@@ -6637,6 +6689,9 @@ void Load_ProceduralBones( )
 }
 
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_CD()
 {
 	if (cdset)
@@ -6649,6 +6704,9 @@ void Cmd_CD()
 }
 
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_CDMaterials()
 {
 	while (TokenAvailable())
@@ -6671,6 +6729,9 @@ void Cmd_CDMaterials()
 }
 
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_Pushd()
 {
 	GetToken(false);
@@ -6681,37 +6742,65 @@ void Cmd_Pushd()
 	numdirs++;
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_Popd()
 {
 	if (numdirs > 0)
 		numdirs--;
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_CollisionModel()
 {
 	DoCollisionModel( false );
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_CollisionJoints()
 {
 	DoCollisionModel( true );
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_ExternalTextures()
 {
 	MdlWarning( "ignoring $externaltextures, obsolete..." );
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_ClipToTextures()
 {
 	clip_texcoords = 1;
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_CollapseBones()
 {
 	g_collapse_bones = true;
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_AlwaysCollapse()
 {
 	g_collapse_bones = true;
@@ -6719,37 +6808,65 @@ void Cmd_AlwaysCollapse()
 	g_collapse[g_numcollapse++] = strdup( token );
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_CalcTransitions()
 {
 	g_bMultistageGraph = true;
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_StaticProp()
 {
 	g_staticprop = true;
 	gflags |= STUDIOHDR_FLAGS_STATIC_PROP;
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_ZBrush()
 {
 	g_bZBrush = true;
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_RealignBones()
 {
 	g_realignbones = true;
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_BaseLOD()
 {
 	Cmd_LOD( "$lod" );
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_KeyValues()
 {
 	Option_KeyValues( &g_KeyValueText );
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_ConstDirectionalLight()
 {
 	gflags |= STUDIOHDR_FLAGS_CONSTANT_DIRECTIONAL_LIGHT_DOT;
@@ -6758,6 +6875,10 @@ void Cmd_ConstDirectionalLight()
 	g_constdirectionalightdot = (byte)( verify_atof(token) * 255.0f );
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_MinLOD()
 {
 	GetToken( false );
@@ -6765,6 +6886,9 @@ void Cmd_MinLOD()
 }
 
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void Cmd_BoneSaveFrame( )
 {
 	s_bonesaveframe_t tmp;
@@ -6796,10 +6920,10 @@ void Cmd_BoneSaveFrame( )
 }
 
 
-//
-// This is the master list of the commands a QC file supports.
+//-----------------------------------------------------------------------------
+// Purpose:  This is the master list of the commands a QC file supports.
 // To add a new command to the QC files, add it here.
-//
+//-----------------------------------------------------------------------------
 struct
 {
 	char *m_pName;
@@ -6892,11 +7016,9 @@ struct
 };
 	
 
-/*
-===============
-ParseScript
-===============
-*/
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void ParseScript()
 {
 	while (1)
@@ -6926,8 +7048,10 @@ void ParseScript()
 }
 
 
-// Used by the CheckSurfaceProps.py script.
+//-----------------------------------------------------------------------------
+// Purpose:  Used by the CheckSurfaceProps.py script.
 // They specify the .mdl file and it prints out all the surface props that the model uses.
+//-----------------------------------------------------------------------------
 bool HandlePrintSurfaceProps( int &returnValue )
 {
 	const char *pFilename = CommandLine()->ParmValue( "-PrintSurfaceProps", (const char*)NULL );
@@ -6980,6 +7104,10 @@ bool HandlePrintSurfaceProps( int &returnValue )
 	}
 }
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void UsageAndExit()
 {
 	MdlError( "Bad or missing options\n"
@@ -7008,28 +7136,29 @@ void UsageAndExit()
 		);
 }
 
-#ifndef _DEBUG
 
+#ifndef _DEBUG
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 LONG __stdcall VExceptionFilter( struct _EXCEPTION_POINTERS *ExceptionInfo )
 {
 	MdlExceptionFilter( ExceptionInfo->ExceptionRecord->ExceptionCode );
 	return EXCEPTION_EXECUTE_HANDLER; // (never gets here anyway)
 }
+#endif // _DEBUG
 
-#endif
-/*
-==============
-main
-==============
-*/
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 int main (int argc, char **argv)
 {
 	int		i;
 
 #ifndef _DEBUG
 	LPTOP_LEVEL_EXCEPTION_FILTER pOldFilter = SetUnhandledExceptionFilter( VExceptionFilter );
-#endif
+#endif // _DEBUG
 
 	CommandLine()->CreateCmdLine( argc, argv );
 	InstallSpewFunction();
@@ -7318,7 +7447,4 @@ int main (int argc, char **argv)
 
 	return 0;
 }
-
-
-
 
