@@ -1,0 +1,159 @@
+//-----------------------------------------------------------------------------
+//	STUDIOMDL.VPC	//copied from VBSP.VPC
+//
+//	Author(s) Unusuario2
+//
+//	Project Script
+//-----------------------------------------------------------------------------
+
+//All the info can be found in studiomdl-2005.vcproj
+//This script is just an adaptation from studiomdl-2005.vcproj to vpc 
+
+$Macro SRCDIR		"..\.."
+$Macro OUTBINDIR	"$SRCDIR\..\game\bin"
+$Macro OUTBINNAME	"studiomdl"
+
+$Include "$SRCDIR\vpc_scripts\source_exe_con_base.vpc"
+
+$Configuration
+{
+	$Compiler
+	{
+		$AdditionalIncludeDirectories		"$BASE,..\common,..\..\public,..\..\public\tier1" //51
+		$PreprocessorDefinitions			"$BASE;MACRO_MATHLIB;PROTECTED_THINGS_DISABLE"
+
+		//$PreprocessorDefinitions			"$BASE;"
+	}
+
+	$Linker
+	{
+		$AdditionalDependencies		    	"$BASE winmm.lib"
+		$EnableLargeAddresses				"Support Addresses Larger Than 2 Gigabytes (/LARGEADDRESSAWARE)" [$WIN32]
+	}
+}
+
+$Project "Studiomdl"
+{
+	$Folder	"Source Files"
+	{
+		$File  "collisionmodel.cpp"
+		$File  "HardwareMatrixState.cpp"
+		$File  "HardwareVertexCache.cpp"
+		$File  "matsys.cpp"
+		$File  "mrmsupport.cpp"
+		$File  "objsupport.cpp"
+		$File  "optimize.cpp"
+		$File  "perfstats.cpp"
+		$File  "simplify.cpp"
+		$File  "studiomdl.cpp"
+		$File  "UnifyLODs.cpp"
+		$File  "v1support.cpp"
+		$File  "write.cpp"
+
+		$Folder	"Common Files"
+		{
+			$File  "..\..\public\studio.cpp"
+			$File  "..\common\physdll.cpp"
+			$File  "..\common\scriplib.cpp"
+			$File  "..\common\mstristrip.cpp"
+			$File  "..\..\public\tier0\memoverride.cpp"
+			$File  "..\..\Public\CollisionUtils.cpp"
+			$File  "..\..\public\filesystem_helpers.cpp"
+			$File  "..\..\public\filesystem_init.cpp"
+			$File  "..\common\FileSystem_Tools.cpp"
+			$File  "..\..\public\bone_setup.cpp"
+			$File  "..\common\cmdlib.cpp"
+		}
+	}
+
+	$Folder	"Header Files"
+	{
+		$File  "collisionmodel.h"
+		$File  "FileBuffer.h"
+		$File  "HardwareMatrixState.h"
+		$File  "HardwareVertexCache.h"
+		$File  "matsys.h"
+		$File  "..\NvTriStripLib\NvTriStrip.h"
+		$File  "perfstats.h"
+		$File  "studiomdl.h"
+
+		$Folder	"Common header files"
+		{
+			$File  "..\common\cmdlib.h"
+			$File  "..\common\physdll.h"
+			$File  "..\common\scriplib.h"
+			$File  "..\common\mstristrip.h"
+			$File  "..\common\FileSystem_Tools.h"
+		}
+	}
+
+	$Folder	"Public Headers"
+	{			
+		$File  "..\..\public\gametrace.h"
+		$File  "..\..\Public\mathlib\amd3dx.h"
+		$File  "..\..\public\basehandle.h"
+		$File  "..\..\Public\tier0\basetypes.h"
+		$File  "..\..\Public\bitvec.h"
+		$File  "..\..\public\bone_accessor.h"
+		$File  "..\..\public\bone_setup.h"
+		$File  "..\..\Public\bspflags.h"
+		$File  "..\..\public\tier1\characterset.h"	
+		$File  "..\..\Public\cmodel.h"	
+		$File  "..\..\Public\CollisionUtils.h"
+		$File  "..\..\Public\tier0\commonmacros.h"
+		$File  "..\..\public\mathlib\compressed_vector.h"
+		$File  "..\..\Public\const.h"
+		$File  "..\..\public\vphysics\constraints.h"
+		$File  "..\..\public\tier0\dbg.h"
+		$File  "..\..\public\tier0\fasttimer.h"	
+		$File  "..\..\Public\FileSystem.h"
+		$File  "..\..\public\filesystem_helpers.h"		
+		$File  "..\..\public\appframework\IAppSystem.h"
+		$File  "..\..\public\tier0\ICommandLine.h"
+		$File  "..\..\public\ihandleentity.h"
+		$File  "..\..\public\materialsystem\imaterial.h"
+		$File  "..\..\public\materialsystem\imaterialsystem.h"
+		$File  "..\..\public\materialsystem\imaterialvar.h"
+		$File  "..\..\public\tier1\interface.h"
+		$File  "..\..\Public\IStudioRender.h"
+		$File  "..\..\public\tier1\KeyValues.h"
+		$File  "..\..\public\materialsystem\materialsystem_config.h"
+		$File  "..\..\Public\mathlib\MATHLIB.H"
+		$File  "..\..\public\tier0\memdbgoff.h"
+		$File  "..\..\public\tier0\memdbgon.h"			
+		$File  "..\..\public\optimize.h"
+		$File  "..\..\Public\phyfile.h"
+		$File  "..\..\public\tier0\platform.h"
+		$File  "..\..\public\tier0\protected_things.h"
+		$File  "..\..\public\vstdlib\random.h"
+		$File  "..\..\Public\string_t.h"
+		$File  "..\..\public\tier1\strtools.h"
+		$File  "..\..\Public\studio.h"
+		$File  "..\..\public\tier1\utlbuffer.h"
+		$File  "..\..\public\tier1\utldict.h"
+		$File  "..\..\public\tier1\utllinkedlist.h"
+		$File  "..\..\public\tier1\utlmemory.h"
+		$File  "..\..\public\tier1\utlrbtree.h"
+		$File  "..\..\public\tier1\utlsymbol.h"
+		$File  "..\..\public\tier1\utlvector.h"
+		$File  "..\..\Public\vcollide.h"
+		$File  "..\..\Public\vcollide_parse.h"
+		$File  "..\..\Public\mathlib\vector.h"
+		$File  "..\..\Public\mathlib\vector2d.h"
+		$File  "..\..\Public\mathlib\vector4d.h"
+		$File  "..\..\Public\mathlib\vmatrix.h"
+		$File  "..\..\Public\vphysics_interface.h"
+		$File  "..\..\Public\mathlib\vplane.h"
+		$File  "..\..\public\tier0\vprof.h"
+		$File  "..\..\public\vstdlib\vstdlib.h"
+	}
+
+	$Folder	"Link Libraries"
+	{
+		$Lib	tier1
+		$Lib	tier2
+		$Lib	vstdlib
+		$Lib	mathlib
+		$Lib	nvtristrip 
+	}
+}
