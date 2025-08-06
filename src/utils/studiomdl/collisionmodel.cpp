@@ -5,7 +5,7 @@
 // $Workfile:     $
 // $Date:         $
 // $NoKeywords: $
-//=============================================================================//
+//=====================================================================================//
 
 // NOTE: The term joint here is used to mean a bone, collision model, and a joint.
 // Each "joint" is the collision geometry at a named bone (or set of bones that have been merged)
@@ -617,7 +617,7 @@ void CJointedModel::ComputeMass( void )
 
 	if( !g_quiet )
 	{
-		printf("Computed Mass: %.2f kg\n", m_totalMass );
+		Msg("Computed Mass: %.2f kg\n", m_totalMass );
 	}
 }
 
@@ -1241,7 +1241,7 @@ int ProcessJointedModel( CJointedModel &joints )
 
 	if( !g_quiet )
 	{
-		printf("Processing jointed collision model\n" );
+		Msg("Processing jointed collision model\n" );
 	}
 	// loop through each bone and form a convex element
 	for ( int boneIndex = 0; boneIndex < joints.m_pModel->numbones; boneIndex++ )
@@ -1253,7 +1253,7 @@ int ProcessJointedModel( CJointedModel &joints )
 		ConvertToBoneSpace( joints.m_pModel, boneIndex, boneVerts );
 		vertCount = CopyFaceVertsByBone( verts, boneVerts, joints, boneIndex );
 		//vertCount = CopyVertsByBone( verts, boneVerts, joints, boneIndex );
-//		printf("Bone %s has %d verts\n", joints.m_pModel->localBone[boneIndex].name, vertCount );
+//		Msg("Bone %s has %d verts\n", joints.m_pModel->localBone[boneIndex].name, vertCount );
 		// if verts were attached to this bone, build a convex element from those verts
 		if ( vertCount )
 		{
@@ -1291,7 +1291,7 @@ int ProcessJointedModel( CJointedModel &joints )
 
 				if( !g_quiet )
 				{
-					printf("%-24s (%3d verts) volume: %4.2f\n", pPhys->m_name, vertCount, pPhys->m_volume );
+					Msg("%-24s (%3d verts) volume: %4.2f\n", pPhys->m_name, vertCount, pPhys->m_volume );
 				}
 				joints.UnlinkCollisionModel( pPhys );
 				joints.AppendCollisionModel( pPhys );
@@ -1502,7 +1502,7 @@ int ProcessSingleBody( CJointedModel &joints )
 				MdlWarning("Bad collision model, check your smoothing groups!!!\n" );
 				if (!g_quiet)
 				{
-					printf("\07" );
+					Msg("\07" );
 				}
 				MdlWarning("Truncating model!!!!\n" );
 				MdlWarning( "%s has bad smoothing groups\n", pmodel->filename );
@@ -1552,7 +1552,7 @@ int ProcessSingleBody( CJointedModel &joints )
 
 		if( !g_quiet )
 		{
-			printf("Model has %d convex sub-parts\n", elements.Size() );
+			Msg("Model has %d convex sub-parts\n", elements.Size() );
 		}
 	
 		CPhysCollisionModel *pPhys = new CPhysCollisionModel;
@@ -1711,7 +1711,7 @@ void CCmd_JointSkip( CJointedModel &joints, const char *pName )
 	}
 	else
 	{
-//			printf("skipping joint %s\n", pName );
+//			Msg("skipping joint %s\n", pName );
 		joints.SkipBone( boneIndex );
 	}
 }
@@ -2207,7 +2207,7 @@ void CollisionModel_Build( void )
 	FixCollisionHierarchy( g_JointedModel );
 	if( !g_quiet )
 	{
-		printf("Collision model completed.\n" );
+		Msg("Collision model completed.\n" );
 	}
 	g_JointedModel.ComputeMass();
 }
@@ -2313,7 +2313,7 @@ void CollisionModel_Write( long checkSum )
 			volume = 1;
 		if( !g_quiet )
 		{
-			printf("Collision model volume %.2f in^3\n", volume );
+			Msg("Collision model volume %.2f in^3\n", volume );
 		}
 
 		Q_SetExtension( filename, ".phy", sizeof( filename ) );

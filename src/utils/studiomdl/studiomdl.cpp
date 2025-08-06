@@ -4,7 +4,7 @@
 //
 // $NoKeywords: $
 //
-//=============================================================================//
+//=====================================================================================//
 
 
 //
@@ -40,26 +40,26 @@
 #include "utldict.h"
 
 
-bool g_collapse_bones = false;
-bool g_quiet = false;
-bool g_badCollide = false;
-bool g_IHVTest = false;
-bool g_bCheckLengths = false;
-bool g_bPrintBones = false;
-bool g_bPerf = false;
-bool g_bDumpGraph = false;
+bool g_collapse_bones	= false;
+bool g_quiet			= false;
+bool g_badCollide		= false;
+bool g_IHVTest			= false;
+bool g_bCheckLengths	= false;
+bool g_bPrintBones		= false;
+bool g_bPerf			= false;
+bool g_bDumpGraph		= false;
 bool g_bMultistageGraph = false;
-bool g_verbose = false;
-bool g_bCreateMakefile = false;
-bool g_bHasModelName = false;
-bool g_bZBrush = false;
-bool g_bVerifyOnly = false;
-bool g_bUseBoneInBBox = true;
+bool g_verbose			= false;
+bool g_bCreateMakefile	= false;
+bool g_bHasModelName	= false;
+bool g_bZBrush			= false;
+bool g_bVerifyOnly		= false;
+bool g_bUseBoneInBBox	= true;
 bool g_bLockBoneLengths = false;
 bool g_bOverridePreDefinedBones = true;
-bool g_bXbox = false;
-int g_minLod = 0;
-bool g_bNoWarnings = false;
+bool g_bXbox			= false;
+bool g_bNoWarnings		= false;
+int  g_minLod = 0;
 
 char g_path[1024];
 
@@ -73,8 +73,8 @@ char* cdtextures[16];
 char		fullpath[1024];
 
 char		rootname[MAXSTUDIONAME];		// name of the root bone
-float		g_defaultscale;
-float		g_currentscale;
+float		g_defaultscale = 1.0;
+float		g_currentscale = g_defaultscale;
 RadianEuler	g_defaultrotation;
 
 
@@ -93,7 +93,7 @@ int			ignore_warnings;
 Vector		eyeposition;
 Vector		illumposition;
 int			illumpositionset;
-int			gflags;
+int			gflags = 0;
 Vector		bbox[2];
 Vector		cbox[2];
 bool		g_wrotebbox;
@@ -301,6 +301,7 @@ void CreateMakefile_OutputMakefile( void )
 
 static bool g_bFirstWarning = true;
 
+// Unsuario2: RMEOVE this!
 void TokenError( char const *fmt, ... )
 {
 	static char output[1024];
@@ -324,6 +325,7 @@ void TokenError( char const *fmt, ... )
 	}
 }
 
+// Unsuario2: RMEOVE this!
 void MdlError( char const *fmt, ... )
 {
 	static char output[1024];
@@ -337,13 +339,13 @@ void MdlError( char const *fmt, ... )
 	{
 		if (g_bFirstWarning)
 		{
-			printf("%s :\n", fullpath );
+			Msg("%s :\n", fullpath );
 			g_bFirstWarning = false;
 		}
-		printf("\t");
+		Msg("\t");
 	}
 
-	printf("ERROR: ");
+	Msg("ERROR: ");
 	va_start( args, fmt );
 	vprintf( fmt, args );
 
@@ -353,7 +355,7 @@ void MdlError( char const *fmt, ... )
 	if (g_bHasModelName)
 	{
 		// undescriptive errors in batch processes could be anonymous
-		printf("ERROR: Aborted Processing on '%s'\n", outname);
+		Msg("ERROR: Aborted Processing on '%s'\n", outname);
 
 		strcpy( fileName, gamedir );
 		strcat( fileName, "models/" );	
@@ -375,7 +377,7 @@ void MdlError( char const *fmt, ... )
 	exit( -1 );
 }
 
-
+// Unsuario2: RMEOVE this!
 void MdlWarning( const char *fmt, ... )
 {
 	va_list args;
@@ -388,15 +390,15 @@ void MdlWarning( const char *fmt, ... )
 	{
 		if (g_bFirstWarning)
 		{
-			printf("%s :\n", fullpath );
+			Msg("%s :\n", fullpath );
 			g_bFirstWarning = false;
 		}
-		printf("\t");
+		Msg("\t");
 	}
 
 	Assert( 0 );
 
-	printf("WARNING: ");
+	Msg("WARNING: ");
 	va_start( args, fmt );
 	vprintf( fmt, args );
 }
@@ -478,16 +480,12 @@ void MdlExceptionFilter( unsigned long code )
 
 #endif
 
-/*
-=================
-=================
-*/
 
 int k_memtotal;
 void *kalloc( int num, int size )
 {
-	// printf( "calloc( %d, %d )\n", num, size );
-	// printf( "%d ", num * size );
+	// Msg( "calloc( %d, %d )\n", num, size );
+	// Msg( "%d ", num * size );
 	k_memtotal += num * size;
 	// ensure memory alignment on maximum of ALIGN
 	void *ptr = calloc( num, size + 511 );
@@ -497,7 +495,7 @@ void *kalloc( int num, int size )
 
 void kmemset( void *ptr, int value, int size )
 {
-	// printf( "kmemset( %x, %d, %d )\n", ptr, value, size );
+	// Msg( "kmemset( %x, %d, %d )\n", ptr, value, size );
 	memset( ptr, value, size );
 	return;
 }
@@ -702,7 +700,7 @@ int lookup_texture( char *texturename, int maxlen )
 	if (i >= MAXSTUDIOSKINS)
 		MdlError("Too many materials used, max %d\n", ( int )MAXSTUDIOSKINS );
 
-//	printf( "texture %d = %s\n", i, texturename );
+//	Msg( "texture %d = %s\n", i, texturename );
 	strcpyn( g_texture[i].name, texturename );
 
 	g_texture[i].material = -1;
@@ -747,7 +745,7 @@ int use_texture_as_material( int textureindex )
 {
 	if (g_texture[textureindex].material == -1)
 	{
-		// printf("%d %d %s\n", textureindex, g_nummaterials, g_texture[textureindex].name );
+		// Msg("%d %d %s\n", textureindex, g_nummaterials, g_texture[textureindex].name );
 		g_material[g_nummaterials] = textureindex;
 		g_texture[textureindex].material = g_nummaterials++;
 	}
@@ -849,9 +847,9 @@ void SetSkinValues( )
 	}
 	g_numskinref = g_numtextures;
 
-	// printf ("width: %i  height: %i\n",width, height);
+	// Msg ("width: %i  height: %i\n",width, height);
 	/*
-	printf ("adjusted width: %i height: %i  top : %i  left: %i\n",
+	Msg ("adjusted width: %i height: %i  top : %i  left: %i\n",
 			pmesh->skinwidth, pmesh->skinheight, pmesh->skintop, pmesh->skinleft );
 	*/
 }
@@ -915,12 +913,12 @@ void Build_Reference( s_source_t *psource)
 			// FIXME : Hey, it's orthogical so inv(A) == transpose(A)
 			ConcatTransforms( psource->boneToPose[parent], m, psource->boneToPose[i] );
 		}
-		// printf("%3d %f %f %f\n", i, psource->bonefixup[i].worldorg[0], psource->bonefixup[i].worldorg[1], psource->bonefixup[i].worldorg[2] );
+		// Msg("%3d %f %f %f\n", i, psource->bonefixup[i].worldorg[0], psource->bonefixup[i].worldorg[1], psource->bonefixup[i].worldorg[2] );
 		/*
 		AngleMatrix( angle, m );
-		printf("%8.4f %8.4f %8.4f\n", m[0][0], m[1][0], m[2][0] );
-		printf("%8.4f %8.4f %8.4f\n", m[0][1], m[1][1], m[2][1] );
-		printf("%8.4f %8.4f %8.4f\n", m[0][2], m[1][2], m[2][2] );
+		Msg("%8.4f %8.4f %8.4f\n", m[0][0], m[1][0], m[2][0] );
+		Msg("%8.4f %8.4f %8.4f\n", m[0][1], m[1][1], m[2][1] );
+		Msg("%8.4f %8.4f %8.4f\n", m[0][2], m[1][2], m[2][2] );
 		*/
 	}
 }
@@ -1080,8 +1078,10 @@ void Cmd_Autocenter()
 
 void Option_Studio( s_model_t *pmodel )
 {
-	if (!GetToken (false)) return;
-	strcpyn( pmodel->filename, token );
+	if (!GetToken (false)) 
+		return;
+
+	V_snprintf(pmodel->filename, sizeof(pmodel->filename), "%s", token);
 
 	// pmodel = (s_model_t *)kalloc( 1, sizeof( s_model_t ) );
 	// g_bodypart[g_numbodyparts].pmodel[g_bodypart[g_numbodyparts].nummodels] = pmodel;
@@ -1089,7 +1089,15 @@ void Option_Studio( s_model_t *pmodel )
 
 	flip_triangles = 1;
 
-	pmodel->scale = g_currentscale = g_defaultscale;
+	if (pmodel)
+	{
+		pmodel->scale = g_currentscale = g_defaultscale;
+	}
+	else
+	{
+		Error("pmodel == nullptr!\n");
+	}
+
 
 	while (TokenAvailable())
 	{
@@ -4208,29 +4216,29 @@ void Option_Flexrule( s_model_t *pmodel, char *name )
 
 	if (0)
 	{
-		printf("%s = ", g_flexdesc[pRule->flex].FACS );
+		Msg("%s = ", g_flexdesc[pRule->flex].FACS );
 		for ( k = 0; k < i; k++)
 		{
 			switch( stream[k].op )
 			{
-			case STUDIO_CONST: printf("%f ", stream[k].d.value ); break;
-			case STUDIO_FETCH1: printf("%s ", g_flexcontroller[stream[k].d.index].name ); break;
-			case STUDIO_FETCH2: printf("[%d] ", stream[k].d.index ); break;
-			case STUDIO_ADD: printf("+ "); break;
-			case STUDIO_SUB: printf("- "); break;
-			case STUDIO_MUL: printf("* "); break;
-			case STUDIO_DIV: printf("/ "); break;
-			case STUDIO_NEG: printf("neg "); break;
-			case STUDIO_MAX: printf("max "); break;
-			case STUDIO_MIN: printf("min "); break;
-			case STUDIO_COMMA: 	printf(", "); break; // error
-			case STUDIO_OPEN: 	printf("( " ); break; // error
-			case STUDIO_CLOSE: 	printf(") " ); break; // error
+			case STUDIO_CONST: Msg("%f ", stream[k].d.value ); break;
+			case STUDIO_FETCH1: Msg("%s ", g_flexcontroller[stream[k].d.index].name ); break;
+			case STUDIO_FETCH2: Msg("[%d] ", stream[k].d.index ); break;
+			case STUDIO_ADD: Msg("+ "); break;
+			case STUDIO_SUB: Msg("- "); break;
+			case STUDIO_MUL: Msg("* "); break;
+			case STUDIO_DIV: Msg("/ "); break;
+			case STUDIO_NEG: Msg("neg "); break;
+			case STUDIO_MAX: Msg("max "); break;
+			case STUDIO_MIN: Msg("min "); break;
+			case STUDIO_COMMA: 	Msg(", "); break; // error
+			case STUDIO_OPEN: 	Msg("( " ); break; // error
+			case STUDIO_CLOSE: 	Msg(") " ); break; // error
 			default:
-				printf("err%d ", stream[k].op ); break;
+				Msg("err%d ", stream[k].op ); break;
 			}
 		}
-		printf("\n");
+		Msg("\n");
 		// exit(1);
 	}
 
@@ -4357,29 +4365,29 @@ void Option_Flexrule( s_model_t *pmodel, char *name )
 
 	if (0)
 	{
-		printf("%s = ", g_flexdesc[pRule->flex].FACS );
+		Msg("%s = ", g_flexdesc[pRule->flex].FACS );
 		for ( i = 0; i < pRule->numops; i++)
 		{
 			switch( pRule->op[i].op )
 			{
-			case STUDIO_CONST: printf("%f ", pRule->op[i].d.value ); break;
-			case STUDIO_FETCH1: printf("%s ", g_flexcontroller[pRule->op[i].d.index].name ); break;
-			case STUDIO_FETCH2: printf("[%d] ", pRule->op[i].d.index ); break;
-			case STUDIO_ADD: printf("+ "); break;
-			case STUDIO_SUB: printf("- "); break;
-			case STUDIO_MUL: printf("* "); break;
-			case STUDIO_DIV: printf("/ "); break;
-			case STUDIO_NEG: printf("neg "); break;
-			case STUDIO_MAX: printf("max "); break;
-			case STUDIO_MIN: printf("min "); break;
-			case STUDIO_COMMA: 	printf(", "); break; // error
-			case STUDIO_OPEN: 	printf("( " ); break; // error
-			case STUDIO_CLOSE: 	printf(") " ); break; // error
+			case STUDIO_CONST: Msg("%f ", pRule->op[i].d.value ); break;
+			case STUDIO_FETCH1: Msg("%s ", g_flexcontroller[pRule->op[i].d.index].name ); break;
+			case STUDIO_FETCH2: Msg("[%d] ", pRule->op[i].d.index ); break;
+			case STUDIO_ADD: Msg("+ "); break;
+			case STUDIO_SUB: Msg("- "); break;
+			case STUDIO_MUL: Msg("* "); break;
+			case STUDIO_DIV: Msg("/ "); break;
+			case STUDIO_NEG: Msg("neg "); break;
+			case STUDIO_MAX: Msg("max "); break;
+			case STUDIO_MIN: Msg("min "); break;
+			case STUDIO_COMMA: 	Msg(", "); break; // error
+			case STUDIO_OPEN: 	Msg("( " ); break; // error
+			case STUDIO_CLOSE: 	Msg(") " ); break; // error
 			default:
-				printf("err%d ", pRule->op[i].op ); break;
+				Msg("err%d ", pRule->op[i].op ); break;
 			}
 		}
-		printf("\n");
+		Msg("\n");
 		// exit(1);
 	}
 }
@@ -4637,7 +4645,7 @@ void Cmd_IKChain( )
 	{
 		if (!g_quiet)
 		{
-			printf("duplicate ikchain \"%s\" ignored\n", token );
+			Msg("duplicate ikchain \"%s\" ignored\n", token );
 		}
 		while (TokenAvailable())
 		{
@@ -4792,7 +4800,7 @@ static void SpewBones()
 
 	for ( int i = g_numbones; --i >= 0; )
 	{
-		printf("%s\n",g_bonetable[i].name);
+		Msg("%s\n",g_bonetable[i].name);
 	}
 }
 
@@ -5816,7 +5824,7 @@ void Cmd_ShadowLOD( void )
 {
 	if (!g_quiet)
 	{
-		printf( "Processing $shadowlod\n" );
+		Msg( "Processing $shadowlod\n" );
 	}
 
 	// Act like it's a regular lod entry
@@ -6297,7 +6305,7 @@ int Load_VTA( s_source_t *psource )
 		return 0;
 
 	if (!g_quiet)
-		printf ("VTA MODEL %s\n", psource->filename);
+		Msg ("VTA MODEL %s\n", psource->filename);
 
 	g_iLinecount = 0;
 	while (fgets( g_szLine, sizeof( g_szLine ), g_fpInput ) != NULL) 
@@ -6353,7 +6361,7 @@ void Grab_AxisInterpBones( )
 		int i = sscanf( g_szLine, "%1023s \"%[^\"]\" \"%[^\"]\" \"%[^\"]\" \"%[^\"]\" %d", cmd, pBone->bonename, tmp, pBone->controlname, tmp, &pBone->axis );
 		if (i == 6 && stricmp( cmd, "bone") == 0)
 		{
-			// printf( "\"%s\" \"%s\" \"%s\" \"%s\"\n", cmd, pBone->bonename, tmp, pBone->controlname );
+			// Msg( "\"%s\" \"%s\" \"%s\" \"%s\"\n", cmd, pBone->bonename, tmp, pBone->controlname );
 			pAxis = pBone;
 			pBone->axis = pBone->axis - 1;	// MAX uses 1..3, engine 0..2
 			g_numaxisinterpbones++;
@@ -6492,7 +6500,7 @@ void Grab_QuatInterpBones( )
 
 		if (i == 5 && stricmp( cmd, "<helper>") == 0)
 		{
-			// printf( "\"%s\" \"%s\" \"%s\" \"%s\"\n", cmd, pBone->bonename, tmp, pBone->controlname );
+			// Msg( "\"%s\" \"%s\" \"%s\" \"%s\"\n", cmd, pBone->bonename, tmp, pBone->controlname );
 			pAxis = pBone;
 			g_numquatinterpbones++;
 			pBone = &g_quatinterpbones[g_numquatinterpbones];
@@ -6898,7 +6906,7 @@ struct
 ParseScript
 ===============
 */
-void ParseScript (void)
+void ParseScript()
 {
 	while (1)
 	{
@@ -6955,21 +6963,21 @@ bool HandlePrintSurfaceProps( int &returnValue )
 				for ( int i=0; i < pHdr->numbones; i++ )
 				{
 					mstudiobone_t *pBone = pHdr->pBone( i );
-					printf( "%s\n", pBone->pszSurfaceProp() );
+					Msg( "%s\n", pBone->pszSurfaceProp() );
 				}
 
 				returnValue = 0;
 			}
 			else
 			{
-				printf( "-PrintSurfaceProps: '%s' is wrong version (%d should be %d).\n", 
+				Msg( "-PrintSurfaceProps: '%s' is wrong version (%d should be %d).\n", 
 					pFilename, pHdr->version, STUDIO_VERSION );
 				returnValue = 1;
 			}
 		}
 		else
 		{
-			printf( "-PrintSurfaceProps: can't open '%s'\n", pFilename );
+			Msg( "-PrintSurfaceProps: can't open '%s'\n", pFilename );
 			returnValue = 1;
 		}
 
@@ -7033,16 +7041,20 @@ int main (int argc, char **argv)
 #endif
 
 	CommandLine()->CreateCmdLine( argc, argv );
-
 	InstallSpewFunction();
 	MathLib_Init( 2.2f, 2.2f, 0.0f, 2.0f, false, false, false, false );
 	
+	if (argc == 1)
+	{
+		UsageAndExit();
+	}
 
 	int returnValue;	
 	if ( HandlePrintSurfaceProps( returnValue ) )
 		return returnValue;
 
 	
+	// Unsuario2, TODO: Move this to global!
 	g_currentscale = g_defaultscale = 1.0;
 	g_defaultrotation = RadianEuler( 0, 0, M_PI / 2 );
 
@@ -7066,13 +7078,12 @@ int main (int argc, char **argv)
 	g_realignbones = false;
 	g_constdirectionalightdot = 0;
 
-	if (argc == 1)
-	{
-		UsageAndExit();
-	}
+
 	
 	g_bDumpGLViewFiles = false;
-	g_quiet = false;		  
+	g_quiet = false;	
+
+
 	for (i = 1; i < argc - 1; i++) 
 	{
 		if (argv[i][0] == '-') 
@@ -7189,9 +7200,9 @@ int main (int argc, char **argv)
 					if (i < argc - 2 && argv[i + 1][0] != '-') {
 						i++;
 						strcpy ( sourcetexture[numrep], argv[i]);
-						printf ("Replacing %s with %s\n", sourcetexture[numrep], defaulttexture[numrep] );
+						Msg ("Replacing %s with %s\n", sourcetexture[numrep], defaulttexture[numrep] );
 					}
-					printf ("Using default texture: %s\n", defaulttexture);
+					Msg ("Using default texture: %s\n", defaulttexture);
 					numrep++;
 					break;
 				case 'r':
@@ -7254,16 +7265,16 @@ int main (int argc, char **argv)
 
 	if (!g_quiet)
 	{
-		printf("qdir:    \"%s\"\n", qdir );
-		printf("gamedir: \"%s\"\n", gamedir );
-		printf("g_path:  \"%s\"\n", g_path );
+		Msg("qdir:    \"%s\"\n", qdir );
+		Msg("gamedir: \"%s\"\n", gamedir );
+		Msg("g_path:  \"%s\"\n", g_path );
 	}
 
 	// load the script
 	Q_DefaultExtension(g_path, ".qc", sizeof( g_path ) );
 	if (!g_quiet)
 	{
-		printf("Working on \"%s\"\n", g_path);
+		Msg("Working on \"%s\"\n", g_path);
 	}
 	LoadScriptFile(g_path);
 
@@ -7311,7 +7322,7 @@ int main (int argc, char **argv)
 
 	if (!g_quiet)
 	{
-		printf("\nCompleted \"%s\"\n", g_path);
+		Msg("\nCompleted \"%s\"\n", g_path);
 	}
 
 	return 0;

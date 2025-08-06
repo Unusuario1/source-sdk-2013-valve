@@ -41,14 +41,14 @@ public:
 	{
 		if ( !g_quiet )
 		{
-			printf( "testing to make sure that the whole file has been written\n" );
+			Msg( "testing to make sure that the whole file has been written\n" );
 		}
 		int i;
 		for( i = 0; i < EndOfFileOffset; i++ )
 		{
 			if( !m_pUsed[i] )
 			{
-				printf( "offset %d not written, end of file invalid!\n", i );
+				Msg( "offset %d not written, end of file invalid!\n", i );
 				assert( 0 );
 			}
 		}
@@ -71,7 +71,7 @@ public:
 	
 	void WriteAt( int offset, void *data, int size, const char *name )
 	{
-//		printf( "WriteAt: \"%s\" offset: %d end: %d size: %d\n", name, offset, offset + size - 1, size );
+//		Msg( "WriteAt: \"%s\" offset: %d end: %d size: %d\n", name, offset, offset + size - 1, size );
 		m_pCurPos = m_pData + offset;
 
 #ifdef _DEBUG
@@ -84,7 +84,7 @@ public:
 			{
 				if( !bitched )
 				{
-					printf( "overwrite at %d! (overwriting \"%s\" with \"%s\")\n", i + offset, used[i], name );
+					Msg( "overwrite at %d! (overwriting \"%s\" with \"%s\")\n", i + offset, used[i], name );
 					assert( 0 );
 					bitched = true;
 				}

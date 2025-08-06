@@ -2,7 +2,7 @@
 //
 // Purpose: 
 //
-//=============================================================================//
+//=====================================================================================//
 
 #include <stdlib.h>
 #include <tier0/dbg.h>
@@ -203,9 +203,9 @@ void SpewPerfStats( studiohdr_t *pStudioHdr, const char *pFilename )
 		Q_StripExtension( pFilename, fileName, sizeof( fileName ) );
 		strcat( fileName, prefix[j] );
 
-		printf( "\n" );
-		printf( "Performance Stats: %s\n", fileName );
-		printf( "------------------\n" );
+		Msg( "\n" );
+		Msg( "Performance Stats: %s\n", fileName );
+		Msg( "------------------\n" );
 
 		// persist the vtx data
 		if (FileExists(fileName))
@@ -242,12 +242,12 @@ void SpewPerfStats( studiohdr_t *pStudioHdr, const char *pFilename )
 		for( i = studioHWData.m_RootLOD; i < studioHWData.m_NumLODs; i++ )
 		{
 			CUtlBuffer statsOutput( 0, 0, true /* text */ );
-			printf( "LOD: %d\n", i );
+			Msg( "LOD: %d\n", i );
 			drawModelInfo.m_Lod = i;
 			g_pStudioRender->GetPerfStats( &drawModelInfo, &statsOutput );
-			printf( "\tactual tris: %d\n", ( int )drawModelInfo.m_ActualTriCount );
-			printf( "\ttexture memory bytes: %d\n", ( int )drawModelInfo.m_TextureMemoryBytes );
-			printf( ( char * )statsOutput.Base() );
+			Msg( "\tactual tris: %d\n", ( int )drawModelInfo.m_ActualTriCount );
+			Msg( "\ttexture memory bytes: %d\n", ( int )drawModelInfo.m_TextureMemoryBytes );
+			Msg( ( char * )statsOutput.Base() );
 		}
 #endif
 		g_pStudioRender->UnloadModel( &studioHWData );

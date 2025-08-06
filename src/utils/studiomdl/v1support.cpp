@@ -4,7 +4,7 @@
 //
 // $NoKeywords: $
 //
-//=============================================================================//
+//=====================================================================================//
 
 //
 // studiomdl.c: generates a studio .mdl file from a .qc script
@@ -141,9 +141,9 @@ void ParseFaceData( s_source_t *psource, int material, s_face_t *pFace )
 			
 				weights[k] = atof(token);
 			}
-			// printf("%d ", iCount );
+			// Msg("%d ", iCount );
 
-			//printf("\n");
+			//Msg("\n");
 			//exit(1);
 		}
 
@@ -302,7 +302,7 @@ int Load_SMD ( s_source_t *psource )
 
 	if( !g_quiet )
 	{
-		printf ("SMD MODEL %s\n", psource->filename);
+		Msg ("SMD MODEL %s\n", psource->filename);
 	}
 
 	g_iLinecount = 0;

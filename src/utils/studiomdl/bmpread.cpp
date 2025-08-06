@@ -4,7 +4,7 @@
 //
 // $NoKeywords: $
 //
-//=============================================================================//
+//=====================================================================================//
 
 
 #include <windows.h>
@@ -89,7 +89,7 @@ ReadBmpFile(
     *pwidth = bmih.biWidth;
     *pheight = bmih.biHeight;
 
-	printf("w %d h %d s %d\n",bmih.biWidth, bmih.biHeight, cbBmpBits );
+	Msg("w %d h %d s %d\n",bmih.biWidth, bmih.biHeight, cbBmpBits );
 
 GetOut:
 	if (pfile) fclose(pfile);

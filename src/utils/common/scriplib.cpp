@@ -45,7 +45,7 @@ script_t	scriptstack[MAX_INCLUDES];
 script_t	*script = NULL;
 int			scriptline;
 
-char    token[MAXTOKEN];
+char     token[MAXTOKEN];
 qboolean endofscript;
 qboolean tokenready;                     // only true if UnGetToken was just called
 

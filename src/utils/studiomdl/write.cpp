@@ -4,7 +4,7 @@
 //
 // $NoKeywords: $
 //
-//=============================================================================//
+//=====================================================================================//
 
 //
 // write.c: writes a studio .mdl file
@@ -221,7 +221,7 @@ static void WriteBoneInfo( studiohdr_t *phdr )
 			k = g_axisinterpbones[j].bone;
 			pbone[k].procindex		= (byte *)&pProc[i] - (byte *)&pbone[k];
 			pbone[k].proctype		= STUDIO_PROC_AXISINTERP;
-			// printf("bone %d %d\n", j, pbone[k].procindex );
+			// Msg("bone %d %d\n", j, pbone[k].procindex );
 			pProc[i].control		= g_axisinterpbones[j].control;
 			pProc[i].axis			= g_axisinterpbones[j].axis;
 			for (k = 0; k < 6; k++)
@@ -246,7 +246,7 @@ static void WriteBoneInfo( studiohdr_t *phdr )
 			k = g_quatinterpbones[j].bone;
 			pbone[k].procindex		= (byte *)&pProc[i] - (byte *)&pbone[k];
 			pbone[k].proctype		= STUDIO_PROC_QUATINTERP;
-			// printf("bone %d %d\n", j, pbone[k].procindex );
+			// Msg("bone %d %d\n", j, pbone[k].procindex );
 			pProc[i].control		= g_quatinterpbones[j].control;
 
 			mstudioquatinterpinfo_t *pTrigger = (mstudioquatinterpinfo_t *)pData;
@@ -455,14 +455,14 @@ static void WriteSequenceInfo( studiohdr_t *phdr )
 			for (j = 0; j < pseqdesc->groupsize[0]; j++)
 			{
 				*(pposekey++) = g_sequence[i].param0[j];
-				// printf("%.2f ", g_sequence[i].param0[j] );
+				// Msg("%.2f ", g_sequence[i].param0[j] );
 			}
 			for (j = 0; j < pseqdesc->groupsize[1]; j++)
 			{
 				*(pposekey++) = g_sequence[i].param1[j];
-				// printf("%.2f ", g_sequence[i].param1[j] );
+				// Msg("%.2f ", g_sequence[i].param1[j] );
 			}
-			// printf("\n" );
+			// Msg("\n" );
 		}
 
 		// pseqdesc->motiontype	= g_sequence[i].motiontype;
@@ -517,7 +517,7 @@ static void WriteSequenceInfo( studiohdr_t *phdr )
 			}
 				 						
 			
-			// printf("%4d : %d %f\n", pevent[j].event, g_sequence[i].event[j].frame, pevent[j].cycle );
+			// Msg("%4d : %d %f\n", pevent[j].event, g_sequence[i].event[j].frame, pevent[j].cycle );
 			// AddToStringTable( &pevent[j], &pevent[j].szoptionindex, g_sequence[i].event[j].options );
 			strcpy( pevent[j].options, g_sequence[i].event[j].options );
 		}
@@ -578,7 +578,7 @@ static void WriteSequenceInfo( studiohdr_t *phdr )
 		if (j < g_numbones)
 		{
 			// allocate new block
-			//printf("new %08x\n", pData );
+			//Msg("new %08x\n", pData );
 			pweight						= (float *)pData;
 			pseqdesc->weightlistindex = (pData - pSequenceStart);
 			pData += g_numbones * sizeof( float );
@@ -590,7 +590,7 @@ static void WriteSequenceInfo( studiohdr_t *phdr )
 		else
 		{
 			// use previous boneweight
-			//printf("prev %08x\n", pweight );
+			//Msg("prev %08x\n", pweight );
 			pseqdesc->weightlistindex = ((byte *)pweight - pSequenceStart);
 		}
 
@@ -653,7 +653,7 @@ static void WriteSequenceInfo( studiohdr_t *phdr )
 	for (i = 0; i < g_numxnodes; i++)
 	{
 		AddToStringTable( phdr, pxnodename, g_xnodename[i+1] );
-		// printf("%d : %s\n", i, g_xnodename[i+1] );
+		// Msg("%d : %s\n", i, g_xnodename[i+1] );
 		pxnodename++;
 	}
 
@@ -664,13 +664,13 @@ static void WriteSequenceInfo( studiohdr_t *phdr )
 	ALIGN4( pData );
 	for (i = 0; i < g_numxnodes; i++)
 	{
-//		printf("%2d (%12s) : ", i + 1, g_xnodename[i+1] );
+//		Msg("%2d (%12s) : ", i + 1, g_xnodename[i+1] );
 		for (j = 0; j < g_numxnodes; j++)
 		{
 			*ptransition++ = g_xnode[i][j];
-//			printf(" %2d", g_xnode[i][j] );
+//			Msg(" %2d", g_xnode[i][j] );
 		}
-//		printf("\n" );
+//		Msg("\n" );
 	}
 }
 
@@ -727,7 +727,7 @@ byte *WriteAnimationData( s_animation_t *srcanim, byte *pData )
 	for (j = 0; j < g_numbones; j++)
 	{
 		// destanim->weight = srcanim->weight[j];
-		// printf( "%s %.1f\n", g_bonetable[j].name, destanim->weight );
+		// Msg( "%s %.1f\n", g_bonetable[j].name, destanim->weight );
 		destanim->flags = 0;
 
 		numPos[ (srcanim->numanim[j][0] != 0) + (srcanim->numanim[j][1] != 0) + (srcanim->numanim[j][2] != 0) ]++;
@@ -898,7 +898,7 @@ byte *WriteIkErrors( s_animation_t *srcanim, byte *pData )
 		}
 
 		/*
-		printf("%d %d %d %d : %.2f %.2f %.2f %.2f\n", 
+		Msg("%d %d %d %d : %.2f %.2f %.2f %.2f\n", 
 			srcanim->ikrule[j].start, srcanim->ikrule[j].peak, srcanim->ikrule[j].tail, srcanim->ikrule[j].end, 
 			pikrule->start, pikrule->peak, pikrule->tail, pikrule->end );
 		*/
@@ -998,7 +998,7 @@ static byte *WriteAnimations( byte *pData, byte *pStart, int group, studiohdr_t 
 	//      ------------ ------- ------- : ------- (-------)
 	if( g_verbose )
 	{
-		printf("   animation       x       y       ips    angle\n");
+		Msg("   animation       x       y       ips    angle\n");
 	}
 
 	for (i = 0; i < animcount; i++) 
@@ -1032,7 +1032,7 @@ static byte *WriteAnimations( byte *pData, byte *pStart, int group, studiohdr_t 
 			float d = sqrt( DotProduct( srcanim->piecewisemove[j].pos, srcanim->piecewisemove[j].pos ) );
 			if( g_verbose )
 			{
-				printf("%12s %7.2f %7.2f : %7.2f (%7.2f) %.1f\n", srcanim->name, srcanim->piecewisemove[j].pos[0], srcanim->piecewisemove[j].pos[1], d * r, a, t );
+				Msg("%12s %7.2f %7.2f : %7.2f (%7.2f) %.1f\n", srcanim->name, srcanim->piecewisemove[j].pos[0], srcanim->piecewisemove[j].pos[1], d * r, a, t );
 			}
 		}
 
@@ -1125,7 +1125,7 @@ static byte *WriteAnimations( byte *pData, byte *pStart, int group, studiohdr_t 
 			pBlockData = pBlockEnd;
 		}
 
-		// printf("raw bone data %d : %s\n", (byte *)destanimvalue - pData, srcanim->name);
+		// Msg("raw bone data %d : %s\n", (byte *)destanimvalue - pData, srcanim->name);
 	}
 
 	if( !g_quiet )
@@ -1133,7 +1133,7 @@ static byte *WriteAnimations( byte *pData, byte *pStart, int group, studiohdr_t 
 		/*
 		for (i = 0; i < g_numanimblocks; i++)
 		{
-			printf("%2d (%3d:%3d): %d\n", i, g_animblock[i].iStartAnim, g_animblock[i].iEndAnim, g_animblock[i].end - g_animblock[i].start );
+			Msg("%2d (%3d:%3d): %d\n", i, g_animblock[i].iStartAnim, g_animblock[i].iEndAnim, g_animblock[i].end - g_animblock[i].start );
 		}
 		*/
 	}
@@ -1141,9 +1141,9 @@ static byte *WriteAnimations( byte *pData, byte *pStart, int group, studiohdr_t 
 	if( !g_quiet )
 	{
 		/*
-		printf("raw anim data %d : %d\n", rawanimbytes, animboneframes );
-		printf("pos  %d %d %d %d\n", numPos[0], numPos[1], numPos[2], numPos[3] );
-		printf("axis %d %d %d %d : %d\n", numAxis[0], numAxis[1], numAxis[2], numAxis[3], useRaw );
+		Msg("raw anim data %d : %d\n", rawanimbytes, animboneframes );
+		Msg("pos  %d %d %d %d\n", numPos[0], numPos[1], numPos[2], numPos[3] );
+		Msg("axis %d %d %d %d : %d\n", numAxis[0], numAxis[1], numAxis[2], numAxis[3], useRaw );
 		*/
 	}
 
@@ -1191,12 +1191,12 @@ static byte *WriteAnimations( byte *pData, byte *pStart, int group, studiohdr_t 
 
 			if ((!g_quiet) && (g_bonetable[j].flags & (BONE_HAS_SAVEFRAME_POS | BONE_HAS_SAVEFRAME_ROT)))
 			{
-				printf("$BoneSaveFrame \"%s\"", g_bonetable[j].name );
+				Msg("$BoneSaveFrame \"%s\"", g_bonetable[j].name );
 				if (g_bonetable[j].flags & BONE_HAS_SAVEFRAME_POS)
-					printf(" position" );
+					Msg(" position" );
 				if (g_bonetable[j].flags & BONE_HAS_SAVEFRAME_ROT)
-					printf(" rotation" );
-				printf("\n");
+					Msg(" rotation" );
+				Msg("\n");
 			}
 		}
 	}
@@ -1332,8 +1332,8 @@ static void WriteVertices( studiohdr_t *phdr )
 
 	if ( !g_quiet )
 	{
-		printf ("---------------------\n");
-		printf ("writing %s:\n", fileName);
+		Msg ("---------------------\n");
+		Msg ("writing %s:\n", fileName);
 	}
 
 	pStart = (byte *)kalloc( 1, FILEBUFFER );
@@ -1374,7 +1374,7 @@ static void WriteVertices( studiohdr_t *phdr )
 		pData += pLodDataSrc->numvertices * sizeof( mstudiovertex_t );
 		for (j = 0; j < pLodDataSrc->numvertices; j++)
 		{
-//			printf( "saving bone weight %d for model %d at 0x%p\n",
+//			Msg( "saving bone weight %d for model %d at 0x%p\n",
 //				j, i, &pbone[j] );
 
 			VectorCopy( pLodDataSrc->vertex[j].position, pVert[j].m_vecPosition );
@@ -1395,7 +1395,7 @@ static void WriteVertices( studiohdr_t *phdr )
 
 		if (!g_quiet)
 		{
-			printf( "vertices   %7d bytes (%d vertices)\n", pData - cur, pLodDataSrc->numvertices );
+			Msg( "vertices   %7d bytes (%d vertices)\n", pData - cur, pLodDataSrc->numvertices );
 		}
 	}
 
@@ -1427,13 +1427,13 @@ static void WriteVertices( studiohdr_t *phdr )
 
 		if (!g_quiet)
 		{
-			printf( "tangents   %7d bytes (%d vertices)\n", pData - cur, pLodDataSrc->numvertices );
+			Msg( "tangents   %7d bytes (%d vertices)\n", pData - cur, pLodDataSrc->numvertices );
 		}
 	}
 
 	if (!g_quiet)
 	{
-		printf( "total      %7d bytes\n", pData - pStart );
+		Msg( "total      %7d bytes\n", pData - pStart );
 	}
 
 	// fileHeader->length = pData - pStart;
@@ -1485,7 +1485,7 @@ static void WriteModel( studiohdr_t *phdr )
 
 	for (j = 0; j < g_numflexdesc; j++)
 	{
-		// printf("%d %s\n", j, g_flexdesc[j].FACS );
+		// Msg("%d %s\n", j, g_flexdesc[j].FACS );
 		AddToStringTable( pflexdesc, &pflexdesc->szFACSindex, g_flexdesc[j].FACS );
 		pflexdesc++;
 	}
@@ -1605,7 +1605,7 @@ static void WriteModel( studiohdr_t *phdr )
 
 	if( !g_quiet )
 	{
-		printf("ik/pose    %7d bytes\n", pData - cur );
+		Msg("ik/pose    %7d bytes\n", pData - cur );
 	}
 	cur = (int)pData;
 
@@ -1715,7 +1715,7 @@ static void WriteModel( studiohdr_t *phdr )
 
 		if ( !g_quiet )
 		{
-			printf("eyeballs   %7d bytes (%d eyeballs)\n", pData - cur, g_model[i]->numeyeballs );
+			Msg("eyeballs   %7d bytes (%d eyeballs)\n", pData - cur, g_model[i]->numeyeballs );
 		}
 
 		// move flexes into individual meshes
@@ -1770,10 +1770,10 @@ static void WriteModel( studiohdr_t *phdr )
 					pflex->numverts		= numflexkeys[j];
 					pflex->vertindex	= (pData - (byte *)pflex);
 					pflex->flexpair		= g_flexkey[j].flexpair;
-					// printf("%d %d %s : %f %f %f %f\n", j, g_flexkey[j].flexdesc, g_flexdesc[g_flexkey[j].flexdesc].FACS, g_flexkey[j].target0, g_flexkey[j].target1, g_flexkey[j].target2, g_flexkey[j].target3 );
-					// if (j < 9) printf("%d %d %s : %d (%d) %f\n", j, g_flexkey[j].flexdesc, g_flexdesc[g_flexkey[j].flexdesc].FACS, g_flexkey[j].numvanims, pflex->numverts, g_flexkey[j].target );
+					// Msg("%d %d %s : %f %f %f %f\n", j, g_flexkey[j].flexdesc, g_flexdesc[g_flexkey[j].flexdesc].FACS, g_flexkey[j].target0, g_flexkey[j].target1, g_flexkey[j].target2, g_flexkey[j].target3 );
+					// if (j < 9) Msg("%d %d %s : %d (%d) %f\n", j, g_flexkey[j].flexdesc, g_flexdesc[g_flexkey[j].flexdesc].FACS, g_flexkey[j].numvanims, pflex->numverts, g_flexkey[j].target );
 
-					// printf("%d %d : %d %f\n", j, g_flexkey[j].flexnum, g_flexkey[j].numvanims, g_flexkey[j].target );
+					// Msg("%d %d : %d %f\n", j, g_flexkey[j].flexnum, g_flexkey[j].numvanims, g_flexkey[j].target );
 
 					pvertanim = (mstudiovertanim_t *)pData;
 					pData += pflex->numverts * sizeof( mstudiovertanim_t );
@@ -1799,14 +1799,14 @@ static void WriteModel( studiohdr_t *phdr )
 							if ((tmp - pvanim->pos).Length() > 0.1)
 							{	
 								pvertanim->delta.x = pvanim->pos.x;
-								printf("%f %f %f  : %f %f %f\n", 
+								Msg("%f %f %f  : %f %f %f\n", 
 									pvanim->pos[0], pvanim->pos[1], pvanim->pos[2],
 									tmp.x, tmp.y, tmp.z );
 							}
 							*/
-							// if (j < 9) printf("%d %.2f %.2f %.2f\n", n, pvanim->pos[0], pvanim->pos[1], pvanim->pos[2] );
+							// if (j < 9) Msg("%d %.2f %.2f %.2f\n", n, pvanim->pos[0], pvanim->pos[1], pvanim->pos[2] );
 						}
-						// printf("%d %.2f %.2f %.2f\n", pvanim->vertex, pvanim->pos[0], pvanim->pos[1], pvanim->pos[2] );
+						// Msg("%d %.2f %.2f %.2f\n", pvanim->vertex, pvanim->pos[0], pvanim->pos[1], pvanim->pos[2] );
 						pvanim++;
 					}
 					pflex++;
@@ -1816,7 +1816,7 @@ static void WriteModel( studiohdr_t *phdr )
 
 		if( !g_quiet )
 		{
-			printf("flexes     %7d bytes (%d flexes)\n", pData - cur, g_numflexkeys );
+			Msg("flexes     %7d bytes (%d flexes)\n", pData - cur, g_numflexkeys );
 		}
 		cur = (int)pData;
 	}
@@ -1845,7 +1845,7 @@ static void WriteModel( studiohdr_t *phdr )
 	{
 		panimblock[i].datastart = g_animblock[i].start - pBlockStart;
 		panimblock[i].dataend = g_animblock[i].end - pBlockStart;
-		// printf("block %d : %x %x (%x)\n", i, panimblock[i].datastart, panimblock[i].dataend, panimblock[i].dataend - panimblock[i].datastart );
+		// Msg("block %d : %x %x (%x)\n", i, panimblock[i].datastart, panimblock[i].dataend, panimblock[i].dataend - panimblock[i].datastart );
 	}
 	AddToStringTable( phdr, &phdr->szanimblocknameindex, g_animblockname );
 }
@@ -2058,8 +2058,8 @@ void WriteModelFiles(void)
 
 	if( !g_quiet )
 	{
-		printf ("---------------------\n");
-		printf ("writing %s:\n", filename);
+		Msg ("---------------------\n");
+		Msg ("writing %s:\n", filename);
 	}
 
 	if (!g_bVerifyOnly)
@@ -2102,21 +2102,21 @@ void WriteModelFiles(void)
 	WriteBoneInfo( phdr );
 	if( !g_quiet )
 	{
-		printf("bones      %7d bytes (%d)\n", pData - pStart - total, g_numbones );
+		Msg("bones      %7d bytes (%d)\n", pData - pStart - total, g_numbones );
 	}
 	total = pData - pStart;
 
 	pData = WriteAnimations( pData, pStart, 0, phdr, NULL );
 	if( !g_quiet )
 	{
-		printf("animations %7d bytes (%d anims) (%d frames) [%d:%02d]\n", pData - pStart - total, g_numani, totalframes, (int)totalseconds / 60, (int)totalseconds % 60 );
+		Msg("animations %7d bytes (%d anims) (%d frames) [%d:%02d]\n", pData - pStart - total, g_numani, totalframes, (int)totalseconds / 60, (int)totalseconds % 60 );
 	}
 	total  = pData - pStart;
 
 	WriteSequenceInfo( phdr );
 	if( !g_quiet )
 	{
-		printf("sequences  %7d bytes (%d seq) \n", pData - pStart - total, g_sequence.Count() );
+		Msg("sequences  %7d bytes (%d seq) \n", pData - pStart - total, g_sequence.Count() );
 	}
 	total  = pData - pStart;
 
@@ -2124,7 +2124,7 @@ void WriteModelFiles(void)
 	/*
 	if( !g_quiet )
 	{
-		printf("models     %7d bytes\n", pData - pStart - total );
+		Msg("models     %7d bytes\n", pData - pStart - total );
 	}
 	*/
 	total  = pData - pStart;
@@ -2132,14 +2132,14 @@ void WriteModelFiles(void)
 	WriteTextures( phdr );
 	if( !g_quiet )
 	{
- 		printf("textures   %7d bytes\n", pData - pStart - total );
+ 		Msg("textures   %7d bytes\n", pData - pStart - total );
 	}
 	total  = pData - pStart;
 
 	WriteKeyValues( phdr, &g_KeyValueText );
 	if( !g_quiet )
 	{
-		printf("keyvalues  %7d bytes\n", pData - pStart - total );
+		Msg("keyvalues  %7d bytes\n", pData - pStart - total );
 	}
 	total  = pData - pStart;
 
@@ -2161,7 +2161,7 @@ void WriteModelFiles(void)
 
 	if( !g_quiet )
 	{
-		printf("collision  %7d bytes\n", pData - pStart - total );
+		Msg("collision  %7d bytes\n", pData - pStart - total );
 	}
 
 	AssignMeshIDs( phdr );
@@ -2169,7 +2169,7 @@ void WriteModelFiles(void)
 	phdr->length = pData - pStart;
 	if( !g_quiet )
 	{
-		printf("total      %7d\n", phdr->length );
+		Msg("total      %7d\n", phdr->length );
 	}
 
 	// Load materials for this model via the material system so that the
@@ -2193,10 +2193,10 @@ void WriteModelFiles(void)
 
 		if ( !g_quiet )
 		{
-			printf ("---------------------\n");
-			printf("writing %s:\n", g_animblockname);
-			printf("blocks	   %7d\n", g_numanimblocks );
-			printf("total      %7d\n", pblockhdr->length );
+			Msg ("---------------------\n");
+			Msg("writing %s:\n", g_animblockname);
+			Msg("blocks	   %7d\n", g_numanimblocks );
+			Msg("total      %7d\n", pblockhdr->length );
 		}
 	}
 
@@ -3312,7 +3312,7 @@ bool Clamp_VVD_LODS( const char *fileName, int rootLOD )
 
 	int newLength = Studio_VertexDataSize( pTempVvdHdr, rootLOD, true );
 
-	// printf("was %d now %d\n", len, newLength );
+	// Msg("was %d now %d\n", len, newLength );
 
 	vertexFileHeader_t *pNewVvdHdr = (vertexFileHeader_t *)calloc( newLength, 1 );
 
@@ -3320,9 +3320,9 @@ bool Clamp_VVD_LODS( const char *fileName, int rootLOD )
 
 	if (!g_quiet)
 	{
-		printf ("---------------------\n");
-		printf ("writing %s:\n", fileName);
-		printf( "vertices   (%d vertices)\n", pNewVvdHdr->numLODVertexes[ 0 ] );
+		Msg ("---------------------\n");
+		Msg ("writing %s:\n", fileName);
+		Msg( "vertices   (%d vertices)\n", pNewVvdHdr->numLODVertexes[ 0 ] );
 	}
 
 	// pNewVvdHdr->length = newLength;
@@ -3454,7 +3454,7 @@ bool Clamp_VTX_LODS( const char *fileName, int rootLOD, studiohdr_t *pStudioHdr 
 					pNewVtxMesh->stripGroupHeaderOffset = (pData - (byte *)pNewVtxMesh);
 					pData += pNewVtxMesh->numStripGroups * sizeof( OptimizedModel::StripGroupHeader_t );
 
-					// printf("part %d : model %d : lod %d : mesh %d : strips %d : offset %d\n", i, j, nLodID, k, pVtxMesh->numStripGroups, pVtxMesh->stripGroupHeaderOffset );
+					// Msg("part %d : model %d : lod %d : mesh %d : strips %d : offset %d\n", i, j, nLodID, k, pVtxMesh->numStripGroups, pVtxMesh->stripGroupHeaderOffset );
 
 					for (m = 0; m < pVtxMesh->numStripGroups; m++)
 					{
@@ -3483,9 +3483,9 @@ bool Clamp_VTX_LODS( const char *fileName, int rootLOD, studiohdr_t *pStudioHdr 
 						pNewStripGroup->flags = pStripGroup->flags;
 
 						/*
-						printf("\tnumVerts %d %d :\n", pStripGroup->numVerts, pStripGroup->vertOffset );
-						printf("\tnumIndices %d %d :\n", pStripGroup->numIndices, pStripGroup->indexOffset );
-						printf("\tnumStrips %d %d :\n", pStripGroup->numStrips, pStripGroup->stripOffset );
+						Msg("\tnumVerts %d %d :\n", pStripGroup->numVerts, pStripGroup->vertOffset );
+						Msg("\tnumIndices %d %d :\n", pStripGroup->numIndices, pStripGroup->indexOffset );
+						Msg("\tnumStrips %d %d :\n", pStripGroup->numStrips, pStripGroup->stripOffset );
 						*/
 
 						for (n = 0; n < pStripGroup->numStrips; n++)
@@ -3509,13 +3509,13 @@ bool Clamp_VTX_LODS( const char *fileName, int rootLOD, studiohdr_t *pStudioHdr 
 							pData += size;
 
 							/*
-							printf("\t\tnumIndices %d %d :\n", pNewStrip->numIndices, pNewStrip->indexOffset );
-							printf("\t\tnumVerts %d %d :\n", pNewStrip->numVerts, pNewStrip->vertOffset );
-							printf("\t\tnumBoneStateChanges %d %d :\n", pNewStrip->numBoneStateChanges, pNewStrip->boneStateChangeOffset );
+							Msg("\t\tnumIndices %d %d :\n", pNewStrip->numIndices, pNewStrip->indexOffset );
+							Msg("\t\tnumVerts %d %d :\n", pNewStrip->numVerts, pNewStrip->vertOffset );
+							Msg("\t\tnumBoneStateChanges %d %d :\n", pNewStrip->numBoneStateChanges, pNewStrip->boneStateChangeOffset );
 							*/
-							// printf("(%d)\n", delta );
+							// Msg("(%d)\n", delta );
 						}
-						// printf("(%d)\n", delta );
+						// Msg("(%d)\n", delta );
 					}
 				}
 			}
@@ -3547,14 +3547,14 @@ bool Clamp_VTX_LODS( const char *fileName, int rootLOD, studiohdr_t *pStudioHdr 
 	}
 
 	int newLen = pData - (byte *)pNewVtxHdr;
-	// printf("len %d : %d\n", len, newLen );
+	// Msg("len %d : %d\n", len, newLen );
 
 	// pNewVtxHdr->length = newLen;
 
 	if (!g_quiet)
 	{
-		printf ("writing %s:\n", fileName);
-		printf( "everything (%d bytes)\n", newLen );
+		Msg ("writing %s:\n", fileName);
+		Msg( "everything (%d bytes)\n", newLen );
 	}
 	SaveFile( (char *)fileName, pNewVtxHdr, newLen );
 

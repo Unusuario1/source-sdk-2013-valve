@@ -4,7 +4,7 @@
 //
 // $NoKeywords: $
 //
-//=============================================================================//
+//=====================================================================================//
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -1060,14 +1060,14 @@ static int FindOrCreateExactVertexInDictionary( CVertexDictionary &vertexDict,
 
 static void PrintBonesUsedInLOD( s_source_t *pSrc )
 {
-	printf( "PrintBonesUsedInLOD\n" );
+	Msg( "PrintBonesUsedInLOD\n" );
 	int i;
 	for( i = 0; i < pSrc->numvertices; i++ )
 	{
 		Vector &pos = pSrc->vertex[i].position;
 		Vector &norm = pSrc->vertex[i].normal;
 		Vector2D &texcoord = pSrc->vertex[i].texcoord;
-		printf( "pos: %f %f %f norm: %f %f %f texcoord: %f %f\n",
+		Msg( "pos: %f %f %f norm: %f %f %f texcoord: %f %f\n",
 			pos[0], pos[1], pos[2], norm[0], norm[1], norm[2], texcoord[0], texcoord[1] );
 		s_boneweight_t *pBoneWeight = &pSrc->vertex[i].globalBoneweight;
 		int j;
@@ -1075,10 +1075,10 @@ static void PrintBonesUsedInLOD( s_source_t *pSrc )
 		{
 			int globalBoneID = pBoneWeight->bone[j];
 			const char *pBoneName = g_bonetable[globalBoneID].name;
-			printf( "vert: %d bone: %d boneid: %d weight: %f name: \"%s\"\n", i, ( int )j, ( int )pBoneWeight->bone[j], 
+			Msg( "vert: %d bone: %d boneid: %d weight: %f name: \"%s\"\n", i, ( int )j, ( int )pBoneWeight->bone[j], 
 				( float )pBoneWeight->weight[j], pBoneName );
 		}
-		printf( "\n" );
+		Msg( "\n" );
 		fflush( stdout );
 	}
 }
@@ -1106,7 +1106,7 @@ static void PrintSBoneWeight( s_boneweight_t *pBoneWeight, const s_source_t *pSr
 		int globalBoneID;
 		globalBoneID = pBoneWeight->bone[j];
 		const char *pBoneName = g_bonetable[globalBoneID].name;
-		printf( "bone: %d boneid: %d weight: %f name: \"%s\"\n", ( int )j, ( int )pBoneWeight->bone[j], 
+		Msg( "bone: %d boneid: %d weight: %f name: \"%s\"\n", ( int )j, ( int )pBoneWeight->bone[j], 
 			( float )pBoneWeight->weight[j], pBoneName );
 	}
 }
@@ -1180,7 +1180,7 @@ static void CreateLODVertsInDictionary( int nLodID, const s_source_t *pRootLODSr
 	int nNewVertsCreated = vertexDict.VertexCount() - nNumCurrentVerts;
 	if (!g_quiet && nNewVertsCreated)
 	{
-		printf( "Lod %d: vertexes: %d (%d new)\n", nLodID, vertexDict.VertexCount(), nNewVertsCreated);
+		Msg( "Lod %d: vertexes: %d (%d new)\n", nLodID, vertexDict.VertexCount(), nNewVertsCreated);
 	}
 }
 
@@ -1189,14 +1189,14 @@ static void PrintSourceVerts( s_source_t *pSrc )
 	int i;
 	for( i = 0; i < pSrc->numvertices; i++ )
 	{
-		printf( "v %d ", i );
-		printf( "pos: %f %f %f ", pSrc->vertex[i].position[0], pSrc->vertex[i].position[1], pSrc->vertex[i].position[2] );
-		printf( "norm: %f %f %f ", pSrc->vertex[i].normal[0], pSrc->vertex[i].normal[1], pSrc->vertex[i].normal[2] );
-		printf( "texcoord: %f %f\n", pSrc->vertex[i].texcoord[0], pSrc->vertex[i].texcoord[1] );
+		Msg( "v %d ", i );
+		Msg( "pos: %f %f %f ", pSrc->vertex[i].position[0], pSrc->vertex[i].position[1], pSrc->vertex[i].position[2] );
+		Msg( "norm: %f %f %f ", pSrc->vertex[i].normal[0], pSrc->vertex[i].normal[1], pSrc->vertex[i].normal[2] );
+		Msg( "texcoord: %f %f\n", pSrc->vertex[i].texcoord[0], pSrc->vertex[i].texcoord[1] );
 		int j;
 		for( j = 0; j < pSrc->vertex[i].globalBoneweight.numbones; j++ )
 		{
-			printf( "\t%d: %d %f\n", j, ( int )pSrc->vertex[i].globalBoneweight.bone[j], 
+			Msg( "\t%d: %d %f\n", j, ( int )pSrc->vertex[i].globalBoneweight.bone[j], 
 				pSrc->vertex[i].globalBoneweight.weight[j] );
 		}
 		fflush( stdout );
@@ -1447,7 +1447,7 @@ static void PrintSpaces( int numSpaces )
 	int i;
 	for( i = 0; i < numSpaces; i++ )
 	{
-		printf( " " );
+		Msg( " " );
 	}
 }
 
@@ -1457,7 +1457,7 @@ static void SpewBoneInfo( int globalBoneID, int depth )
 	if( g_bPrintBones )
 	{
 		PrintSpaces( depth * 2 );
-		printf( "%d \"%s\" ", depth, pBone->name );
+		Msg( "%d \"%s\" ", depth, pBone->name );
 	}
 	int i;
 	for( i = 0; i < 8; i++ )
@@ -1466,14 +1466,14 @@ static void SpewBoneInfo( int globalBoneID, int depth )
 		{
 			if( g_bPrintBones )
 			{
-				printf( "lod%d ", i );
+				Msg( "lod%d ", i );
 			}
 			g_NumBonesInLOD[i]++;
 		}
 	}
 	if( g_bPrintBones )
 	{
-		printf( "\n" );	
+		Msg( "\n" );	
 	}
 	
 	int j;
@@ -1500,7 +1500,7 @@ void SpewBoneUsageStats( void )
 		int i;
 		for( i = 0; i < g_ScriptLODs.Count(); i++ )
 		{
-			printf( "\t%d bones used in lod %d\n", g_NumBonesInLOD[i], i );
+			Msg( "\t%d bones used in lod %d\n", g_NumBonesInLOD[i], i );
 		}
 	}
 }
@@ -1600,7 +1600,7 @@ static void PrintReplacedBones( LodScriptData_t &lod )
 	int i;
 	for( i = 0; i < lod.boneReplacements.Count(); i++ )
 	{
-		printf( "%s -> %s\n", 
+		Msg( "%s -> %s\n", 
 			lod.boneReplacements[i].GetSrcName(), 
 			lod.boneReplacements[i].GetDstName() );
 	}
@@ -1610,7 +1610,7 @@ static void PrintReplacedBones( LodScriptData_t &lod )
 void FixupReplacedBonesForLOD( LodScriptData_t &lod )
 {
 /*
-	printf( "before:\n" );
+	Msg( "before:\n" );
 	PrintReplacedBones( lod );
 */
 	bool changed;
@@ -1636,7 +1636,7 @@ void FixupReplacedBonesForLOD( LodScriptData_t &lod )
 		}
 	} while( changed );
 /*
-	printf( "after:\n" );
+	Msg( "after:\n" );
 	PrintReplacedBones( lod );
 */
 }

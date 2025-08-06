@@ -4,7 +4,7 @@
 //
 // $NoKeywords: $
 //
-//=============================================================================//
+//=====================================================================================//
 
 
 //
@@ -524,7 +524,7 @@ void UnifyIndices( s_source_t *psource )
 		g_src_uface[i] = uface[i];
 	}
 
-	// printf("%d : %d %d %d\n", numvlist, g_numverts, g_numnormals, g_numtexcoords );
+	// Msg("%d : %d %d %d\n", numvlist, g_numverts, g_numnormals, g_numtexcoords );
 }
 
 void CalcModelTangentSpaces( s_source_t *pSrc );
@@ -579,7 +579,7 @@ void BuildIndividualMeshes( s_source_t *psource )
 		psource->vertexInfo[i].firstref		= v_listdata[j].firstref;
 		psource->vertexInfo[i].lastref		= v_listdata[j].lastref;
 #endif
-		// printf("%4d : %2d :  %6.2f %6.2f %6.2f\n", i, psource->boneweight[i].bone[0], psource->vertex[i][0], psource->vertex[i][1], psource->vertex[i][2] );
+		// Msg("%4d : %2d :  %6.2f %6.2f %6.2f\n", i, psource->boneweight[i].bone[0], psource->vertex[i][0], psource->vertex[i][1], psource->vertex[i][2] );
 	}
 
 	// sort faces by materials, last used.
@@ -629,7 +629,7 @@ void BuildIndividualMeshes( s_source_t *psource )
 	/*
 	for (k = 0; k < MAXSTUDIOSKINS; k++)
 	{
-		printf("%d : %d:%d %d:%d\n", k, psource->mesh[k].numvertices, psource->mesh[k].vertexoffset, psource->mesh[k].numfaces, psource->mesh[k].faceoffset );
+		Msg("%d : %d:%d %d:%d\n", k, psource->mesh[k].numvertices, psource->mesh[k].vertexoffset, psource->mesh[k].numfaces, psource->mesh[k].faceoffset );
 	}
 	*/
 
@@ -650,7 +650,7 @@ void BuildIndividualMeshes( s_source_t *psource )
 				psource->face[i].c = v_ilistsort[g_src_uface[j].c] - psource->mesh[k].vertexoffset;
 				Assert( ((psource->face[i].a & 0xF0000000) == 0) && ((psource->face[i].b & 0xF0000000) == 0) && 
 					((psource->face[i].c & 0xF0000000) == 0) );
-				// printf("%3d : %4d %4d %4d\n", i, psource->face[i].a, psource->face[i].b, psource->face[i].c );
+				// Msg("%3d : %4d %4d %4d\n", i, psource->face[i].a, psource->face[i].b, psource->face[i].c );
 			}
 
 			psource->nummeshes++;
@@ -688,7 +688,7 @@ int Load_VRM ( s_source_t *psource )
 
 	if( !g_quiet )
 	{
-		printf ("grabbing %s\n", psource->filename);
+		Msg ("grabbing %s\n", psource->filename);
 	}
 
 	g_iLinecount = 0;
