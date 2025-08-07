@@ -1211,7 +1211,7 @@ void Cmd_Bodygroup()
 		{
 			MdlError("unknown bodygroup option: \"%s\"\n", token);
 		}
-	} while (1);
+	} while (true);
 
 	g_numbodyparts++;
 	return;
@@ -2505,7 +2505,7 @@ void Cmd_Cmdlist()
 	GetToken(false);
 	strcpyn(g_cmdlist[g_numcmdlists].name, token);
 
-	while (1)
+	while (true)
 	{
 		if (depth > 0)
 		{
@@ -2630,7 +2630,7 @@ int ParseAnimation(s_animation_t* panim, bool isAppend)
 {
 	int depth = 0;
 
-	while (1)
+	while (true)
 	{
 		if (depth > 0)
 		{
@@ -2846,7 +2846,7 @@ int ParseSequence( s_sequence_t *pseq, bool isAppend )
 		animations[0] = pseq->panim[0][0];
 	}
 
-	while (1)
+	while (true)
 	{
 		if (depth > 0)
 		{
@@ -3237,7 +3237,7 @@ int ParseEmpty()
 {
 	int depth = 0;
 
-	while (1)
+	while (true)
 	{
 		if (depth > 0)
 		{
@@ -3441,7 +3441,7 @@ void Option_Weightlist( s_weightlist_t *pweightlist )
 
 	pweightlist->numbones = 0;
 
-	while (1)
+	while (true)
 	{
 		if (depth > 0)
 		{
@@ -4448,7 +4448,7 @@ void Cmd_Model( )
 	Option_Studio( g_model[g_nummodels] );
 	
 	int depth = 0;
-	while (1)
+	while (true)
 	{
 		char FAC[256], vtafile[256];
 		if (depth > 0)
@@ -4600,7 +4600,7 @@ void Cmd_FakeVTA(void)
 	strcpyn(g_source[g_numsources]->filename, token);
 	g_numsources++;
 
-	while (1)
+	while (true)
 	{
 		if (depth > 0)
 		{
@@ -4951,7 +4951,7 @@ void Cmd_TextureGroup()
 	if (g_numskinref == 0)
 		g_numskinref = g_numtextures;
 
-	while (1)
+	while (true)
 	{
 		if (!GetToken(true))
 		{
@@ -7021,25 +7021,25 @@ struct
 //-----------------------------------------------------------------------------
 void ParseScript()
 {
-	while (1)
+	while (true)
 	{
-		GetToken (true);
+		GetToken(true);
 		if (endofscript)
 			return;
 
 		// Check all the commands we know about.
 		int i;
-		for ( i=0; i < ARRAYSIZE( g_Commands ); i++ )
+		for (i = 0; i < ARRAYSIZE(g_Commands); i++)
 		{
-			if ( !stricmp( g_Commands[i].m_pName, token ) )
+			if (!stricmp(g_Commands[i].m_pName, token))
 			{
 				g_Commands[i].m_pCmd();
 				break;
 			}
 		}
-		if ( i == ARRAYSIZE( g_Commands ) )
+		if (i == ARRAYSIZE(g_Commands))
 		{
-			if( !g_bCreateMakefile )
+			if (!g_bCreateMakefile)
 			{
 				TokenError("bad command %s\n", token);
 			}

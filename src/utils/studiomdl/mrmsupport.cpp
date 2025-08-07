@@ -116,7 +116,7 @@ int SortAndBalanceBones(int iCount, int iMaxCount, int bones[], float weights[])
 //-----------------------------------------------------------------------------
 void Grab_Vertexlist( s_source_t *psource )
 {
-	while (1)
+	while (true)
 	{
 		if (fgets(g_szLine, sizeof(g_szLine), g_fpInput) != NULL)
 		{
@@ -180,7 +180,7 @@ void Grab_Vertexlist( s_source_t *psource )
 //-----------------------------------------------------------------------------
 void Grab_Facelist(s_source_t* psource)
 {
-	while (1)
+	while (true)
 	{
 		if (fgets(g_szLine, sizeof(g_szLine), g_fpInput) != NULL)
 		{
@@ -213,7 +213,7 @@ void Grab_Facelist(s_source_t* psource)
 //-----------------------------------------------------------------------------
 void Grab_Materiallist(s_source_t* psource)
 {
-	while (1)
+	while (true)
 	{
 		if (fgets(g_szLine, sizeof(g_szLine), g_fpInput) != NULL)
 		{
@@ -254,7 +254,7 @@ void Grab_Materiallist(s_source_t* psource)
 //-----------------------------------------------------------------------------
 void Grab_Texcoordlist(s_source_t* psource)
 {
-	while (1)
+	while (true)
 	{
 		if (fgets(g_szLine, sizeof(g_szLine), g_fpInput) != NULL)
 		{
@@ -289,7 +289,7 @@ void Grab_Texcoordlist(s_source_t* psource)
 //-----------------------------------------------------------------------------
 void Grab_Normallist(s_source_t* psource)
 {
-	while (1)
+	while (true)
 	{
 		if (fgets(g_szLine, sizeof(g_szLine), g_fpInput) != NULL)
 		{
@@ -332,7 +332,7 @@ void Grab_Normallist(s_source_t* psource)
 //-----------------------------------------------------------------------------
 void Grab_Faceattriblist(s_source_t* psource)
 {
-	while (1)
+	while (true)
 	{
 		if (fgets(g_szLine, sizeof(g_szLine), g_fpInput) != NULL)
 		{
@@ -700,7 +700,7 @@ void BuildIndividualMeshes( s_source_t *psource )
 //-----------------------------------------------------------------------------
 void Grab_MRMFaceupdates( s_source_t *psource )
 {
-	while (1)
+	while (true)
 	{
 		if (fgets(g_szLine, sizeof(g_szLine), g_fpInput) != NULL)
 		{

@@ -12,15 +12,15 @@
 #endif // _WIN32
 
 
-void Cmd_CollisionText( void );
-int DoCollisionModel( bool separateJoints );
+void Cmd_CollisionText();
+int DoCollisionModel(bool separateJoints);
 
 // execute after simplification, before writing
-void CollisionModel_Build( void );
+void CollisionModel_Build();
 // execute during writing
-void CollisionModel_Write( long checkSum );
+void CollisionModel_Write(long checkSum);
 
-void CollisionModel_ExpandBBox( Vector &mins, Vector &maxs );
+void CollisionModel_ExpandBBox(Vector& mins, Vector& maxs);
 
 
 #endif // COLLISIONMODEL_H

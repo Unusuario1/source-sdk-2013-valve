@@ -113,6 +113,7 @@ private:
 		memcpy( m_pCurPos, data, size );
 		m_pCurPos += size;
 	}
+
 	CFileBuffer(); // undefined
 	int m_Size;
 	unsigned char *m_pData;

@@ -198,10 +198,10 @@ void ParseFaceData( s_source_t *psource, int material, s_face_t *pFace )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void Grab_Triangles( s_source_t *psource )
+void Grab_Triangles(s_source_t* psource)
 {
 	int		i;
-	int		tcount = 0;	
+	int		tcount = 0;
 	Vector	vmin, vmax;
 
 	vmin[0] = vmin[1] = vmin[2] = 99999;
@@ -209,7 +209,7 @@ void Grab_Triangles( s_source_t *psource )
 
 	g_numfaces = 0;
 	numvlist = 0;
- 
+
 	//
 	// load the base triangles
 	//
@@ -217,43 +217,43 @@ void Grab_Triangles( s_source_t *psource )
 	int material;
 	char texturename[64];
 
-	while (1) 
+	while (true)
 	{
-		if (fgets( g_szLine, sizeof( g_szLine ), g_fpInput ) == NULL) 
+		if (fgets(g_szLine, sizeof(g_szLine), g_fpInput) == NULL)
 			break;
 
 		g_iLinecount++;
 
 		// check for end
-		if (IsEnd( g_szLine )) 
+		if (IsEnd(g_szLine))
 			break;
 
 		// Look for extra junk that we may want to avoid...
-		int nLineLength = strlen( g_szLine );
+		int nLineLength = strlen(g_szLine);
 		if (nLineLength >= 64)
 		{
-			MdlWarning("Unexpected data at line %d, (need a texture name) ignoring...\n", g_iLinecount );
+			MdlWarning("Unexpected data at line %d, (need a texture name) ignoring...\n", g_iLinecount);
 			continue;
 		}
 
 		// strip off trailing smag
-		strncpy( texturename, g_szLine, 63 );
-		for (i = strlen( texturename ) - 1; i >= 0 && ! isgraph( texturename[i] ); i--)
+		strncpy(texturename, g_szLine, 63);
+		for (i = strlen(texturename) - 1; i >= 0 && !isgraph(texturename[i]); i--)
 		{
 		}
 		texturename[i + 1] = '\0';
 
 		// funky texture overrides
-		for (i = 0; i < numrep; i++)  
+		for (i = 0; i < numrep; i++)
 		{
-			if (sourcetexture[i][0] == '\0') 
+			if (sourcetexture[i][0] == '\0')
 			{
-				strcpy( texturename, defaulttexture[i] );
+				strcpy(texturename, defaulttexture[i]);
 				break;
 			}
-			if (stricmp( texturename, sourcetexture[i]) == 0) 
+			if (stricmp(texturename, sourcetexture[i]) == 0)
 			{
-				strcpy( texturename, defaulttexture[i] );
+				strcpy(texturename, defaulttexture[i]);
 				break;
 			}
 		}
@@ -261,36 +261,36 @@ void Grab_Triangles( s_source_t *psource )
 		if (texturename[0] == '\0')
 		{
 			// weird source problem, skip them
-			fgets( g_szLine, sizeof( g_szLine ), g_fpInput );
-			fgets( g_szLine, sizeof( g_szLine ), g_fpInput );
-			fgets( g_szLine, sizeof( g_szLine ), g_fpInput );
+			fgets(g_szLine, sizeof(g_szLine), g_fpInput);
+			fgets(g_szLine, sizeof(g_szLine), g_fpInput);
+			fgets(g_szLine, sizeof(g_szLine), g_fpInput);
 			g_iLinecount += 3;
 			continue;
 		}
 
-		if (stricmp( texturename, "null.bmp") == 0 || stricmp( texturename, "null.tga") == 0)
+		if (stricmp(texturename, "null.bmp") == 0 || stricmp(texturename, "null.tga") == 0)
 		{
 			// skip all faces with the null texture on them.
-			fgets( g_szLine, sizeof( g_szLine ), g_fpInput );
-			fgets( g_szLine, sizeof( g_szLine ), g_fpInput );
-			fgets( g_szLine, sizeof( g_szLine ), g_fpInput );
+			fgets(g_szLine, sizeof(g_szLine), g_fpInput);
+			fgets(g_szLine, sizeof(g_szLine), g_fpInput);
+			fgets(g_szLine, sizeof(g_szLine), g_fpInput);
 			g_iLinecount += 3;
 			continue;
 		}
 
-		texture = lookup_texture( texturename, sizeof( texturename ) );
+		texture = lookup_texture(texturename, sizeof(texturename));
 		psource->texmap[texture] = texture;	// hack, make it 1:1
-		material = use_texture_as_material( texture );
+		material = use_texture_as_material(texture);
 
 		s_face_t f;
-		ParseFaceData( psource, material, &f );
-	
+		ParseFaceData(psource, material, &f);
+
 		g_src_uface[g_numfaces] = f;
 		g_face[g_numfaces].material = material;
 		g_numfaces++;
 	}
 
-	BuildIndividualMeshes( psource );
+	BuildIndividualMeshes(psource);
 }
 
 

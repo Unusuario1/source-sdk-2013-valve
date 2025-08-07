@@ -11,7 +11,6 @@
 #pragma once
 #endif // _WIN32
 
-
 #include "materialsystem/IMaterialSystem.h"
 
 
@@ -19,7 +18,7 @@ extern IMaterialSystem *g_pMaterialSystem;
 extern CreateInterfaceFn g_MatSysFactory;
 extern CreateInterfaceFn g_ShaderAPIFactory;
 
-void InitMaterialSystem( const char *materialBaseDirPath );
+void InitMaterialSystem(const char* materialBaseDirPath);
 
 
 #endif // MATSYS_H
