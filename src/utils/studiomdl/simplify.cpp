@@ -3358,7 +3358,7 @@ void MakeStaticProp()
 				bool bFound = false;
 				for ( k = 0; k < g_numattachments; k++ )
 				{
-					if ( !Q_V_stricmp( g_attachment[k].name, pAttachmentName ) )
+					if ( !V_stricmp( g_attachment[k].name, pAttachmentName ) )
 					{
 						bFound = true;
 						break;
@@ -3660,7 +3660,7 @@ int BuildGlobalBonetable( )
 		if (k == -1)
 		{
 			k = g_numbones;
-			V_V_strcpy_safe( g_bonetable[k].name, g_importbone[i].name );
+			V_strcpy_safe( g_bonetable[k].name, g_importbone[i].name );
 			if ( V_strlen( g_importbone[i].parent ) == 0 )
 			{
 				g_bonetable[k].parent = -1;
@@ -3705,7 +3705,7 @@ int BuildGlobalBonetable( )
 				{
 					// create new bone
 					k = g_numbones;
-					V_V_strcpy_safe( g_bonetable[k].name, psource->localBone[j].name );
+					V_strcpy_safe( g_bonetable[k].name, psource->localBone[j].name );
 					if ((n = psource->localBone[j].parent) != -1)
 						g_bonetable[k].parent		= findGlobalBone( psource->localBone[n].name );
 					else

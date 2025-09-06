@@ -2142,7 +2142,7 @@ void LoadSurfacePropsAll()
 	{
 		for (KeyValues* sub = manifest->GetFirstSubKey(); sub != NULL; sub = sub->GetNextKey())
 		{
-			if (!Q_V_stricmp(sub->GetName(), "file"))
+			if (!V_stricmp(sub->GetName(), "file"))
 			{
 				// Add
 				LoadSurfaceProps(sub->GetString());
@@ -2169,7 +2169,7 @@ int DoCollisionModel(bool separateJoints)
 	// name
 	if (!GetToken(false)) return 0;
 
-	V_V_strcpy_safe(name, token);
+	V_strcpy_safe(name, token);
 
 	PhysicsDLLPath("VPHYSICS.DLL");
 

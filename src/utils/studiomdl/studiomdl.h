@@ -773,7 +773,7 @@ struct s_loddata_t
 // raw off-disk source files.  Raw data should be not processed.
 struct s_source_t
 {
-	char	filename[MAX_PATH];
+	char	filename[1024];
 	int 	time;	// time stamp
 
 	bool	isActiveModel;

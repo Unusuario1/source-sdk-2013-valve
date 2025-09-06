@@ -1395,7 +1395,7 @@ static void UnifyModelLODs( s_model_t *pSrcModel )
 	int nNumLODs = g_ScriptLODs.Count();
 	lods.AddMultipleToTail( nNumLODs );
 	
-	if( Q_V_stricmp( pSrcModel->name, "blank" ) == 0 )
+	if( V_stricmp( pSrcModel->name, "blank" ) == 0 )
 		return;
 	
 	// lod source are not gauranteed to be unique
@@ -1731,7 +1731,7 @@ void FixupReplacedBonesForLOD( LodScriptData_t &lod )
 				{
 					continue;
 				}
-				if( Q_V_stricmp( lod.boneReplacements[i].GetSrcName(), lod.boneReplacements[j].GetDstName() ) == 0 )
+				if( V_stricmp( lod.boneReplacements[i].GetSrcName(), lod.boneReplacements[j].GetDstName() ) == 0 )
 				{
 					lod.boneReplacements[j].SetDstName( lod.boneReplacements[i].GetDstName() );
 					changed = true;

@@ -603,7 +603,7 @@ int LookupPoseParameter( char *name )
 			return i;
 		}
 	}
-	V_V_strcpy_safe( g_pose[i].name, name );
+	V_strcpy_safe( g_pose[i].name, name );
 	g_numposeparameters = i + 1;
 
 	if (g_numposeparameters > MAXSTUDIOPOSEPARAM)
@@ -629,7 +629,7 @@ void Cmd_PoseParameter( )
 
 	// name
 	GetToken (false);
-	V_V_strcpy_safe( g_pose[i].name, token );
+	V_strcpy_safe( g_pose[i].name, token );
 
 	if (TokenAvailable())
 	{
@@ -710,7 +710,7 @@ int lookup_texture( char *texturename, int maxlen )
 		MdlError("Too many materials used, max %d\n", ( int )MAXSTUDIOSKINS );
 
 //	Msg( "texture %d = %s\n", i, texturename );
-	V_V_strcpy_safe( g_texture[i].name, texturename );
+	V_strcpy_safe( g_texture[i].name, texturename );
 
 	g_texture[i].material = -1;
 	/*
@@ -811,7 +811,7 @@ void SetSkinValues()
 		char szName[256];
 
 		// strip down till it finds "models"
-		V_V_strcpy_safe(szName, fullpath);
+		V_strcpy_safe(szName, fullpath);
 		while (szName[0] != '\0' && strnicmp("models", szName, 6) != 0)
 		{
 			V_strcpy(&szName[0], &szName[1]);
@@ -971,7 +971,7 @@ int Grab_Nodes( s_node_t *pnodes )
 			}
 			*/
 			
-			V_V_strcpy_safe( pnodes[index].name, name );
+			V_strcpy_safe( pnodes[index].name, name );
 			pnodes[index].parent = parent;
 			if (index > numbones)
 			{
@@ -1162,7 +1162,7 @@ int Option_Blank()
 
 	g_bodypart[g_numbodyparts].pmodel[g_bodypart[g_numbodyparts].nummodels] = g_model[g_nummodels];
 
-	V_V_strcpy_safe(g_model[g_nummodels]->name, "blank");
+	V_strcpy_safe(g_model[g_nummodels]->name, "blank");
 
 	g_bodypart[g_numbodyparts].nummodels++;
 	g_nummodels++;
@@ -1185,7 +1185,7 @@ void Cmd_Bodygroup()
 	else {
 		g_bodypart[g_numbodyparts].base = g_bodypart[g_numbodyparts - 1].base * g_bodypart[g_numbodyparts - 1].nummodels;
 	}
-	V_V_strcpy_safe(g_bodypart[g_numbodyparts].name, token);
+	V_strcpy_safe(g_bodypart[g_numbodyparts].name, token);
 
 	do
 	{
@@ -1233,7 +1233,7 @@ void Cmd_Body()
 	else {
 		g_bodypart[g_numbodyparts].base = g_bodypart[g_numbodyparts - 1].base * g_bodypart[g_numbodyparts - 1].nummodels;
 	}
-	V_V_strcpy_safe(g_bodypart[g_numbodyparts].name, token);
+	V_strcpy_safe(g_bodypart[g_numbodyparts].name, token);
 
 	g_model[g_nummodels] = (s_model_t*)kalloc(1, sizeof(s_model_t));
 	g_bodypart[g_numbodyparts].pmodel[g_bodypart[g_numbodyparts].nummodels] = g_model[g_nummodels];
@@ -1391,7 +1391,7 @@ int Option_Event(s_sequence_t* psequence)
 		if (token[0] == '}') // opps, hit the end
 			return 1;
 		// found an option
-		V_V_strcpy_safe(psequence->event[psequence->numevents - 1].options, token);
+		V_strcpy_safe(psequence->event[psequence->numevents - 1].options, token);
 	}
 
 	return 0;
@@ -1430,7 +1430,7 @@ void Option_IKRule( s_ikrule_t *pRule )
 
 		// bone
 		GetToken( false );
-		V_V_strcpy_safe( pRule->bonename, token );
+		V_strcpy_safe( pRule->bonename, token );
 	}
 	else if (V_stricmp( token, "footstep" ) == 0)
 	{
@@ -1446,7 +1446,7 @@ void Option_IKRule( s_ikrule_t *pRule )
 
 		// name of attachment
 		GetToken( false );
-		V_V_strcpy_safe( pRule->attachment, token );
+		V_strcpy_safe( pRule->attachment, token );
 	}
 	else if (V_stricmp( token, "release" ) == 0)
 	{
@@ -1755,7 +1755,7 @@ s_source_t* Load_Source(char const* name, const char* ext, bool reverse, bool is
 
 	if (xext[0] == '\0')
 	{
-		V_V_strcpy_safe(xext, ext);
+		V_strcpy_safe(xext, ext);
 	}
 	else
 	{
@@ -1771,7 +1771,7 @@ s_source_t* Load_Source(char const* name, const char* ext, bool reverse, bool is
 	}
 
 	g_source[g_numsources] = (s_source_t*)kalloc(1, sizeof(s_source_t));
-	V_V_strcpy_safe(g_source[g_numsources]->filename, g_szFilename); // HERE IS THE CRASH!!
+	V_strcpy_safe(g_source[g_numsources]->filename, g_szFilename); // HERE IS THE CRASH!!
 
 	if (isActiveModel)
 	{
@@ -1781,37 +1781,37 @@ s_source_t* Load_Source(char const* name, const char* ext, bool reverse, bool is
 	if (xext[0] == '\0' || V_stricmp(xext, "vrm") == 0)
 	{
 		V_sprintf_safe(g_szFilename, "%s%s.vrm", cddir[numdirs], pTempName);
-		V_V_strcpy_safe(g_source[g_numsources]->filename, g_szFilename);
+		V_strcpy_safe(g_source[g_numsources]->filename, g_szFilename);
 		result = Load_VRM(g_source[g_numsources]);
 	}
 	if ((!result && xext[0] == '\0') || V_stricmp(xext, "smd") == 0)
 	{
 		V_sprintf_safe(g_szFilename, "%s%s.smd", cddir[numdirs], pTempName);
-		V_V_strcpy_safe(g_source[g_numsources]->filename, g_szFilename);
+		V_strcpy_safe(g_source[g_numsources]->filename, g_szFilename);
 		result = Load_SMD(g_source[g_numsources]);
 	}
 	if ((!result && xext[0] == '\0') || V_stricmp(xext, "sma") == 0)
 	{
 		V_sprintf_safe(g_szFilename, "%s%s.sma", cddir[numdirs], pTempName);
-		V_V_strcpy_safe(g_source[g_numsources]->filename, g_szFilename);
+		V_strcpy_safe(g_source[g_numsources]->filename, g_szFilename);
 		result = Load_SMD(g_source[g_numsources]);
 	}
 	if ((!result && xext[0] == '\0') || V_stricmp(xext, "phys") == 0)
 	{
 		V_sprintf_safe(g_szFilename, "%s%s.phys", cddir[numdirs], pTempName);
-		V_V_strcpy_safe(g_source[g_numsources]->filename, g_szFilename);
+		V_strcpy_safe(g_source[g_numsources]->filename, g_szFilename);
 		result = Load_SMD(g_source[g_numsources]);
 	}
 	if ((!result && xext[0] == '\0') || V_stricmp(xext, "vta") == 0)
 	{
 		V_sprintf_safe(g_szFilename, "%s%s.vta", cddir[numdirs], pTempName);
-		V_V_strcpy_safe(g_source[g_numsources]->filename, g_szFilename);
+		V_strcpy_safe(g_source[g_numsources]->filename, g_szFilename);
 		result = Load_VTA(g_source[g_numsources]);
 	}
 	if ((!result && xext[0] == '\0') || V_stricmp(xext, "obj") == 0)
 	{
 		V_sprintf_safe(g_szFilename, "%s%s.obj", cddir[numdirs], pTempName);
-		V_V_strcpy_safe(g_source[g_numsources]->filename, g_szFilename);
+		V_strcpy_safe(g_source[g_numsources]->filename, g_szFilename);
 		result = Load_OBJ(g_source[g_numsources]);
 	}
 
@@ -2502,7 +2502,7 @@ void Cmd_Cmdlist()
 
 	// name
 	GetToken(false);
-	V_V_strcpy_safe(g_cmdlist[g_numcmdlists].name, token);
+	V_strcpy_safe(g_cmdlist[g_numcmdlists].name, token);
 
 	while (true)
 	{
@@ -2595,12 +2595,12 @@ void Cmd_Animation()
 	g_panimation[g_numani] = (s_animation_t*)kalloc(1, sizeof(s_animation_t));
 	g_panimation[g_numani]->index = g_numani;
 	panim = g_panimation[g_numani];
-	V_V_strcpy_safe(panim->name, token);
+	V_strcpy_safe(panim->name, token);
 	g_numani++;
 
 	// filename
 	GetToken(false);
-	V_V_strcpy_safe(panim->filename, token);
+	V_strcpy_safe(panim->filename, token);
 
 	// panim->animgroup = g_currentanimgroup;
 
@@ -2705,7 +2705,7 @@ s_animation_t *Cmd_ImpliedAnimation( s_sequence_t *psequence, char *filename )
 
 	V_strcpy( panim->name, "@" );
 	strcat( panim->name, psequence->name );
-	V_V_strcpy_safe( panim->filename, filename );
+	V_strcpy_safe( panim->filename, filename );
 
 	VectorCopy( g_defaultadjust, panim->adjust );
 	panim->scale = 1.0f;
@@ -2811,7 +2811,7 @@ void Cmd_Sequence()
 	memset(pseq, 0, sizeof(s_sequence_t));
 
 	// initialize sequence
-	V_V_strcpy_safe(pseq->name, token);
+	V_strcpy_safe(pseq->name, token);
 
 	pseq->actweight = 0;
 	pseq->activityname[0] = '\0';
@@ -3053,13 +3053,13 @@ int ParseSequence( s_sequence_t *pseq, bool isAppend )
 		else if (V_stricmp( "addlayer", token ) == 0)
 		{
 			GetToken( false );
-			V_V_strcpy_safe( pseq->autolayer[pseq->numautolayers].name, token );
+			V_strcpy_safe( pseq->autolayer[pseq->numautolayers].name, token );
 			pseq->numautolayers++;
 		}
 		else if (V_stricmp( "iklock", token ) == 0)
 		{
 			GetToken(false);
-			V_V_strcpy_safe( pseq->iklock[pseq->numiklocks].name, token );
+			V_strcpy_safe( pseq->iklock[pseq->numiklocks].name, token );
 
 			GetToken(false);
 			pseq->iklock[pseq->numiklocks].flPosWeight = verify_atof( token );
@@ -3078,7 +3078,7 @@ int ParseSequence( s_sequence_t *pseq, bool isAppend )
 			pseq->autolayer[pseq->numautolayers].flags = 0;
 
 			GetToken( false );
-			V_V_strcpy_safe( pseq->autolayer[pseq->numautolayers].name, token );
+			V_strcpy_safe( pseq->autolayer[pseq->numautolayers].name, token );
 
 			GetToken( false );
 			pseq->autolayer[pseq->numautolayers].start = verify_atoi( token );
@@ -3403,7 +3403,7 @@ void Cmd_DeclareSequence()
 
 	// initialize sequence
 	GetToken(false);
-	V_V_strcpy_safe(pseq->name, token);
+	V_strcpy_safe(pseq->name, token);
 }
 
 
@@ -3426,7 +3426,7 @@ void Cmd_DeclareAnimation(void)
 
 	// initialize animation
 	GetToken(false);
-	V_V_strcpy_safe(panim->name, token);
+	V_strcpy_safe(panim->name, token);
 }
 
 
@@ -3499,7 +3499,7 @@ void Option_Weightlist( s_weightlist_t *pweightlist )
 			{
 				TokenError("Too many bones (%d) in weightlist '%s'\n", i, pweightlist->name );
 			}
-			V_V_strcpy_safe( pweightlist->bonename[i], token );
+			V_strcpy_safe( pweightlist->bonename[i], token );
 			GetToken( false );
 			pweightlist->boneweight[i] = verify_atof( token );
 			pweightlist->boneposweight[i] = pweightlist->boneweight[i];
@@ -3536,7 +3536,7 @@ void Cmd_Weightlist( )
 		}
 	}
 
-	V_V_strcpy_safe( g_weightlist[i].name, token );
+	V_strcpy_safe( g_weightlist[i].name, token );
 
 	Option_Weightlist( &g_weightlist[g_numweightlist] );
 
@@ -3566,7 +3566,7 @@ void Option_Eyeball( s_model_t *pmodel )
 
 	// name
 	GetToken (false);
-	V_V_strcpy_safe( eyeball->name, token );
+	V_strcpy_safe( eyeball->name, token );
 
 	// bone name
 	GetToken (false);
@@ -3597,7 +3597,7 @@ void Option_Eyeball( s_model_t *pmodel )
 
 	// mesh material 
 	GetToken (false);
-	V_V_strcpy_safe( szMeshMaterial, token );
+	V_strcpy_safe( szMeshMaterial, token );
 	mesh_material = use_texture_as_material( lookup_texture( token, sizeof( token ) ) );
 
 	// diameter
@@ -3616,7 +3616,7 @@ void Option_Eyeball( s_model_t *pmodel )
 	GetToken (false);
 	eyeball->iris_scale = 1.0 / verify_atof( token );
 
-	eyeball->glint_material = use_texture_as_material( lookup_texture( "glint", Q_V_strlen( "glint" ) + 1 ) );
+	eyeball->glint_material = use_texture_as_material( lookup_texture( "glint", V_strlen( "glint" ) + 1 ) );
 	
 	VectorCopy( tmp, eyeball->org );
 
@@ -3663,7 +3663,7 @@ void Option_Spherenormals( s_source_t *psource )
 
 	// mesh material 
 	GetToken (false);
-	V_V_strcpy_safe( szMeshMaterial, token );
+	V_strcpy_safe( szMeshMaterial, token );
 	mesh_material = use_texture_as_material( lookup_texture( token, sizeof( token ) ) );
 
 	// X
@@ -3737,7 +3737,7 @@ int Add_Flexdesc( const char *name )
 
 	if (flexdesc == g_numflexdesc)
 	{
-		V_V_strcpy_safe( g_flexdesc[flexdesc].FACS, name );
+		V_strcpy_safe( g_flexdesc[flexdesc].FACS, name );
 
 		g_numflexdesc++;
 	}
@@ -3841,11 +3841,11 @@ void Option_Eyelid( int imodel )
 
 	// type
 	GetToken (false);
-	V_V_strcpy_safe( type, token );
+	V_strcpy_safe( type, token );
 
 	// source
 	GetToken (false);
-	V_V_strcpy_safe( vtafile, token );
+	V_strcpy_safe( vtafile, token );
 
 	int lowererframe, neutralframe, raiserframe;
 	float lowerertarget, neutraltarget, raisertarget;
@@ -3855,7 +3855,7 @@ void Option_Eyelid( int imodel )
 	char szEyeball[64] = {""};
 
 	basedesc = g_numflexdesc;
-	V_V_strcpy_safe( g_flexdesc[g_numflexdesc++].FACS, type );
+	V_strcpy_safe( g_flexdesc[g_numflexdesc++].FACS, type );
 
 	while (TokenAvailable())
 	{
@@ -3873,7 +3873,7 @@ void Option_Eyelid( int imodel )
 			GetToken (false);
 			lowerertarget = verify_atof( token );
 			lowererdesc = g_numflexdesc;
-			V_V_strcpy_safe( g_flexdesc[g_numflexdesc++].FACS, localdesc );
+			V_strcpy_safe( g_flexdesc[g_numflexdesc++].FACS, localdesc );
 		}
 		else if (V_stricmp( token, "neutral") == 0)
 		{
@@ -3882,7 +3882,7 @@ void Option_Eyelid( int imodel )
 			GetToken (false);
 			neutraltarget = verify_atof( token );
 			neutraldesc = g_numflexdesc;
-			V_V_strcpy_safe( g_flexdesc[g_numflexdesc++].FACS, localdesc );
+			V_strcpy_safe( g_flexdesc[g_numflexdesc++].FACS, localdesc );
 		}
 		else if (V_stricmp( token, "raiser") == 0)
 		{
@@ -3891,7 +3891,7 @@ void Option_Eyelid( int imodel )
 			GetToken (false);
 			raisertarget = verify_atof( token );
 			raiserdesc = g_numflexdesc;
-			V_V_strcpy_safe( g_flexdesc[g_numflexdesc++].FACS, localdesc );
+			V_strcpy_safe( g_flexdesc[g_numflexdesc++].FACS, localdesc );
 		}
 		else if (V_stricmp( token, "split") == 0)
 		{
@@ -4011,7 +4011,7 @@ int Option_Mouth( s_model_t *pmodel )
 
 	// bone name
 	GetToken (false);
-	V_V_strcpy_safe( g_mouth[index].bonename, token );
+	V_strcpy_safe( g_mouth[index].bonename, token );
 
 	// vector
 	GetToken (false);
@@ -4057,8 +4057,8 @@ void Option_Flexcontroller( s_model_t *pmodel )
 			}
 
 
-			V_V_strcpy_safe( g_flexcontroller[g_numflexcontrollers].name, token );
-			V_V_strcpy_safe( g_flexcontroller[g_numflexcontrollers].type, type );
+			V_strcpy_safe( g_flexcontroller[g_numflexcontrollers].name, token );
+			V_strcpy_safe( g_flexcontroller[g_numflexcontrollers].type, type );
 			g_flexcontroller[g_numflexcontrollers].min = range_min;
 			g_flexcontroller[g_numflexcontrollers].max = range_max;
 			g_numflexcontrollers++;
@@ -4429,7 +4429,7 @@ void Cmd_Model( )
 	// name
 	if (!GetToken(false)) 
 		return;
-	V_V_strcpy_safe( g_model[g_nummodels]->name, token );
+	V_strcpy_safe( g_model[g_nummodels]->name, token );
 
 	// fake g_bodypart stuff
 	if (g_numbodyparts == 0) {
@@ -4438,7 +4438,7 @@ void Cmd_Model( )
 	else {
 		g_bodypart[g_numbodyparts].base = g_bodypart[g_numbodyparts-1].base * g_bodypart[g_numbodyparts-1].nummodels;
 	}
-	V_V_strcpy_safe( g_bodypart[g_numbodyparts].name, token );
+	V_strcpy_safe( g_bodypart[g_numbodyparts].name, token );
 
 	g_bodypart[g_numbodyparts].pmodel[g_bodypart[g_numbodyparts].nummodels] = g_model[g_nummodels];
 	g_bodypart[g_numbodyparts].nummodels = 1;
@@ -4596,7 +4596,7 @@ void Cmd_FakeVTA(void)
 
 	s_source_t* psource = (s_source_t*)kalloc(1, sizeof(s_source_t));
 	g_source[g_numsources] = psource;
-	V_V_strcpy_safe(g_source[g_numsources]->filename, token);
+	V_strcpy_safe(g_source[g_numsources]->filename, token);
 	g_numsources++;
 
 	while (true)
@@ -4681,10 +4681,10 @@ void Cmd_IKChain()
 		return;
 	}
 
-	V_V_strcpy_safe(g_ikchain[g_numikchains].name, token);
+	V_strcpy_safe(g_ikchain[g_numikchains].name, token);
 
 	GetToken(false);
-	V_V_strcpy_safe(g_ikchain[g_numikchains].bonename, token);
+	V_strcpy_safe(g_ikchain[g_numikchains].bonename, token);
 
 	g_ikchain[g_numikchains].axis = STUDIO_Z;
 	g_ikchain[g_numikchains].value = 0.0;
@@ -4746,7 +4746,7 @@ void Cmd_IKChain()
 void Cmd_IKAutoplayLock( )
 {
 	GetToken(false);
-	V_V_strcpy_safe( g_ikautoplaylock[g_numikautoplaylocks].name, token );
+	V_strcpy_safe( g_ikautoplaylock[g_numikautoplaylocks].name, token );
 
 	GetToken(false);
 	g_ikautoplaylock[g_numikautoplaylocks].flPosWeight = verify_atof( token );
@@ -4765,7 +4765,7 @@ void Cmd_Root ()
 {
 	if (GetToken (false))
 	{
-		V_V_strcpy_safe( rootname, token );
+		V_strcpy_safe( rootname, token );
 	}
 }
 
@@ -4787,7 +4787,7 @@ void Cmd_Controller(void)
 		}
 		if (GetToken(false))
 		{
-			V_V_strcpy_safe(g_bonecontroller[g_numbonecontrollers].name, token);
+			V_strcpy_safe(g_bonecontroller[g_numbonecontrollers].name, token);
 			GetToken(false);
 			if ((g_bonecontroller[g_numbonecontrollers].type = lookupControl(token)) == -1)
 			{
@@ -4837,7 +4837,7 @@ void Cmd_ScreenAlign()
 
 		Assert(g_numscreenalignedbones < MAXSTUDIOSRCBONES);
 
-		V_V_strcpy_safe(g_screenalignedbone[g_numscreenalignedbones].name, token);
+		V_strcpy_safe(g_screenalignedbone[g_numscreenalignedbones].name, token);
 		g_screenalignedbone[g_numscreenalignedbones].flags = BONE_SCREEN_ALIGN_SPHERE;
 
 		if (GetToken(false))
@@ -5002,7 +5002,7 @@ void Cmd_Hitgroup()
 	GetToken(false);
 	g_hitgroup[g_numhitgroups].group = verify_atoi(token);
 	GetToken(false);
-	V_V_strcpy_safe(g_hitgroup[g_numhitgroups].name, token);
+	V_strcpy_safe(g_hitgroup[g_numhitgroups].name, token);
 	g_numhitgroups++;
 }
 
@@ -5034,7 +5034,7 @@ void Cmd_Hitbox()
 
 	// Grab the bone name:
 	GetToken(false);
-	V_V_strcpy_safe(set->hitbox[set->numhitboxes].name, token);
+	V_strcpy_safe(set->hitbox[set->numhitboxes].name, token);
 
 	GetToken(false);
 	set->hitbox[set->numhitboxes].bmin[0] = verify_atof(token);
@@ -5059,7 +5059,7 @@ void Cmd_Hitbox()
 	if (TokenAvailable())
 	{
 		GetToken(false);
-		V_V_strcpy_safe(set->hitbox[set->numhitboxes].hitboxname, token);
+		V_strcpy_safe(set->hitbox[set->numhitboxes].hitboxname, token);
 	}
 
 	set->numhitboxes++;
@@ -5098,7 +5098,7 @@ static CUtlVector<SurfacePropName_t>	s_JointSurfaceProp;
 void Cmd_SurfaceProp ()
 {
 	GetToken (false);
-	V_V_strcpy_safe( s_pDefaultSurfaceProp, token );
+	V_strcpy_safe( s_pDefaultSurfaceProp, token );
 }	
 
 
@@ -5124,12 +5124,12 @@ void Cmd_JointSurfaceProp ()
 	if (i < 0)
 	{
 		i = s_JointSurfaceProp.AddToTail();
-		V_V_strcpy_safe( s_JointSurfaceProp[i].m_pJointName, token );
+		V_strcpy_safe( s_JointSurfaceProp[i].m_pJointName, token );
 	}
 
 	// surface property name
 	GetToken(false);
-	V_V_strcpy_safe( s_JointSurfaceProp[i].m_pSurfaceProp, token );
+	V_strcpy_safe( s_JointSurfaceProp[i].m_pSurfaceProp, token );
 }
 
 
@@ -5294,7 +5294,7 @@ void Cmd_JointContents ()
 	if (i < 0)
 	{
 		i = s_JointContents.AddToTail();
-		V_V_strcpy_safe( s_JointContents[i].m_pJointName, token );
+		V_strcpy_safe( s_JointContents[i].m_pJointName, token );
 	}
 
 	int nAddFlags, nRemoveFlags;
@@ -5394,7 +5394,7 @@ void Cmd_BoneMerge( )
 
 	// bone name
 	GetToken (false);
-	V_V_strcpy_safe( g_BoneMerge[nIndex].bonename, token );
+	V_strcpy_safe( g_BoneMerge[nIndex].bonename, token );
 }
 
 
@@ -5408,11 +5408,11 @@ void Cmd_Attachment( )
 
 	// name
 	GetToken (false);
-	V_V_strcpy_safe( g_attachment[g_numattachments].name, token );
+	V_strcpy_safe( g_attachment[g_numattachments].name, token );
 
 	// bone name
 	GetToken (false);
-	V_V_strcpy_safe( g_attachment[g_numattachments].bonename, token );
+	V_strcpy_safe( g_attachment[g_numattachments].bonename, token );
 
 	Vector tmp;
 
@@ -5526,11 +5526,11 @@ void Cmd_Renamebone( )
 {
 	// from
 	GetToken (false);
-	V_V_strcpy_safe( g_renamedbone[g_numrenamedbones].from, token );
+	V_strcpy_safe( g_renamedbone[g_numrenamedbones].from, token );
 
 	// to
 	GetToken (false);
-	V_V_strcpy_safe( g_renamedbone[g_numrenamedbones].to, token );
+	V_strcpy_safe( g_renamedbone[g_numrenamedbones].to, token );
 
 	g_numrenamedbones++;
 }
@@ -6015,11 +6015,11 @@ void Cmd_ForcedHierarchy( )
 {
 	// child name
 	GetToken (false);
-	V_V_strcpy_safe( g_forcedhierarchy[g_numforcedhierarchy].childname, token );
+	V_strcpy_safe( g_forcedhierarchy[g_numforcedhierarchy].childname, token );
 
 	// parent name
 	GetToken (false);
-	V_V_strcpy_safe( g_forcedhierarchy[g_numforcedhierarchy].parentname, token );
+	V_strcpy_safe( g_forcedhierarchy[g_numforcedhierarchy].parentname, token );
 
 	g_numforcedhierarchy++;
 }
@@ -6032,15 +6032,15 @@ void Cmd_InsertHierarchy( )
 {
 	// child name
 	GetToken (false);
-	V_V_strcpy_safe( g_forcedhierarchy[g_numforcedhierarchy].childname, token );
+	V_strcpy_safe( g_forcedhierarchy[g_numforcedhierarchy].childname, token );
 
 	// subparent name
 	GetToken (false);
-	V_V_strcpy_safe( g_forcedhierarchy[g_numforcedhierarchy].subparentname, token );
+	V_strcpy_safe( g_forcedhierarchy[g_numforcedhierarchy].subparentname, token );
 
 	// parent name
 	GetToken (false);
-	V_V_strcpy_safe( g_forcedhierarchy[g_numforcedhierarchy].parentname, token );
+	V_strcpy_safe( g_forcedhierarchy[g_numforcedhierarchy].parentname, token );
 
 	g_numforcedhierarchy++;
 }
@@ -6053,7 +6053,7 @@ void Cmd_ForceRealign( )
 {
 	// bone name
 	GetToken (false);
-	V_V_strcpy_safe( g_forcedrealign[g_numforcedrealign].name, token );
+	V_strcpy_safe( g_forcedrealign[g_numforcedrealign].name, token );
 
 	// skip
 	GetToken (false);
@@ -6081,7 +6081,7 @@ void Cmd_LimitRotation( )
 {
 	// bone name
 	GetToken (false);
-	V_V_strcpy_safe( g_limitrotation[g_numlimitrotation].name, token );
+	V_strcpy_safe( g_limitrotation[g_numlimitrotation].name, token );
 
 	while (TokenAvailable())
 	{
@@ -6101,11 +6101,11 @@ void Cmd_DefineBone( )
 {
 	// bone name
 	GetToken (false);
-	V_V_strcpy_safe( g_importbone[g_numimportbones].name, token );
+	V_strcpy_safe( g_importbone[g_numimportbones].name, token );
 
 	// parent name
 	GetToken (false);
-	V_V_strcpy_safe( g_importbone[g_numimportbones].parent, token );
+	V_strcpy_safe( g_importbone[g_numimportbones].parent, token );
 
 	Vector pos;
 	QAngle angles;
@@ -6159,7 +6159,7 @@ void Cmd_DefineBone( )
 void Cmd_IncludeModel( )
 {
 	GetToken( false );
-	V_V_strcpy_safe( g_includemodel[g_numincludemodels].name, "models/" );
+	V_strcpy_safe( g_includemodel[g_numincludemodels].name, "models/" );
 	strcat( g_includemodel[g_numincludemodels].name, token );
 	g_numincludemodels++;
 }
@@ -6894,7 +6894,7 @@ void Cmd_BoneSaveFrame( )
 
 	// bone name
 	GetToken( false );
-	V_V_strcpy_safe( tmp.name, token );
+	V_strcpy_safe( tmp.name, token );
 
 	tmp.bSavePos = false;
 	tmp.bSaveRot = false;
