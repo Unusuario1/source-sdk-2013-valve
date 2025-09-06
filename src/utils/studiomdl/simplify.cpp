@@ -129,7 +129,7 @@ void processAnimations()
 	int i, j;
 
 	// find global root bone.
-	if ( strlen( rootname ) )
+	if ( V_strlen( rootname ) )
 	{
 		g_rootIndex = findGlobalBone( rootname );
 		if (g_rootIndex == -1)
@@ -2625,7 +2625,7 @@ int findGlobalBone(const char* name)
 
 	for (k = 0; k < g_numbones; k++)
 	{
-		if (stricmp(g_bonetable[k].name, name) == 0)
+		if (V_stricmp(g_bonetable[k].name, name) == 0)
 		{
 			return k;
 		}
@@ -2642,14 +2642,14 @@ bool IsGlobalBoneXSI(const char* name, const char* bonename)
 {
 	name = RenameBone(name);
 
-	int len = strlen(name);
+	int len = V_strlen(name);
 
-	int len2 = strlen(bonename);
+	int len2 = V_strlen(bonename);
 	if (len2 > len)
 	{
 		if (bonename[len2 - len - 1] == '.')
 		{
-			if (stricmp(&bonename[len2 - len], name) == 0)
+			if (V_stricmp(&bonename[len2 - len], name) == 0)
 			{
 				return true;
 			}
@@ -2669,7 +2669,7 @@ int findGlobalBoneXSI(const char* name)
 
 	name = RenameBone(name);
 
-	int len = strlen(name);
+	int len = V_strlen(name);
 
 	for (k = 0; k < g_numbones; k++)
 	{
@@ -3156,7 +3156,7 @@ bool BoneHasAttachments( char const *pname )
 {
 	for (int k = 0; k < g_numattachments; k++)
 	{
-		if ( !stricmp( g_attachment[k].bonename, pname ) )
+		if ( !V_stricmp( g_attachment[k].bonename, pname ) )
 		{
 			return true;
 		}
@@ -3174,7 +3174,7 @@ bool BoneIsProcedural( char const *pname )
 
 	for (k = 0; k < g_numaxisinterpbones; k++)
 	{
-		if (! stricmp( g_axisinterpbones[k].bonename, pname ) )
+		if (! V_stricmp( g_axisinterpbones[k].bonename, pname ) )
 		{
 			return true;
 		}
@@ -3210,7 +3210,7 @@ bool BoneIsIK( char const *pname )
 	// tag bones used by ikchains 
 	for (k = 0; k < g_numikchains; k++)
 	{
-		if ( !stricmp( g_ikchain[k].bonename, pname ) )
+		if ( !V_stricmp( g_ikchain[k].bonename, pname ) )
 		{
 			return true;
 		}
@@ -3229,7 +3229,7 @@ bool BoneShouldCollapse( char const *pname )
 
 	for (k = 0; k < g_numcollapse; k++)
 	{
-		if (stricmp( g_collapse[k], pname ) == 0)
+		if (V_stricmp( g_collapse[k], pname ) == 0)
 		{
 			return true;
 		}
@@ -3309,7 +3309,7 @@ void MakeStaticProp()
 	{
 		s_source_t *psource = g_source[i];
 
-		strcpy( psource->localBone[0].name, "static_prop" );
+		V_strcpy( psource->localBone[0].name, "static_prop" );
 		psource->localBone[0].parent = -1;
 
 		for (k = 1; k < psource->numbones; k++)
@@ -3358,7 +3358,7 @@ void MakeStaticProp()
 				bool bFound = false;
 				for ( k = 0; k < g_numattachments; k++ )
 				{
-					if ( !Q_stricmp( g_attachment[k].name, pAttachmentName ) )
+					if ( !Q_V_stricmp( g_attachment[k].name, pAttachmentName ) )
 					{
 						bFound = true;
 						break;
@@ -3495,7 +3495,7 @@ void TagUsedBones( )
 		{
 			for (j = 0; j < psource->numbones; j++)
 			{
-				if ( !stricmp( g_attachment[k].bonename, psource->localBone[j].name ) )
+				if ( !V_stricmp( g_attachment[k].bonename, psource->localBone[j].name ) )
 				{
 					// this bone is a keeper with or without associated vertices
 					// because an attachment point depends on it.
@@ -3522,7 +3522,7 @@ void TagUsedBones( )
 		{
 			for (j = 0; j < psource->numbones; j++)
 			{
-				if ( !stricmp( g_ikchain[k].bonename, psource->localBone[j].name ) )
+				if ( !V_stricmp( g_ikchain[k].bonename, psource->localBone[j].name ) )
 				{
 					// this bone is a keeper with or without associated vertices
 					// because a ikchain depends on it.
@@ -3535,7 +3535,7 @@ void TagUsedBones( )
 		{
 			for (j = 0; j < psource->numbones; j++)
 			{
-				if ( !stricmp( g_mouth[k].bonename, psource->localBone[j].name ) )
+				if ( !V_stricmp( g_mouth[k].bonename, psource->localBone[j].name ) )
 				{
 					// this bone is a keeper with or without associated vertices
 					// because a mouth shader depends on it.
@@ -3550,7 +3550,7 @@ void TagUsedBones( )
 		{
 			for ( j = 0; j < psource->numbones; j++ )
 			{
-				if ( stricmp( g_BoneMerge[k].bonename, psource->localBone[j].name ) )
+				if ( V_stricmp( g_BoneMerge[k].bonename, psource->localBone[j].name ) )
 					continue;
 
 				psource->boneflags[j] |= BONE_USED_BY_BONE_MERGE;
@@ -3591,9 +3591,9 @@ void RenameBones( )
 		{
 			for (k = 0; k < g_numrenamedbones; k++)
 			{
-				if (!stricmp( g_source[i]->localBone[j].name, g_renamedbone[k].from))
+				if (!V_stricmp( g_source[i]->localBone[j].name, g_renamedbone[k].from))
 				{
-					strcpy( g_source[i]->localBone[j].name, g_renamedbone[k].to );
+					V_strcpy( g_source[i]->localBone[j].name, g_renamedbone[k].to );
 					break;
 				}
 			}
@@ -3610,7 +3610,7 @@ const char* RenameBone(const char* pName)
 	int k;
 	for (k = 0; k < g_numrenamedbones; k++)
 	{
-		if (!stricmp(pName, g_renamedbone[k].from))
+		if (!V_stricmp(pName, g_renamedbone[k].from))
 		{
 			return g_renamedbone[k].to;
 		}
@@ -3634,7 +3634,7 @@ void TagUsedImportedBones()
 	{
 		for (j = 0; j < g_numbones; j++)
 		{
-			if (stricmp(g_BoneMerge[k].bonename, g_bonetable[j].name))
+			if (V_stricmp(g_BoneMerge[k].bonename, g_bonetable[j].name))
 				continue;
 
 			g_bonetable[j].flags |= BONE_USED_BY_BONE_MERGE;
@@ -3660,8 +3660,8 @@ int BuildGlobalBonetable( )
 		if (k == -1)
 		{
 			k = g_numbones;
-			strcpyn( g_bonetable[k].name, g_importbone[i].name );
-			if ( strlen( g_importbone[i].parent ) == 0 )
+			V_V_strcpy_safe( g_bonetable[k].name, g_importbone[i].name );
+			if ( V_strlen( g_importbone[i].parent ) == 0 )
 			{
 				g_bonetable[k].parent = -1;
 			}
@@ -3705,7 +3705,7 @@ int BuildGlobalBonetable( )
 				{
 					// create new bone
 					k = g_numbones;
-					strcpyn( g_bonetable[k].name, psource->localBone[j].name );
+					V_V_strcpy_safe( g_bonetable[k].name, psource->localBone[j].name );
 					if ((n = psource->localBone[j].parent) != -1)
 						g_bonetable[k].parent		= findGlobalBone( psource->localBone[n].name );
 					else
@@ -3822,7 +3822,7 @@ void EnforceHierarchy( )
 		j = findGlobalBone( g_forcedhierarchy[i].parentname );
 		k = findGlobalBone( g_forcedhierarchy[i].childname );
 
-		if (j == -1 && strlen( g_forcedhierarchy[i].parentname ) > 0 )
+		if (j == -1 && V_strlen( g_forcedhierarchy[i].parentname ) > 0 )
 		{
 			MdlError( "unknown bone: \"%s\" in forced hierarchy\n", g_forcedhierarchy[i].parentname );
 		}
@@ -3839,7 +3839,7 @@ void EnforceHierarchy( )
 		*/
 
 		/*
-		if (strlen(g_forcedhierarchy[i].subparentname) != 0)
+		if (V_strlen(g_forcedhierarchy[i].subparentname) != 0)
 		{
 			int n, m;
 
@@ -3864,7 +3864,7 @@ void EnforceHierarchy( )
 			g_numbones++;
 
 			// add the bone
-			strcpy( g_bonetable[k].name, g_forcedhierarchy[i].subparentname );
+			V_strcpy( g_bonetable[k].name, g_forcedhierarchy[i].subparentname );
 			g_bonetable[k].parent = j;
 			g_bonetable[k].split = true;
 			g_bonetable[k+1].parent = k;
@@ -4226,7 +4226,7 @@ int MapSourcesToGlobalBonetable( )
 				// garymcthack - This gets tripped on the antlion if there are any lods at all.
 				// I don't understand why.
 
-				if (stricmp(szAnim, szNode) && !(g_bonetable[k].flags & BONE_ALWAYS_PROCEDURAL))
+				if (V_stricmp(szAnim, szNode) && !(g_bonetable[k].flags & BONE_ALWAYS_PROCEDURAL))
 				{
 					Msg("illegal parent bone replacement in g_sequence \"%s\"\n\t\"%s\" has \"%s\", reference has \"%s\"\n", 
 						g_source[i]->filename, 
@@ -5310,7 +5310,7 @@ static void FindAutolayers()
 			int j;
 			for (j = 0; j < g_sequence.Count(); j++)
 			{
-				if (stricmp(g_sequence[i].autolayer[k].name, g_sequence[j].name) == 0)
+				if (V_stricmp(g_sequence[i].autolayer[k].name, g_sequence[j].name) == 0)
 				{
 					g_sequence[i].autolayer[k].sequence = j;
 					break;
@@ -5382,7 +5382,7 @@ static void LinkAttachments()
 		// search through known bones
 		for (k = 0; k < g_numbones; k++)
 		{
-			if ( !stricmp( g_attachment[i].bonename, g_bonetable[k].name ))
+			if ( !V_stricmp( g_attachment[i].bonename, g_bonetable[k].name ))
 			{
 				g_attachment[i].bone = k;
 				MatrixCopy( g_bonetable[k].boneToPose, boneToPose );
@@ -5400,7 +5400,7 @@ static void LinkAttachments()
 			{
 				for (k = 0; k < g_source[j]->numbones && !found; k++)
 				{
-					if ( !stricmp( g_attachment[i].bonename, g_source[j]->localBone[k].name ) )
+					if ( !V_stricmp( g_attachment[i].bonename, g_source[j]->localBone[k].name ) )
 					{
 						MatrixCopy( g_source[j]->boneToPose[k], boneToPose );
 
@@ -5466,7 +5466,7 @@ static void LinkMouths()
 		int j;
 		for ( j = 0; j < g_numbones; j++)
 		{
-			if (g_mouth[i].bonename[0] && stricmp( g_mouth[i].bonename, g_bonetable[j].name) == 0)
+			if (g_mouth[i].bonename[0] && V_stricmp( g_mouth[i].bonename, g_bonetable[j].name) == 0)
 				break;
 		}
 		if (j >= g_numbones)
@@ -5707,7 +5707,7 @@ static void LinkIKLocks()
 	{
 		for (j = 0; j < g_numikchains; j++)
 		{
-			if (stricmp(g_ikchain[j].name, g_ikautoplaylock[i].name) == 0)
+			if (V_stricmp(g_ikchain[j].name, g_ikautoplaylock[i].name) == 0)
 			{
 				break;
 			}
@@ -5728,7 +5728,7 @@ static void LinkIKLocks()
 		{
 			for (j = 0; j < g_numikchains; j++)
 			{
-				if (stricmp(g_ikchain[j].name, g_sequence[k].iklock[i].name) == 0)
+				if (V_stricmp(g_ikchain[j].name, g_sequence[k].iklock[i].name) == 0)
 				{
 					break;
 				}
@@ -6038,7 +6038,7 @@ static void ProcessIKRules( )
 					matrix3x4_t worldToBone;
 					matrix3x4_t local;
 
-					if (strlen(pRule->bonename) == 0)
+					if (V_strlen(pRule->bonename) == 0)
 					{
 						pRule->bone = -1;
 					}
@@ -6108,7 +6108,7 @@ static void ProcessIKRules( )
 					// pRule->pos = footfall;
 					// pRule->q = RadianEuler( 0, 0, 0 );
 
-					if (strlen(pRule->bonename) == 0)
+					if (V_strlen(pRule->bonename) == 0)
 					{
 						if (pRule->bone != -1)
 						{
@@ -6947,7 +6947,7 @@ void SetupHitBoxes()
 
 		s_hitboxset *set = &g_hitboxsets[ index ];
 		memset( set, 0, sizeof( *set) );
-		strcpy( set->hitboxsetname, "default" );
+		V_strcpy( set->hitboxsetname, "default" );
 
 		gflags |= STUDIOHDR_FLAGS_AUTOGENERATED_HITBOX;
 

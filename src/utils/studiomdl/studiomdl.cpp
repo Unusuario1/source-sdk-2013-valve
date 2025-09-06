@@ -265,7 +265,7 @@ void CreateMakefile_OutputMakefile( void )
 		MdlError( "can't open makefile.tmp!\n" );
 	}
 	char mdlname[MAX_PATH];
-	strcpy( mdlname, gamedir );
+	V_strcpy( mdlname, gamedir );
 //	if( *g_pPlatformName )
 //	{
 //		strcat( mdlname, "platform_" );
@@ -286,7 +286,7 @@ void CreateMakefile_OutputMakefile( void )
 	}
 	fprintf( fp, "\n" );
 	char mkdirpath[MAX_PATH];
-	strcpy( mkdirpath, mdlname );
+	V_strcpy( mkdirpath, mdlname );
 	Q_StripFilename( mkdirpath );
 	fprintf( fp, "\tmkdir \"%s\"\n", mkdirpath );
 	fprintf( fp, "\t%s -quiet %s\n\n", CommandLine()->GetParm( 0 ), fullpath );
@@ -308,14 +308,14 @@ void TokenError( char const *fmt, ... )
 	if (GetTokenizerStatus( &pFilename, &iLineNumber ))
 	{
 		va_start( args, fmt );
-		vsprintf( output, fmt, args );
+		V_sprintf_safe( output, fmt, args ); // SEE THIS!!
 
 		MdlError( "%s(%d): - %s", pFilename, iLineNumber, output );
 	}
 	else
 	{
 		va_start( args, fmt );
-		vsprintf( output, fmt, args );
+		V_sprintf_safe( output, fmt, args ); // SEE THIS!!
 		MdlError( "%s", output );
 	}
 }
@@ -352,7 +352,7 @@ void MdlError( char const *fmt, ... )
 		// undescriptive errors in batch processes could be anonymous
 		Msg("ERROR: Aborted Processing on '%s'\n", outname);
 
-		strcpy( fileName, gamedir );
+		V_strcpy( fileName, gamedir );
 		strcat( fileName, "models/" );	
 		strcat( fileName, outname );
 		Q_FixSlashes( fileName );
@@ -360,7 +360,7 @@ void MdlError( char const *fmt, ... )
 
 		for (int i=0; i<ARRAYSIZE(knownExtensions); i++)
 		{
-			strcpy( fileName, baseName);
+			V_strcpy( fileName, baseName);
 			strcat( fileName, knownExtensions[i] );
 
 			// really need filesystem concept here
@@ -534,7 +534,7 @@ float verify_atof( const char *token )
 //-----------------------------------------------------------------------------
 static void AppendKeyValueText( CUtlVector< char > *pKeyValue, const char *pString )
 {
-	int nLen = strlen(pString);
+	int nLen = V_strlen(pString);
 	int nFirst = pKeyValue->AddMultipleToTail( nLen );
 	memcpy( pKeyValue->Base() + nFirst, pString, nLen );
 }
@@ -569,22 +569,22 @@ void Option_KeyValues( CUtlVector< char > *pKeyValue );
 //-----------------------------------------------------------------------------
 int lookupControl( char *string )
 {
-	if (stricmp(string,"X")==0) return STUDIO_X;
-	if (stricmp(string,"Y")==0) return STUDIO_Y;
-	if (stricmp(string,"Z")==0) return STUDIO_Z;
-	if (stricmp(string,"XR")==0) return STUDIO_XR;
-	if (stricmp(string,"YR")==0) return STUDIO_YR;
-	if (stricmp(string,"ZR")==0) return STUDIO_ZR;
+	if (V_stricmp(string,"X")==0) return STUDIO_X;
+	if (V_stricmp(string,"Y")==0) return STUDIO_Y;
+	if (V_stricmp(string,"Z")==0) return STUDIO_Z;
+	if (V_stricmp(string,"XR")==0) return STUDIO_XR;
+	if (V_stricmp(string,"YR")==0) return STUDIO_YR;
+	if (V_stricmp(string,"ZR")==0) return STUDIO_ZR;
 
-	if (stricmp(string,"LX")==0) return STUDIO_LX;
-	if (stricmp(string,"LY")==0) return STUDIO_LY;
-	if (stricmp(string,"LZ")==0) return STUDIO_LZ;
-	if (stricmp(string,"LXR")==0) return STUDIO_LXR;
-	if (stricmp(string,"LYR")==0) return STUDIO_LYR;
-	if (stricmp(string,"LZR")==0) return STUDIO_LZR;
+	if (V_stricmp(string,"LX")==0) return STUDIO_LX;
+	if (V_stricmp(string,"LY")==0) return STUDIO_LY;
+	if (V_stricmp(string,"LZ")==0) return STUDIO_LZ;
+	if (V_stricmp(string,"LXR")==0) return STUDIO_LXR;
+	if (V_stricmp(string,"LYR")==0) return STUDIO_LYR;
+	if (V_stricmp(string,"LZR")==0) return STUDIO_LZR;
 
-	if (stricmp(string,"LM")==0) return STUDIO_LINEAR;
-	if (stricmp(string,"LQ")==0) return STUDIO_QUADRATIC_MOTION;
+	if (V_stricmp(string,"LM")==0) return STUDIO_LINEAR;
+	if (V_stricmp(string,"LQ")==0) return STUDIO_QUADRATIC_MOTION;
 
 	return -1;
 }
@@ -598,12 +598,12 @@ int LookupPoseParameter( char *name )
 	int i;
 	for ( i = 0; i < g_numposeparameters; i++)
 	{
-		if (!stricmp( name, g_pose[i].name))
+		if (!V_stricmp( name, g_pose[i].name))
 		{
 			return i;
 		}
 	}
-	strcpyn( g_pose[i].name, name );
+	V_V_strcpy_safe( g_pose[i].name, name );
 	g_numposeparameters = i + 1;
 
 	if (g_numposeparameters > MAXSTUDIOPOSEPARAM)
@@ -629,7 +629,7 @@ void Cmd_PoseParameter( )
 
 	// name
 	GetToken (false);
-	strcpyn( g_pose[i].name, token );
+	V_V_strcpy_safe( g_pose[i].name, token );
 
 	if (TokenAvailable())
 	{
@@ -649,12 +649,12 @@ void Cmd_PoseParameter( )
 	{
 		GetToken (false);
 
-		if (!stricmp( token, "wrap" ))
+		if (!V_stricmp( token, "wrap" ))
 		{
 			g_pose[i].flags |= STUDIO_LOOPING;
 			g_pose[i].loop = g_pose[i].max - g_pose[i].min;
 		}
-		else if (!stricmp( token, "loop" ))
+		else if (!V_stricmp( token, "loop" ))
 		{
 			g_pose[i].flags |= STUDIO_LOOPING;
 			GetToken (false);
@@ -671,7 +671,7 @@ char *stristr( const char *string, const char *string2 )
 {
 	int c, len;
 	c = tolower( *string2 );
-	len = strlen( string2 );
+	len = V_strlen( string2 );
 
 	while (string) {
 		for (; *string && tolower( *string ) != c; string++);
@@ -700,7 +700,7 @@ int lookup_texture( char *texturename, int maxlen )
 
 	for (i = 0; i < g_numtextures; i++) 
 	{
-		if (stricmp( g_texture[i].name, texturename ) == 0) 
+		if (V_stricmp( g_texture[i].name, texturename ) == 0) 
 		{
 			return i;
 		}
@@ -710,7 +710,7 @@ int lookup_texture( char *texturename, int maxlen )
 		MdlError("Too many materials used, max %d\n", ( int )MAXSTUDIOSKINS );
 
 //	Msg( "texture %d = %s\n", i, texturename );
-	strcpyn( g_texture[i].name, texturename );
+	V_V_strcpy_safe( g_texture[i].name, texturename );
 
 	g_texture[i].material = -1;
 	/*
@@ -735,17 +735,17 @@ void Cmd_RenameMaterial()
 	char to[256];
 
 	GetToken( false );
-	strcpy( from, token );
+	V_strcpy( from, token );
 
 	GetToken( false );
-	strcpy( to, token );
+	V_strcpy( to, token );
 
 	int i;
 	for (i = 0; i < g_numtextures; i++) 
 	{
-		if (stricmp( g_texture[i].name, from ) == 0) 
+		if (V_stricmp( g_texture[i].name, from ) == 0) 
 		{
-			strcpy( g_texture[i].name, to );
+			V_strcpy( g_texture[i].name, to );
 			return;
 		}
 	}
@@ -811,10 +811,10 @@ void SetSkinValues()
 		char szName[256];
 
 		// strip down till it finds "models"
-		strcpyn(szName, fullpath);
+		V_V_strcpy_safe(szName, fullpath);
 		while (szName[0] != '\0' && strnicmp("models", szName, 6) != 0)
 		{
-			strcpy(&szName[0], &szName[1]);
+			V_strcpy(&szName[0], &szName[1]);
 		}
 		if (szName[0] != '\0')
 		{
@@ -829,7 +829,7 @@ void SetSkinValues()
 			//				strcat( szName, g_pPlatformName );
 			//				strcat( szName, "/" );	
 			//			}
-			strcpy(szName, "models/");
+			V_strcpy(szName, "models/");
 			strcat(szName, outname);
 			Q_StripExtension(szName, szName, sizeof(szName));
 			strcat(szName, "/");
@@ -888,7 +888,7 @@ int LookupXNode( char *name )
 	int i;
 	for ( i = 1; i <= g_numxnodes; i++)
 	{
-		if (stricmp( name, g_xnodename[i] ) == 0)
+		if (V_stricmp( name, g_xnodename[i] ) == 0)
 		{
 			return i;
 		}
@@ -965,13 +965,13 @@ int Grab_Nodes( s_node_t *pnodes )
 		{
 			// check for duplicated bones
 			/*
-			if (strlen(pnodes[index].name) != 0)
+			if (V_strlen(pnodes[index].name) != 0)
 			{
 				MdlError( "bone \"%s\" exists more than once\n", name );
 			}
 			*/
 			
-			strcpyn( pnodes[index].name, name );
+			V_V_strcpy_safe( pnodes[index].name, name );
 			pnodes[index].parent = parent;
 			if (index > numbones)
 			{
@@ -1111,25 +1111,25 @@ void Option_Studio(s_model_t* pmodel)
 	while (TokenAvailable())
 	{
 		GetToken(false);
-		if (stricmp("reverse", token) == 0)
+		if (V_stricmp("reverse", token) == 0)
 		{
 			flip_triangles = 0;
 		}
-		else if (stricmp("scale", token) == 0)
+		else if (V_stricmp("scale", token) == 0)
 		{
 			GetToken(false);
 			pmodel->scale = g_currentscale = verify_atof(token);
 		}
-		else if (stricmp("faces", token) == 0)
+		else if (V_stricmp("faces", token) == 0)
 		{
 			GetToken(false);
 			GetToken(false);
 		}
-		else if (stricmp("bias", token) == 0)
+		else if (V_stricmp("bias", token) == 0)
 		{
 			GetToken(false);
 		}
-		else if (stricmp("{", token) == 0)
+		else if (V_stricmp("{", token) == 0)
 		{
 			UnGetToken();
 			break;
@@ -1162,7 +1162,7 @@ int Option_Blank()
 
 	g_bodypart[g_numbodyparts].pmodel[g_bodypart[g_numbodyparts].nummodels] = g_model[g_nummodels];
 
-	strcpyn(g_model[g_nummodels]->name, "blank");
+	V_V_strcpy_safe(g_model[g_nummodels]->name, "blank");
 
 	g_bodypart[g_numbodyparts].nummodels++;
 	g_nummodels++;
@@ -1185,7 +1185,7 @@ void Cmd_Bodygroup()
 	else {
 		g_bodypart[g_numbodyparts].base = g_bodypart[g_numbodyparts - 1].base * g_bodypart[g_numbodyparts - 1].nummodels;
 	}
-	strcpyn(g_bodypart[g_numbodyparts].name, token);
+	V_V_strcpy_safe(g_bodypart[g_numbodyparts].name, token);
 
 	do
 	{
@@ -1196,7 +1196,7 @@ void Cmd_Bodygroup()
 			is_started = 1;
 		else if (token[0] == '}')
 			break;
-		else if (stricmp("studio", token) == 0)
+		else if (V_stricmp("studio", token) == 0)
 		{
 			g_model[g_nummodels] = (s_model_t*)kalloc(1, sizeof(s_model_t));
 			g_bodypart[g_numbodyparts].pmodel[g_bodypart[g_numbodyparts].nummodels] = g_model[g_nummodels];
@@ -1205,7 +1205,7 @@ void Cmd_Bodygroup()
 			Option_Studio(g_model[g_nummodels]);
 			g_nummodels++;
 		}
-		else if (stricmp("blank", token) == 0)
+		else if (V_stricmp("blank", token) == 0)
 			Option_Blank();
 		else
 		{
@@ -1233,7 +1233,7 @@ void Cmd_Body()
 	else {
 		g_bodypart[g_numbodyparts].base = g_bodypart[g_numbodyparts - 1].base * g_bodypart[g_numbodyparts - 1].nummodels;
 	}
-	strcpyn(g_bodypart[g_numbodyparts].name, token);
+	V_V_strcpy_safe(g_bodypart[g_numbodyparts].name, token);
 
 	g_model[g_nummodels] = (s_model_t*)kalloc(1, sizeof(s_model_t));
 	g_bodypart[g_numbodyparts].pmodel[g_bodypart[g_numbodyparts].nummodels] = g_model[g_nummodels];
@@ -1280,7 +1280,7 @@ void Grab_Animation(s_source_t* psource)
 		}
 		else if (sscanf(g_szLine, "%1023s %d", cmd, &index))
 		{
-			if (stricmp(cmd, "time") == 0)
+			if (V_stricmp(cmd, "time") == 0)
 			{
 				t = index;
 				if (psource->startframe == -1)
@@ -1316,7 +1316,7 @@ void Grab_Animation(s_source_t* psource)
 					// MdlError( "%s has duplicated frame %d\n", psource->filename, t );
 				}
 			}
-			else if (stricmp(cmd, "end") == 0)
+			else if (V_stricmp(cmd, "end") == 0)
 			{
 				psource->numframes = psource->endframe - psource->startframe + 1;
 
@@ -1356,7 +1356,7 @@ int Option_Activity(s_sequence_t* psequence)
 	found = false;
 
 	GetToken(false);
-	strcpy(psequence->activityname, token);
+	V_strcpy(psequence->activityname, token);
 
 	GetToken(false);
 	psequence->actweight = verify_atoi(token);
@@ -1377,7 +1377,7 @@ int Option_Event(s_sequence_t* psequence)
 
 	GetToken(false);
 
-	strcpy(psequence->event[psequence->numevents].eventname, token);
+	V_strcpy(psequence->event[psequence->numevents].eventname, token);
 
 	GetToken(false);
 	psequence->event[psequence->numevents].frame = verify_atoi(token);
@@ -1391,7 +1391,7 @@ int Option_Event(s_sequence_t* psequence)
 		if (token[0] == '}') // opps, hit the end
 			return 1;
 		// found an option
-		strcpyn(psequence->event[psequence->numevents - 1].options, token);
+		V_V_strcpy_safe(psequence->event[psequence->numevents - 1].options, token);
 	}
 
 	return 0;
@@ -1409,7 +1409,7 @@ void Option_IKRule( s_ikrule_t *pRule )
 	int i;
 	for ( i = 0; i < g_numikchains; i++)
 	{
-		if (stricmp( token, g_ikchain[i].name ) == 0)
+		if (V_stricmp( token, g_ikchain[i].name ) == 0)
 		{
 			break;
 		}
@@ -1424,15 +1424,15 @@ void Option_IKRule( s_ikrule_t *pRule )
 
 	// type
 	GetToken( false );
-	if (stricmp( token, "touch" ) == 0)
+	if (V_stricmp( token, "touch" ) == 0)
 	{
 		pRule->type = IK_SELF;
 
 		// bone
 		GetToken( false );
-		strcpyn( pRule->bonename, token );
+		V_V_strcpy_safe( pRule->bonename, token );
 	}
-	else if (stricmp( token, "footstep" ) == 0)
+	else if (V_stricmp( token, "footstep" ) == 0)
 	{
 		pRule->type = IK_GROUND;
 
@@ -1440,19 +1440,19 @@ void Option_IKRule( s_ikrule_t *pRule )
 		pRule->floor = g_ikchain[pRule->chain].floor;
 		pRule->radius = g_ikchain[pRule->chain].radius;
 	}
-	else if (stricmp( token, "attachment" ) == 0)
+	else if (V_stricmp( token, "attachment" ) == 0)
 	{
 		pRule->type = IK_ATTACHMENT;
 
 		// name of attachment
 		GetToken( false );
-		strcpyn( pRule->attachment, token );
+		V_V_strcpy_safe( pRule->attachment, token );
 	}
-	else if (stricmp( token, "release" ) == 0)
+	else if (V_stricmp( token, "release" ) == 0)
 	{
 		pRule->type = IK_RELEASE;
 	}
-	else if (stricmp( token, "unlatch" ) == 0)
+	else if (V_stricmp( token, "unlatch" ) == 0)
 	{
 		pRule->type = IK_UNLATCH;
 	}
@@ -1462,18 +1462,18 @@ void Option_IKRule( s_ikrule_t *pRule )
 	while (TokenAvailable())
 	{
 		GetToken( false );
-		if (stricmp( token, "height" ) == 0)
+		if (V_stricmp( token, "height" ) == 0)
 		{
 			GetToken( false );
 			pRule->height = verify_atof( token );
 		}
-		else if (stricmp( token, "target" ) == 0)
+		else if (V_stricmp( token, "target" ) == 0)
 		{
 			// slot
 			GetToken( false );
 			pRule->slot = verify_atoi( token );
 		}
-		else if (stricmp( token, "range" ) == 0)
+		else if (V_stricmp( token, "range" ) == 0)
 		{
 			// ramp
 			GetToken( false );
@@ -1500,37 +1500,37 @@ void Option_IKRule( s_ikrule_t *pRule )
 			else
 				pRule->end = verify_atoi( token );
 		}
-		else if (stricmp( token, "floor" ) == 0)
+		else if (V_stricmp( token, "floor" ) == 0)
 		{
 			GetToken( false );
 			pRule->floor = verify_atof( token );
 		}
-		else if (stricmp( token, "pad" ) == 0)
+		else if (V_stricmp( token, "pad" ) == 0)
 		{
 			GetToken( false );
 			pRule->radius = verify_atof( token ) / 2.0f;
 		}
-		else if (stricmp( token, "radius" ) == 0)
+		else if (V_stricmp( token, "radius" ) == 0)
 		{
 			GetToken( false );
 			pRule->radius = verify_atof( token );
 		}
-		else if (stricmp( token, "contact" ) == 0)
+		else if (V_stricmp( token, "contact" ) == 0)
 		{
 			GetToken( false );
 			pRule->contact = verify_atoi( token );
 		}
-		else if (stricmp( token, "usesequence" ) == 0)
+		else if (V_stricmp( token, "usesequence" ) == 0)
 		{
 			pRule->usesequence = true;
 			pRule->usesource = false;
 		}
-		else if (stricmp( token, "usesource" ) == 0)
+		else if (V_stricmp( token, "usesource" ) == 0)
 		{
 			pRule->usesequence = false;
 			pRule->usesource = true;
 		}
-		else if (stricmp( token, "fakeorigin" ) == 0)
+		else if (V_stricmp( token, "fakeorigin" ) == 0)
 		{
 			GetToken( false );
 			pRule->pos.x = verify_atof( token );
@@ -1541,7 +1541,7 @@ void Option_IKRule( s_ikrule_t *pRule )
 
 			pRule->bone = -1;
 		}
-		else if (stricmp( token, "fakerotate" ) == 0)
+		else if (V_stricmp( token, "fakerotate" ) == 0)
 		{
 			QAngle ang;
 
@@ -1556,9 +1556,9 @@ void Option_IKRule( s_ikrule_t *pRule )
 
 			pRule->bone = -1;
 		}
-		else if (stricmp( token, "bone" ) == 0)
+		else if (V_stricmp( token, "bone" ) == 0)
 		{
-			strcpy( pRule->bonename, token );
+			V_strcpy( pRule->bonename, token );
 		}
 		else
 		{
@@ -1599,37 +1599,37 @@ void Cmd_UpAxis(void)
 	// (specified by the up direction) to a z up space
 	// Note: x, -x, -y are untested
 	GetToken(false);
-	if (!stricmp(token, "x"))
+	if (!V_stricmp(token, "x"))
 	{
 		// rotate 90 degrees around y to move x into z
 		g_defaultrotation.x = 0.0f;
 		g_defaultrotation.y = M_PI / 2.0f;
 	}
-	else if (!stricmp(token, "-x"))
+	else if (!V_stricmp(token, "-x"))
 	{
 		// untested
 		g_defaultrotation.x = 0.0f;
 		g_defaultrotation.y = -M_PI / 2.0f;
 	}
-	else if (!stricmp(token, "y"))
+	else if (!V_stricmp(token, "y"))
 	{
 		// rotate 90 degrees around x to move y into z
 		g_defaultrotation.x = M_PI / 2.0f;
 		g_defaultrotation.y = 0.0f;
 	}
-	else if (!stricmp(token, "-y"))
+	else if (!V_stricmp(token, "-y"))
 	{
 		// untested
 		g_defaultrotation.x = -M_PI / 2.0f;
 		g_defaultrotation.y = 0.0f;
 	}
-	else if (!stricmp(token, "z"))
+	else if (!V_stricmp(token, "z"))
 	{
 		// there's still a built in 90 degree Z rotation :(
 		g_defaultrotation.x = 0.0f;
 		g_defaultrotation.y = 0.0f;
 	}
-	else if (!stricmp(token, "-z"))
+	else if (!V_stricmp(token, "-z"))
 	{
 		// there's still a built in 90 degree Z rotation :(
 		g_defaultrotation.x = 0.0f;
@@ -1699,33 +1699,33 @@ static s_source_t* FindCachedSource(char const* name, char const* xext)
 	if (xext[0])
 	{
 		// we know what extension is necessary. . look for it.
-		sprintf(g_szFilename, "%s%s.%s", cddir[numdirs], name, xext);
+		V_sprintf_safe(g_szFilename, "%s%s.%s", cddir[numdirs], name, xext);
 		for (i = 0; i < g_numsources; i++)
 		{
-			if (stricmp(g_szFilename, g_source[i]->filename) == 0)
+			if (V_stricmp(g_szFilename, g_source[i]->filename) == 0)
 				return g_source[i];
 		}
 	}
 	else
 	{
 		// we don't know what extension to use, so look for all of 'em.
-		sprintf(g_szFilename, "%s%s.vrm", cddir[numdirs], name);
+		V_sprintf_safe(g_szFilename, "%s%s.vrm", cddir[numdirs], name);
 		for (i = 0; i < g_numsources; i++)
 		{
-			if (stricmp(g_szFilename, g_source[i]->filename) == 0)
+			if (V_stricmp(g_szFilename, g_source[i]->filename) == 0)
 				return g_source[i];
 		}
-		sprintf(g_szFilename, "%s%s.smd", cddir[numdirs], name);
+		V_sprintf_safe(g_szFilename, "%s%s.smd", cddir[numdirs], name);
 		for (i = 0; i < g_numsources; i++)
 		{
-			if (stricmp(g_szFilename, g_source[i]->filename) == 0)
+			if (V_stricmp(g_szFilename, g_source[i]->filename) == 0)
 				return g_source[i];
 		}
 		/*
-		sprintf (g_szFilename, "%s%s.vta", cddir[numdirs], name );
+		V_sprintf_safe (g_szFilename, "%s%s.vta", cddir[numdirs], name );
 		for (i = 0; i < g_numsources; i++)
 		{
-			if (stricmp( g_szFilename, g_source[i]->filename ) == 0)
+			if (V_stricmp( g_szFilename, g_source[i]->filename ) == 0)
 				return g_source[i];
 		}
 		*/
@@ -1745,17 +1745,17 @@ s_source_t* Load_Source(char const* name, const char* ext, bool reverse, bool is
 		TokenError("Load_Source( %s ) - overflowed g_numsources.", name);
 
 	Assert(name);
-	int namelen = strlen(name) + 1;
+	int namelen = V_strlen(name) + 1;
 	char* pTempName = (char*)_alloca(namelen);
 	char xext[32];
 	int result = false;
 
-	strcpy(pTempName, name);
+	V_strncpy(pTempName, name, namelen);
 	Q_ExtractFileExtension(pTempName, xext, sizeof(xext));
 
 	if (xext[0] == '\0')
 	{
-		strcpyn(xext, ext);
+		V_V_strcpy_safe(xext, ext);
 	}
 	else
 	{
@@ -1771,48 +1771,47 @@ s_source_t* Load_Source(char const* name, const char* ext, bool reverse, bool is
 	}
 
 	g_source[g_numsources] = (s_source_t*)kalloc(1, sizeof(s_source_t));
-	strcpyn(g_source[g_numsources]->filename, g_szFilename);
-
+	V_V_strcpy_safe(g_source[g_numsources]->filename, g_szFilename); // HERE IS THE CRASH!!
 
 	if (isActiveModel)
 	{
 		g_source[g_numsources]->isActiveModel = true;
 	}
 
-	if (xext[0] == '\0' || stricmp(xext, "vrm") == 0)
+	if (xext[0] == '\0' || V_stricmp(xext, "vrm") == 0)
 	{
-		sprintf(g_szFilename, "%s%s.vrm", cddir[numdirs], pTempName);
-		strcpyn(g_source[g_numsources]->filename, g_szFilename);
+		V_sprintf_safe(g_szFilename, "%s%s.vrm", cddir[numdirs], pTempName);
+		V_V_strcpy_safe(g_source[g_numsources]->filename, g_szFilename);
 		result = Load_VRM(g_source[g_numsources]);
 	}
-	if ((!result && xext[0] == '\0') || stricmp(xext, "smd") == 0)
+	if ((!result && xext[0] == '\0') || V_stricmp(xext, "smd") == 0)
 	{
-		sprintf(g_szFilename, "%s%s.smd", cddir[numdirs], pTempName);
-		strcpyn(g_source[g_numsources]->filename, g_szFilename);
+		V_sprintf_safe(g_szFilename, "%s%s.smd", cddir[numdirs], pTempName);
+		V_V_strcpy_safe(g_source[g_numsources]->filename, g_szFilename);
 		result = Load_SMD(g_source[g_numsources]);
 	}
-	if ((!result && xext[0] == '\0') || stricmp(xext, "sma") == 0)
+	if ((!result && xext[0] == '\0') || V_stricmp(xext, "sma") == 0)
 	{
-		sprintf(g_szFilename, "%s%s.sma", cddir[numdirs], pTempName);
-		strcpyn(g_source[g_numsources]->filename, g_szFilename);
+		V_sprintf_safe(g_szFilename, "%s%s.sma", cddir[numdirs], pTempName);
+		V_V_strcpy_safe(g_source[g_numsources]->filename, g_szFilename);
 		result = Load_SMD(g_source[g_numsources]);
 	}
-	if ((!result && xext[0] == '\0') || stricmp(xext, "phys") == 0)
+	if ((!result && xext[0] == '\0') || V_stricmp(xext, "phys") == 0)
 	{
-		sprintf(g_szFilename, "%s%s.phys", cddir[numdirs], pTempName);
-		strcpyn(g_source[g_numsources]->filename, g_szFilename);
+		V_sprintf_safe(g_szFilename, "%s%s.phys", cddir[numdirs], pTempName);
+		V_V_strcpy_safe(g_source[g_numsources]->filename, g_szFilename);
 		result = Load_SMD(g_source[g_numsources]);
 	}
-	if ((!result && xext[0] == '\0') || stricmp(xext, "vta") == 0)
+	if ((!result && xext[0] == '\0') || V_stricmp(xext, "vta") == 0)
 	{
-		sprintf(g_szFilename, "%s%s.vta", cddir[numdirs], pTempName);
-		strcpyn(g_source[g_numsources]->filename, g_szFilename);
+		V_sprintf_safe(g_szFilename, "%s%s.vta", cddir[numdirs], pTempName);
+		V_V_strcpy_safe(g_source[g_numsources]->filename, g_szFilename);
 		result = Load_VTA(g_source[g_numsources]);
 	}
-	if ((!result && xext[0] == '\0') || stricmp(xext, "obj") == 0)
+	if ((!result && xext[0] == '\0') || V_stricmp(xext, "obj") == 0)
 	{
-		sprintf(g_szFilename, "%s%s.obj", cddir[numdirs], pTempName);
-		strcpyn(g_source[g_numsources]->filename, g_szFilename);
+		V_sprintf_safe(g_szFilename, "%s%s.obj", cddir[numdirs], pTempName);
+		V_V_strcpy_safe(g_source[g_numsources]->filename, g_szFilename);
 		result = Load_OBJ(g_source[g_numsources]);
 	}
 
@@ -1844,7 +1843,7 @@ s_sequence_t *LookupSequence( char *name )
 	int i;
 	for (i = 0; i < g_sequence.Count(); i++)
 	{
-		if (stricmp( g_sequence[i].name, token ) == 0)
+		if (V_stricmp( g_sequence[i].name, token ) == 0)
 		{
 			return &g_sequence[i];
 		}
@@ -1861,7 +1860,7 @@ s_animation_t* LookupAnimation(char* name)
 	int i;
 	for (i = 0; i < g_numani; i++)
 	{
-		if (stricmp(g_panimation[i]->name, token) == 0)
+		if (V_stricmp(g_panimation[i]->name, token) == 0)
 		{
 			return g_panimation[i];
 		}
@@ -1887,7 +1886,7 @@ int ParseCmdlistToken( int &numcmds, s_animcmd_t *cmds )
 		return false;
 	}
 	s_animcmd_t *pcmd = &cmds[numcmds];
-	if (stricmp("fixuploop", token ) == 0)
+	if (V_stricmp("fixuploop", token ) == 0)
 	{
 		pcmd->cmd = CMD_FIXUP;
 
@@ -1903,7 +1902,7 @@ int ParseCmdlistToken( int &numcmds, s_animcmd_t *cmds )
 		int i;
 		for ( i = 1; i < g_numweightlist; i++)
 		{
-			if (stricmp( g_weightlist[i].name, token ) == 0)
+			if (V_stricmp( g_weightlist[i].name, token ) == 0)
 			{
 				break;
 			}
@@ -1915,7 +1914,7 @@ int ParseCmdlistToken( int &numcmds, s_animcmd_t *cmds )
 		pcmd->cmd = CMD_WEIGHTS;
 		pcmd->u.weightlist.index = i;
 	}
-	else if (stricmp("subtract", token ) == 0)
+	else if (V_stricmp("subtract", token ) == 0)
 	{
 		pcmd->cmd = CMD_SUBTRACT;
 
@@ -1934,7 +1933,7 @@ int ParseCmdlistToken( int &numcmds, s_animcmd_t *cmds )
 
 		pcmd->u.subtract.flags |= STUDIO_POST;
 	}
-	else if (stricmp("presubtract", token ) == 0) // FIXME: rename this to something better
+	else if (V_stricmp("presubtract", token ) == 0) // FIXME: rename this to something better
 	{
 		pcmd->cmd = CMD_SUBTRACT;
 
@@ -1951,7 +1950,7 @@ int ParseCmdlistToken( int &numcmds, s_animcmd_t *cmds )
 		GetToken( false );
 		pcmd->u.subtract.frame = verify_atoi( token );
 	}
-	else if (stricmp( "alignto", token ) == 0)
+	else if (V_stricmp( "alignto", token ) == 0)
 	{
 		pcmd->cmd = CMD_AO;
 
@@ -1969,7 +1968,7 @@ int ParseCmdlistToken( int &numcmds, s_animcmd_t *cmds )
 		pcmd->u.ao.srcframe = 0;
 		pcmd->u.ao.destframe = 0;
 	}
-	else if (stricmp( "align", token ) == 0)
+	else if (V_stricmp( "align", token ) == 0)
 	{
 		pcmd->cmd = CMD_AO;
 
@@ -2005,7 +2004,7 @@ int ParseCmdlistToken( int &numcmds, s_animcmd_t *cmds )
 		GetToken( false );
 		pcmd->u.ao.destframe = verify_atoi( token );
 	}
-	else if (stricmp( "alignboneto", token ) == 0)
+	else if (V_stricmp( "alignboneto", token ) == 0)
 	{
 		pcmd->cmd = CMD_AO;
 
@@ -2024,7 +2023,7 @@ int ParseCmdlistToken( int &numcmds, s_animcmd_t *cmds )
 		pcmd->u.ao.srcframe = 0;
 		pcmd->u.ao.destframe = 0;
 	}
-	else if (stricmp( "match", token ) == 0)
+	else if (V_stricmp( "match", token ) == 0)
 	{
 		pcmd->cmd = CMD_MATCH;
 
@@ -2038,7 +2037,7 @@ int ParseCmdlistToken( int &numcmds, s_animcmd_t *cmds )
 
 		pcmd->u.match.ref = extanim;
 	}
-	else if (stricmp( "matchblend", token ) == 0)
+	else if (V_stricmp( "matchblend", token ) == 0)
 	{
 		pcmd->cmd = CMD_MATCHBLEND;
 
@@ -2069,7 +2068,7 @@ int ParseCmdlistToken( int &numcmds, s_animcmd_t *cmds )
 		pcmd->u.match.destpost = verify_atoi( token );
 
 	}
-	else if (stricmp( "worldspaceblend", token ) == 0)
+	else if (V_stricmp( "worldspaceblend", token ) == 0)
 	{
 		pcmd->cmd = CMD_WORLDSPACEBLEND;
 
@@ -2085,7 +2084,7 @@ int ParseCmdlistToken( int &numcmds, s_animcmd_t *cmds )
 		pcmd->u.world.startframe = 0;
 		pcmd->u.world.loops = false;
 	}
-	else if (stricmp( "worldspaceblendloop", token ) == 0)
+	else if (V_stricmp( "worldspaceblendloop", token ) == 0)
 	{
 		pcmd->cmd = CMD_WORLDSPACEBLEND;
 
@@ -2104,14 +2103,14 @@ int ParseCmdlistToken( int &numcmds, s_animcmd_t *cmds )
 
 		pcmd->u.world.loops = true;
 	}
-	else if (stricmp( "rotateto", token ) == 0)
+	else if (V_stricmp( "rotateto", token ) == 0)
 	{
 		pcmd->cmd = CMD_ANGLE;
 
 		GetToken( false );
 		pcmd->u.angle.angle = verify_atof( token );
 	}
-	else if (stricmp( "ikrule", token ) == 0)
+	else if (V_stricmp( "ikrule", token ) == 0)
 	{
 		pcmd->cmd = CMD_IKRULE;
 
@@ -2119,7 +2118,7 @@ int ParseCmdlistToken( int &numcmds, s_animcmd_t *cmds )
 
 		Option_IKRule( pcmd->u.ikrule.pRule );
 	}
-	else if (stricmp( "ikfixup", token ) == 0)
+	else if (V_stricmp( "ikfixup", token ) == 0)
 	{
 		pcmd->cmd = CMD_IKFIXUP;
 
@@ -2127,7 +2126,7 @@ int ParseCmdlistToken( int &numcmds, s_animcmd_t *cmds )
 
 		Option_IKRule( pcmd->u.ikrule.pRule );
 	}
-	else if (stricmp( "walkframe", token ) == 0)
+	else if (V_stricmp( "walkframe", token ) == 0)
 	{
 		pcmd->cmd = CMD_MOTION;
 
@@ -2163,7 +2162,7 @@ int ParseCmdlistToken( int &numcmds, s_animcmd_t *cmds )
 		pcmd->u.motion.zr = verify_atof( token );
 		*/
 	}
-	else if (stricmp( "walkalignto", token ) == 0)
+	else if (V_stricmp( "walkalignto", token ) == 0)
 	{
 		pcmd->cmd = CMD_REFMOTION;
 
@@ -2211,7 +2210,7 @@ int ParseCmdlistToken( int &numcmds, s_animcmd_t *cmds )
 		pcmd->u.motion.zr = verify_atof( token );
 		*/
 	}
-	else if (stricmp( "walkalign", token ) == 0)
+	else if (V_stricmp( "walkalign", token ) == 0)
 	{
 		pcmd->cmd = CMD_REFMOTION;
 
@@ -2255,7 +2254,7 @@ int ParseCmdlistToken( int &numcmds, s_animcmd_t *cmds )
 		GetToken( false );
 		pcmd->u.motion.iSrcFrame = verify_atoi( token );
 	}
-	else if (stricmp("derivative", token ) == 0)
+	else if (V_stricmp("derivative", token ) == 0)
 	{
 		pcmd->cmd = CMD_DERIVATIVE;
 
@@ -2263,22 +2262,22 @@ int ParseCmdlistToken( int &numcmds, s_animcmd_t *cmds )
 		GetToken( false );
 		pcmd->u.derivative.scale = verify_atof( token );
 	}
-	else if (stricmp("noanimation", token ) == 0)
+	else if (V_stricmp("noanimation", token ) == 0)
 	{
 		pcmd->cmd = CMD_NOANIMATION;
 	}
-	else if (stricmp("lineardelta", token ) == 0)
+	else if (V_stricmp("lineardelta", token ) == 0)
 	{
 		pcmd->cmd = CMD_LINEARDELTA;
 		pcmd->u.linear.flags |= STUDIO_AL_POST;
 	}
-	else if (stricmp("splinedelta", token ) == 0)
+	else if (V_stricmp("splinedelta", token ) == 0)
 	{
 		pcmd->cmd = CMD_LINEARDELTA;
 		pcmd->u.linear.flags |= STUDIO_AL_POST;
 		pcmd->u.linear.flags |= STUDIO_AL_SPLINE;
 	}
-	else if (stricmp("compress", token ) == 0)
+	else if (V_stricmp("compress", token ) == 0)
 	{
 		pcmd->cmd = CMD_COMPRESS;
 
@@ -2286,7 +2285,7 @@ int ParseCmdlistToken( int &numcmds, s_animcmd_t *cmds )
 		GetToken( false );
 		pcmd->u.compress.frames = verify_atoi( token );
 	}
-	else if (stricmp("numframes", token ) == 0)
+	else if (V_stricmp("numframes", token ) == 0)
 	{
 		pcmd->cmd = CMD_NUMFRAMES;
 
@@ -2294,7 +2293,7 @@ int ParseCmdlistToken( int &numcmds, s_animcmd_t *cmds )
 		GetToken( false );
 		pcmd->u.compress.frames = verify_atoi( token );
 	}
-	else if (stricmp("counterrotate", token ) == 0)
+	else if (V_stricmp("counterrotate", token ) == 0)
 	{
 		pcmd->cmd = CMD_COUNTERROTATE;
 
@@ -2302,7 +2301,7 @@ int ParseCmdlistToken( int &numcmds, s_animcmd_t *cmds )
 		GetToken( false );
 		pcmd->u.counterrotate.pBonename = strdup( token );
 	}
-	else if (stricmp("counterrotateto", token ) == 0)
+	else if (V_stricmp("counterrotateto", token ) == 0)
 	{
 		pcmd->cmd = CMD_COUNTERROTATE;
 
@@ -2340,11 +2339,11 @@ int ParseCmdlistToken( int &numcmds, s_animcmd_t *cmds )
 //-----------------------------------------------------------------------------
 int ParseAnimationToken( s_animation_t *panim )
 {
-	if (stricmp("if", token ) == 0)
+	if (V_stricmp("if", token ) == 0)
 	{
 		// fixme: add expression evaluation
 		GetToken( false );
-		if (atoi( token ) == 0 && stricmp( token, "true" ) != 0)
+		if (atoi( token ) == 0 && V_stricmp( token, "true" ) != 0)
 		{
 			GetToken(true);
 			if (token[0] == '{')
@@ -2353,11 +2352,11 @@ int ParseAnimationToken( s_animation_t *panim )
 				while (TokenAvailable() && depth > 0)
 				{
 					GetToken( true );
-					if (stricmp("{", token ) == 0)
+					if (V_stricmp("{", token ) == 0)
 					{
 						depth++;
 					}
-					else if (stricmp("}", token ) == 0)
+					else if (V_stricmp("}", token ) == 0)
 					{
 						depth--;
 					}
@@ -2365,7 +2364,7 @@ int ParseAnimationToken( s_animation_t *panim )
 			}
 		}
 	}
-	else if (stricmp("fps", token ) == 0)
+	else if (V_stricmp("fps", token ) == 0)
 	{
 		GetToken( false );
 		panim->fps = verify_atof( token );
@@ -2374,7 +2373,7 @@ int ParseAnimationToken( s_animation_t *panim )
 			TokenError( "ParseAnimationToken:  fps (%f from '%s') <= 0.0\n", panim->fps, token );
 		}
 	}
-	else if (stricmp("origin", token ) == 0)
+	else if (V_stricmp("origin", token ) == 0)
 	{
 		GetToken (false);
 		panim->adjust.x = verify_atof (token);
@@ -2385,13 +2384,13 @@ int ParseAnimationToken( s_animation_t *panim )
 		GetToken (false);
 		panim->adjust.z = verify_atof (token);
 	}
-	else if (stricmp("rotate", token ) == 0)
+	else if (V_stricmp("rotate", token ) == 0)
 	{
 		GetToken( false );
 		// FIXME: broken for Maya
 		panim->rotation.z = DEG2RAD( verify_atof( token ) + 90 );
 	}
-	else if (stricmp("angles", token ) == 0)
+	else if (V_stricmp("angles", token ) == 0)
 	{
 		GetToken( false );
 		panim->rotation.x = DEG2RAD( verify_atof( token ) );
@@ -2400,7 +2399,7 @@ int ParseAnimationToken( s_animation_t *panim )
 		GetToken( false );
 		panim->rotation.z = DEG2RAD( verify_atof( token ) + 90.0);
 	}
-	else if (stricmp("scale", token ) == 0)
+	else if (V_stricmp("scale", token ) == 0)
 	{
 		GetToken( false );
 		panim->scale = verify_atof( token );
@@ -2415,7 +2414,7 @@ int ParseAnimationToken( s_animation_t *panim )
 		panim->looprestart = verify_atoi( token );
 		panim->flags |= STUDIO_LOOPING;
 	}
-	else if (stricmp("fudgeloop", token ) == 0)
+	else if (V_stricmp("fudgeloop", token ) == 0)
 	{
 		panim->fudgeloop = true;
 		panim->flags |= STUDIO_LOOPING;
@@ -2442,15 +2441,15 @@ int ParseAnimationToken( s_animation_t *panim )
 
 		panim->numframes = panim->endframe - panim->startframe + 1;
 	}
-	else if (stricmp("post", token) == 0)
+	else if (V_stricmp("post", token) == 0)
 	{
 		panim->flags |= STUDIO_POST;
 	}
-	else if (stricmp("noautoik", token) == 0)
+	else if (V_stricmp("noautoik", token) == 0)
 	{
 		panim->noAutoIK = true;
 	}
-	else if (stricmp("autoik", token) == 0)
+	else if (V_stricmp("autoik", token) == 0)
 	{
 		panim->noAutoIK = false;
 	}
@@ -2458,14 +2457,14 @@ int ParseAnimationToken( s_animation_t *panim )
 	{
 
 	}
-	else if (stricmp("cmdlist", token) == 0)
+	else if (V_stricmp("cmdlist", token) == 0)
 	{
 		GetToken( false ); // A
 
 		int i;
 		for ( i = 0; i < g_numcmdlists; i++)
 		{
-			if (stricmp( g_cmdlist[i].name, token) == 0)
+			if (V_stricmp( g_cmdlist[i].name, token) == 0)
 			{
 				break;
 			}
@@ -2503,7 +2502,7 @@ void Cmd_Cmdlist()
 
 	// name
 	GetToken(false);
-	strcpyn(g_cmdlist[g_numcmdlists].name, token);
+	V_V_strcpy_safe(g_cmdlist[g_numcmdlists].name, token);
 
 	while (true)
 	{
@@ -2534,11 +2533,11 @@ void Cmd_Cmdlist()
 			}
 			return;
 		}
-		if (stricmp("{", token) == 0)
+		if (V_stricmp("{", token) == 0)
 		{
 			depth++;
 		}
-		else if (stricmp("}", token) == 0)
+		else if (V_stricmp("}", token) == 0)
 		{
 			depth--;
 		}
@@ -2596,12 +2595,12 @@ void Cmd_Animation()
 	g_panimation[g_numani] = (s_animation_t*)kalloc(1, sizeof(s_animation_t));
 	g_panimation[g_numani]->index = g_numani;
 	panim = g_panimation[g_numani];
-	strcpyn(panim->name, token);
+	V_V_strcpy_safe(panim->name, token);
 	g_numani++;
 
 	// filename
 	GetToken(false);
-	strcpyn(panim->filename, token);
+	V_V_strcpy_safe(panim->filename, token);
 
 	// panim->animgroup = g_currentanimgroup;
 
@@ -2659,11 +2658,11 @@ int ParseAnimation(s_animation_t* panim, bool isAppend)
 			}
 			return 1;
 		}
-		if (stricmp("{", token) == 0)
+		if (V_stricmp("{", token) == 0)
 		{
 			depth++;
 		}
-		else if (stricmp("}", token) == 0)
+		else if (V_stricmp("}", token) == 0)
 		{
 			depth--;
 		}
@@ -2704,9 +2703,9 @@ s_animation_t *Cmd_ImpliedAnimation( s_sequence_t *psequence, char *filename )
 	panim->startframe = 0;
 	panim->endframe = MAXSTUDIOANIMFRAMES - 1;
 
-	strcpy( panim->name, "@" );
+	V_strcpy( panim->name, "@" );
 	strcat( panim->name, psequence->name );
-	strcpyn( panim->filename, filename );
+	V_V_strcpy_safe( panim->filename, filename );
 
 	VectorCopy( g_defaultadjust, panim->adjust );
 	panim->scale = 1.0f;
@@ -2812,7 +2811,7 @@ void Cmd_Sequence()
 	memset(pseq, 0, sizeof(s_sequence_t));
 
 	// initialize sequence
-	strcpyn(pseq->name, token);
+	V_V_strcpy_safe(pseq->name, token);
 
 	pseq->actweight = 0;
 	pseq->activityname[0] = '\0';
@@ -2875,26 +2874,26 @@ int ParseSequence( s_sequence_t *pseq, bool isAppend )
 			}
 			return 1;
 		}
-		if (stricmp("{", token ) == 0)
+		if (V_stricmp("{", token ) == 0)
 		{
 			depth++;
 		}
-		else if (stricmp("}", token ) == 0)
+		else if (V_stricmp("}", token ) == 0)
 		{
 			depth--;
 		}
 		/*
-		else if (stricmp("deform", token ) == 0)
+		else if (V_stricmp("deform", token ) == 0)
 		{
 			Option_Deform( pseq );
 		}
 		*/
 
-		else if (stricmp("event", token ) == 0)
+		else if (V_stricmp("event", token ) == 0)
 		{
 			depth -= Option_Event( pseq );
 		}
-		else if (stricmp("activity", token ) == 0)
+		else if (V_stricmp("activity", token ) == 0)
 		{
 			Option_Activity( pseq );
 		}
@@ -2904,18 +2903,18 @@ int ParseSequence( s_sequence_t *pseq, bool isAppend )
 			Option_Activity( pseq );
 		}
 
-		else if (stricmp("snap", token ) == 0)
+		else if (V_stricmp("snap", token ) == 0)
 		{
 			pseq->flags |= STUDIO_SNAP;
 		}
 
-		else if (stricmp("blendwidth", token ) == 0)
+		else if (V_stricmp("blendwidth", token ) == 0)
 		{
 			GetToken( false );
 			pseq->groupsize[0] = verify_atoi( token );
 		}
 
-		else if (stricmp("blend", token ) == 0)
+		else if (V_stricmp("blend", token ) == 0)
 		{
 			i = 0;
 			if (pseq->paramindex[0] != -1)
@@ -2937,7 +2936,7 @@ int ParseSequence( s_sequence_t *pseq, bool isAppend )
 			g_pose[j].max  = max( g_pose[j].max, pseq->paramstart[i] );
 			g_pose[j].max  = max( g_pose[j].max, pseq->paramend[i] );
 		}
-		else if (stricmp("calcblend", token ) == 0)
+		else if (V_stricmp("calcblend", token ) == 0)
 		{
 			i = 0;
 			if (pseq->paramindex[0] != -1)
@@ -2959,7 +2958,7 @@ int ParseSequence( s_sequence_t *pseq, bool isAppend )
 			GetToken( false );
 			pseq->paramcontrol[i] = lookupControl( token );
 		}
-		else if (stricmp("blendref", token ) == 0)
+		else if (V_stricmp("blendref", token ) == 0)
 		{
 			GetToken( false );
 			pseq->paramanim = LookupAnimation( token );
@@ -2968,7 +2967,7 @@ int ParseSequence( s_sequence_t *pseq, bool isAppend )
 				TokenError( "Unknown blendref animation \"%s\"\n", token );
 			}
 		}
-		else if (stricmp("blendcomp", token ) == 0)
+		else if (V_stricmp("blendcomp", token ) == 0)
 		{
 			GetToken( false );
 			pseq->paramcompanim = LookupAnimation( token );
@@ -2977,7 +2976,7 @@ int ParseSequence( s_sequence_t *pseq, bool isAppend )
 				TokenError( "Unknown blendcomp animation \"%s\"\n", token );
 			}
 		}
-		else if (stricmp("blendcenter", token ) == 0)
+		else if (V_stricmp("blendcenter", token ) == 0)
 		{
 			GetToken( false );
 			pseq->paramcenter = LookupAnimation( token );
@@ -2986,19 +2985,19 @@ int ParseSequence( s_sequence_t *pseq, bool isAppend )
 				TokenError( "Unknown blendcenter animation \"%s\"\n", token );
 			}
 		}
-		else if (stricmp("node", token ) == 0)
+		else if (V_stricmp("node", token ) == 0)
 		{
 			GetToken( false );
 			pseq->entrynode = pseq->exitnode = LookupXNode( token );
 		}
-		else if (stricmp("transition", token ) == 0)
+		else if (V_stricmp("transition", token ) == 0)
 		{
 			GetToken( false );
 			pseq->entrynode = LookupXNode( token );
 			GetToken( false );
 			pseq->exitnode = LookupXNode( token );
 		}
-		else if (stricmp("rtransition", token ) == 0)
+		else if (V_stricmp("rtransition", token ) == 0)
 		{
 			GetToken( false );
 			pseq->entrynode = LookupXNode( token );
@@ -3006,61 +3005,61 @@ int ParseSequence( s_sequence_t *pseq, bool isAppend )
 			pseq->exitnode = LookupXNode( token );
 			pseq->nodeflags |= 1;
 		}
-		else if (stricmp("exitphase", token ) == 0)
+		else if (V_stricmp("exitphase", token ) == 0)
 		{
 			GetToken( false );
 			pseq->exitphase = verify_atof( token );
 		}
-		else if (stricmp("delta", token) == 0)
+		else if (V_stricmp("delta", token) == 0)
 		{
 			pseq->flags |= STUDIO_DELTA;
 			pseq->flags |= STUDIO_POST;
 		}
-		else if (stricmp("worldspace", token) == 0)
+		else if (V_stricmp("worldspace", token) == 0)
 		{
 			pseq->flags |= STUDIO_WORLD;
 			pseq->flags |= STUDIO_POST;
 		}
-		else if (stricmp("post", token) == 0) // remove
+		else if (V_stricmp("post", token) == 0) // remove
 		{
 			pseq->flags |= STUDIO_POST; 
 		}
-		else if (stricmp("predelta", token) == 0)
+		else if (V_stricmp("predelta", token) == 0)
 		{
 			pseq->flags |= STUDIO_DELTA;
 		}
-		else if (stricmp("autoplay", token) == 0)
+		else if (V_stricmp("autoplay", token) == 0)
 		{
 			pseq->flags |= STUDIO_AUTOPLAY;
 		}
-		else if (stricmp( "fadein", token ) == 0)
+		else if (V_stricmp( "fadein", token ) == 0)
 		{
 			GetToken( false );
 			pseq->fadeintime = verify_atof( token );
 		}
-		else if (stricmp( "fadeout", token ) == 0)
+		else if (V_stricmp( "fadeout", token ) == 0)
 		{
 			GetToken( false );
 			pseq->fadeouttime = verify_atof( token );
 		}
-		else if (stricmp( "realtime", token ) == 0)
+		else if (V_stricmp( "realtime", token ) == 0)
 		{
 			pseq->flags |= STUDIO_REALTIME;
 		}
-		else if (stricmp( "hidden", token ) == 0)
+		else if (V_stricmp( "hidden", token ) == 0)
 		{
 			pseq->flags |= STUDIO_HIDDEN;
 		}
-		else if (stricmp( "addlayer", token ) == 0)
+		else if (V_stricmp( "addlayer", token ) == 0)
 		{
 			GetToken( false );
-			strcpyn( pseq->autolayer[pseq->numautolayers].name, token );
+			V_V_strcpy_safe( pseq->autolayer[pseq->numautolayers].name, token );
 			pseq->numautolayers++;
 		}
-		else if (stricmp( "iklock", token ) == 0)
+		else if (V_stricmp( "iklock", token ) == 0)
 		{
 			GetToken(false);
-			strcpyn( pseq->iklock[pseq->numiklocks].name, token );
+			V_V_strcpy_safe( pseq->iklock[pseq->numiklocks].name, token );
 
 			GetToken(false);
 			pseq->iklock[pseq->numiklocks].flPosWeight = verify_atof( token );
@@ -3070,16 +3069,16 @@ int ParseSequence( s_sequence_t *pseq, bool isAppend )
 		
 			pseq->numiklocks++;
 		}
-		else if (stricmp( "keyvalues", token ) == 0)
+		else if (V_stricmp( "keyvalues", token ) == 0)
 		{
 			Option_KeyValues( &pseq->KeyValue );
 		}
-		else if (stricmp( "blendlayer", token ) == 0)
+		else if (V_stricmp( "blendlayer", token ) == 0)
 		{
 			pseq->autolayer[pseq->numautolayers].flags = 0;
 
 			GetToken( false );
-			strcpyn( pseq->autolayer[pseq->numautolayers].name, token );
+			V_V_strcpy_safe( pseq->autolayer[pseq->numautolayers].name, token );
 
 			GetToken( false );
 			pseq->autolayer[pseq->numautolayers].start = verify_atoi( token );
@@ -3096,25 +3095,25 @@ int ParseSequence( s_sequence_t *pseq, bool isAppend )
 			while (TokenAvailable( ))
 			{
 				GetToken( false );
-				if (stricmp( "xfade", token ) == 0)
+				if (V_stricmp( "xfade", token ) == 0)
 				{
 					pseq->autolayer[pseq->numautolayers].flags |= STUDIO_AL_XFADE;
 				}
-				else if (stricmp( "spline", token ) == 0)
+				else if (V_stricmp( "spline", token ) == 0)
 				{
 					pseq->autolayer[pseq->numautolayers].flags |= STUDIO_AL_SPLINE;
 				}
-				else if (stricmp( "noblend", token ) == 0)
+				else if (V_stricmp( "noblend", token ) == 0)
 				{
 					pseq->autolayer[pseq->numautolayers].flags |= STUDIO_AL_NOBLEND;
 				}
-				else if (stricmp( "poseparameter", token ) == 0)
+				else if (V_stricmp( "poseparameter", token ) == 0)
 				{
 					pseq->autolayer[pseq->numautolayers].flags |= STUDIO_AL_POSE;
 					GetToken( false );
 					pseq->autolayer[pseq->numautolayers].pose = LookupPoseParameter( token );
 				}
-				else if (stricmp( "local", token ) == 0)
+				else if (V_stricmp( "local", token ) == 0)
 				{
 					pseq->autolayer[pseq->numautolayers].flags |= STUDIO_AL_LOCAL;
 					pseq->flags |= STUDIO_LOCAL;
@@ -3138,7 +3137,7 @@ int ParseSequence( s_sequence_t *pseq, bool isAppend )
 			// first look up an existing animation
 			for (n = 0; n < g_numani; n++)
 			{
-				if (stricmp( token, g_panimation[n]->name ) == 0)
+				if (V_stricmp( token, g_panimation[n]->name ) == 0)
 				{
 					animations[numblends++] = g_panimation[n];
 					break;
@@ -3266,11 +3265,11 @@ int ParseEmpty()
 			}
 			return 1;
 		}
-		if (stricmp("{", token) == 0)
+		if (V_stricmp("{", token) == 0)
 		{
 			depth++;
 		}
-		else if (stricmp("}", token) == 0)
+		else if (V_stricmp("}", token) == 0)
 		{
 			depth--;
 		}
@@ -3404,7 +3403,7 @@ void Cmd_DeclareSequence()
 
 	// initialize sequence
 	GetToken(false);
-	strcpyn(pseq->name, token);
+	V_V_strcpy_safe(pseq->name, token);
 }
 
 
@@ -3427,7 +3426,7 @@ void Cmd_DeclareAnimation(void)
 
 	// initialize animation
 	GetToken(false);
-	strcpyn(panim->name, token);
+	V_V_strcpy_safe(panim->name, token);
 }
 
 
@@ -3470,15 +3469,15 @@ void Option_Weightlist( s_weightlist_t *pweightlist )
 			}
 			return;
 		}
-		if (stricmp("{", token ) == 0)
+		if (V_stricmp("{", token ) == 0)
 		{
 			depth++;
 		}
-		else if (stricmp("}", token ) == 0)
+		else if (V_stricmp("}", token ) == 0)
 		{
 			depth--;
 		}
-		else if (stricmp("posweight", token ) == 0)
+		else if (V_stricmp("posweight", token ) == 0)
 		{
 			i = pweightlist->numbones - 1;
 			if (i < 0)
@@ -3500,7 +3499,7 @@ void Option_Weightlist( s_weightlist_t *pweightlist )
 			{
 				TokenError("Too many bones (%d) in weightlist '%s'\n", i, pweightlist->name );
 			}
-			strcpyn( pweightlist->bonename[i], token );
+			V_V_strcpy_safe( pweightlist->bonename[i], token );
 			GetToken( false );
 			pweightlist->boneweight[i] = verify_atof( token );
 			pweightlist->boneposweight[i] = pweightlist->boneweight[i];
@@ -3531,13 +3530,13 @@ void Cmd_Weightlist( )
 
 	for (i = 1; i < g_numweightlist; i++)
 	{
-		if (stricmp( g_weightlist[i].name, token ) == 0)
+		if (V_stricmp( g_weightlist[i].name, token ) == 0)
 		{
 			TokenError( "Duplicate weightlist '%s'\n", token );
 		}
 	}
 
-	strcpyn( g_weightlist[i].name, token );
+	V_V_strcpy_safe( g_weightlist[i].name, token );
 
 	Option_Weightlist( &g_weightlist[g_numweightlist] );
 
@@ -3567,13 +3566,13 @@ void Option_Eyeball( s_model_t *pmodel )
 
 	// name
 	GetToken (false);
-	strcpyn( eyeball->name, token );
+	V_V_strcpy_safe( eyeball->name, token );
 
 	// bone name
 	GetToken (false);
 	for (i = 0; i < pmodel->source->numbones; i++)
 	{
-		if (stricmp( pmodel->source->localBone[i].name, token ) == 0)
+		if (V_stricmp( pmodel->source->localBone[i].name, token ) == 0)
 		{
 			eyeball->bone = i;
 			break;
@@ -3598,7 +3597,7 @@ void Option_Eyeball( s_model_t *pmodel )
 
 	// mesh material 
 	GetToken (false);
-	strcpyn( szMeshMaterial, token );
+	V_V_strcpy_safe( szMeshMaterial, token );
 	mesh_material = use_texture_as_material( lookup_texture( token, sizeof( token ) ) );
 
 	// diameter
@@ -3617,7 +3616,7 @@ void Option_Eyeball( s_model_t *pmodel )
 	GetToken (false);
 	eyeball->iris_scale = 1.0 / verify_atof( token );
 
-	eyeball->glint_material = use_texture_as_material( lookup_texture( "glint", Q_strlen( "glint" ) + 1 ) );
+	eyeball->glint_material = use_texture_as_material( lookup_texture( "glint", Q_V_strlen( "glint" ) + 1 ) );
 	
 	VectorCopy( tmp, eyeball->org );
 
@@ -3664,7 +3663,7 @@ void Option_Spherenormals( s_source_t *psource )
 
 	// mesh material 
 	GetToken (false);
-	strcpyn( szMeshMaterial, token );
+	V_V_strcpy_safe( szMeshMaterial, token );
 	mesh_material = use_texture_as_material( lookup_texture( token, sizeof( token ) ) );
 
 	// X
@@ -3725,7 +3724,7 @@ int Add_Flexdesc( const char *name )
 	int flexdesc;
 	for ( flexdesc = 0; flexdesc < g_numflexdesc; flexdesc++)
 	{
-		if (stricmp( name, g_flexdesc[flexdesc].FACS ) == 0)
+		if (V_stricmp( name, g_flexdesc[flexdesc].FACS ) == 0)
 		{
 			break;
 		}
@@ -3738,7 +3737,7 @@ int Add_Flexdesc( const char *name )
 
 	if (flexdesc == g_numflexdesc)
 	{
-		strcpyn( g_flexdesc[flexdesc].FACS, name );
+		V_V_strcpy_safe( g_flexdesc[flexdesc].FACS, name );
 
 		g_numflexdesc++;
 	}
@@ -3761,9 +3760,9 @@ void Option_Flex( char *name, char *vtafile, int imodel, float pairsplit )
 	if (pairsplit != 0)
 	{
 		char mod[256];
-		sprintf( mod, "%sR", name );
+		V_sprintf_safe( mod, "%sR", name );
 		flexdesc = Add_Flexdesc( mod );
-		sprintf( mod, "%sL", name );
+		V_sprintf_safe( mod, "%sL", name );
 		flexpair = Add_Flexdesc( mod );
 	}
 	else
@@ -3787,23 +3786,23 @@ void Option_Flex( char *name, char *vtafile, int imodel, float pairsplit )
 	{
 		GetToken(false);
 
-		if (stricmp( token, "frame") == 0)
+		if (V_stricmp( token, "frame") == 0)
 		{
 			GetToken (false);
 
 			g_flexkey[g_numflexkeys].frame = verify_atoi( token );
 		}
-		else if (stricmp( token, "position") == 0)
+		else if (V_stricmp( token, "position") == 0)
 		{
 			GetToken (false);
 			g_flexkey[g_numflexkeys].target1 = verify_atof( token );
 		}
-		else if (stricmp( token, "split") == 0)
+		else if (V_stricmp( token, "split") == 0)
 		{
 			GetToken (false);
 			g_flexkey[g_numflexkeys].split = verify_atof( token );
 		}
-		else if (stricmp( token, "decay") == 0)
+		else if (V_stricmp( token, "decay") == 0)
 		{
 			GetToken (false);
 			g_flexkey[g_numflexkeys].decay = verify_atof( token );
@@ -3842,11 +3841,11 @@ void Option_Eyelid( int imodel )
 
 	// type
 	GetToken (false);
-	strcpyn( type, token );
+	V_V_strcpy_safe( type, token );
 
 	// source
 	GetToken (false);
-	strcpyn( vtafile, token );
+	V_V_strcpy_safe( vtafile, token );
 
 	int lowererframe, neutralframe, raiserframe;
 	float lowerertarget, neutraltarget, raisertarget;
@@ -3856,53 +3855,53 @@ void Option_Eyelid( int imodel )
 	char szEyeball[64] = {""};
 
 	basedesc = g_numflexdesc;
-	strcpyn( g_flexdesc[g_numflexdesc++].FACS, type );
+	V_V_strcpy_safe( g_flexdesc[g_numflexdesc++].FACS, type );
 
 	while (TokenAvailable())
 	{
 		GetToken(false);
 
 		char localdesc[256];
-		strcpy( localdesc, type );
+		V_strcpy( localdesc, type );
 		strcat( localdesc, "_" );
 		strcat( localdesc, token );
 
-		if (stricmp( token, "lowerer") == 0)
+		if (V_stricmp( token, "lowerer") == 0)
 		{
 			GetToken (false);
 			lowererframe = verify_atoi( token );
 			GetToken (false);
 			lowerertarget = verify_atof( token );
 			lowererdesc = g_numflexdesc;
-			strcpyn( g_flexdesc[g_numflexdesc++].FACS, localdesc );
+			V_V_strcpy_safe( g_flexdesc[g_numflexdesc++].FACS, localdesc );
 		}
-		else if (stricmp( token, "neutral") == 0)
+		else if (V_stricmp( token, "neutral") == 0)
 		{
 			GetToken (false);
 			neutralframe = verify_atoi( token );
 			GetToken (false);
 			neutraltarget = verify_atof( token );
 			neutraldesc = g_numflexdesc;
-			strcpyn( g_flexdesc[g_numflexdesc++].FACS, localdesc );
+			V_V_strcpy_safe( g_flexdesc[g_numflexdesc++].FACS, localdesc );
 		}
-		else if (stricmp( token, "raiser") == 0)
+		else if (V_stricmp( token, "raiser") == 0)
 		{
 			GetToken (false);
 			raiserframe = verify_atoi( token );
 			GetToken (false);
 			raisertarget = verify_atof( token );
 			raiserdesc = g_numflexdesc;
-			strcpyn( g_flexdesc[g_numflexdesc++].FACS, localdesc );
+			V_V_strcpy_safe( g_flexdesc[g_numflexdesc++].FACS, localdesc );
 		}
-		else if (stricmp( token, "split") == 0)
+		else if (V_stricmp( token, "split") == 0)
 		{
 			GetToken (false);
 			split = verify_atof( token );
 		}
-		else if (stricmp( token, "eyeball") == 0)
+		else if (V_stricmp( token, "eyeball") == 0)
 		{
 			GetToken (false);
-			strcpy( szEyeball, token );
+			V_strcpy( szEyeball, token );
 		}
 
 
@@ -3953,7 +3952,7 @@ void Option_Eyelid( int imodel )
 
 		if (szEyeball[0] != '\0')
 		{
-			if (stricmp( peyeball->name, szEyeball ) != 0)
+			if (V_stricmp( peyeball->name, szEyeball ) != 0)
 				continue;
 		}
 
@@ -4012,7 +4011,7 @@ int Option_Mouth( s_model_t *pmodel )
 
 	// bone name
 	GetToken (false);
-	strcpyn( g_mouth[index].bonename, token );
+	V_V_strcpy_safe( g_mouth[index].bonename, token );
 
 	// vector
 	GetToken (false);
@@ -4036,13 +4035,13 @@ void Option_Flexcontroller( s_model_t *pmodel )
 
 	// g_flex
 	GetToken (false);
-	strcpy( type, token );
+	V_strcpy( type, token );
 
 	while (TokenAvailable())
 	{
 		GetToken(false);
 
-		if (stricmp( token, "range") == 0)
+		if (V_stricmp( token, "range") == 0)
 		{
 			GetToken(false);
 			range_min = verify_atof( token );
@@ -4058,8 +4057,8 @@ void Option_Flexcontroller( s_model_t *pmodel )
 			}
 
 
-			strcpyn( g_flexcontroller[g_numflexcontrollers].name, token );
-			strcpyn( g_flexcontroller[g_numflexcontrollers].type, type );
+			V_V_strcpy_safe( g_flexcontroller[g_numflexcontrollers].name, token );
+			V_V_strcpy_safe( g_flexcontroller[g_numflexcontrollers].type, type );
 			g_flexcontroller[g_numflexcontrollers].min = range_min;
 			g_flexcontroller[g_numflexcontrollers].max = range_max;
 			g_numflexcontrollers++;
@@ -4107,7 +4106,7 @@ void Option_Flexrule( s_model_t *pmodel, char *name )
 	int flexdesc;
 	for ( flexdesc = 0; flexdesc < g_numflexdesc; flexdesc++)
 	{
-		if (stricmp( name, g_flexdesc[flexdesc].FACS ) == 0)
+		if (V_stricmp( name, g_flexdesc[flexdesc].FACS ) == 0)
 		{
 			break;
 		}
@@ -4189,11 +4188,11 @@ void Option_Flexrule( s_model_t *pmodel, char *name )
 		{
 			stream[i++].op = STUDIO_COMMA;
 		}
-		else if ( stricmp( token, "max" ) == 0)
+		else if ( V_stricmp( token, "max" ) == 0)
 		{
 			stream[i++].op = STUDIO_MAX;
 		}
-		else if ( stricmp( token, "min" ) == 0)
+		else if ( V_stricmp( token, "min" ) == 0)
 		{
 			stream[i++].op = STUDIO_MIN;
 		}
@@ -4205,7 +4204,7 @@ void Option_Flexrule( s_model_t *pmodel, char *name )
 
 				for (k = 0; k < g_numflexdesc; k++)
 				{
-					if (stricmp( token, g_flexdesc[k].FACS ) == 0)
+					if (V_stricmp( token, g_flexdesc[k].FACS ) == 0)
 					{
 						stream[i].op = STUDIO_FETCH2;
 						stream[i++].d.index = k;
@@ -4221,7 +4220,7 @@ void Option_Flexrule( s_model_t *pmodel, char *name )
 			{
 				for (k = 0; k < g_numflexcontrollers; k++)
 				{
-					if (stricmp( token, g_flexcontroller[k].name ) == 0)
+					if (V_stricmp( token, g_flexcontroller[k].name ) == 0)
 					{
 						stream[i].op = STUDIO_FETCH1;
 						stream[i++].d.index = k;
@@ -4430,7 +4429,7 @@ void Cmd_Model( )
 	// name
 	if (!GetToken(false)) 
 		return;
-	strcpyn( g_model[g_nummodels]->name, token );
+	V_V_strcpy_safe( g_model[g_nummodels]->name, token );
 
 	// fake g_bodypart stuff
 	if (g_numbodyparts == 0) {
@@ -4439,7 +4438,7 @@ void Cmd_Model( )
 	else {
 		g_bodypart[g_numbodyparts].base = g_bodypart[g_numbodyparts-1].base * g_bodypart[g_numbodyparts-1].nummodels;
 	}
-	strcpyn( g_bodypart[g_numbodyparts].name, token );
+	V_V_strcpy_safe( g_bodypart[g_numbodyparts].name, token );
 
 	g_bodypart[g_numbodyparts].pmodel[g_bodypart[g_numbodyparts].nummodels] = g_model[g_nummodels];
 	g_bodypart[g_numbodyparts].nummodels = 1;
@@ -4478,40 +4477,40 @@ void Cmd_Model( )
 			}
 			return;
 		}
-		if (stricmp("{", token ) == 0)
+		if (V_stricmp("{", token ) == 0)
 		{
 			depth++;
 		}
-		else if (stricmp("}", token ) == 0)
+		else if (V_stricmp("}", token ) == 0)
 		{
 			depth--;
 		}
-		else if (stricmp("eyeball", token ) == 0)
+		else if (V_stricmp("eyeball", token ) == 0)
 		{
 			Option_Eyeball( g_model[g_nummodels] );
 		}
-		else if (stricmp("eyelid", token ) == 0)
+		else if (V_stricmp("eyelid", token ) == 0)
 		{
 			Option_Eyelid( g_nummodels );
 		}
-		else if (stricmp("flex", token ) == 0)
+		else if (V_stricmp("flex", token ) == 0)
 		{
 			// g_flex
 			GetToken (false);
-			strcpy( FAC, token );
+			V_strcpy( FAC, token );
 			if (depth == 0)
 			{
 				// file
 				GetToken (false);
-				strcpy( vtafile, token );
+				V_strcpy( vtafile, token );
 			}
 			Option_Flex( FAC, vtafile, g_nummodels, 0.0 ); // FIXME: this needs to point to a model used, not loaded!!!
 		}
-		else if (stricmp("flexpair", token ) == 0)
+		else if (V_stricmp("flexpair", token ) == 0)
 		{
 			// g_flex
 			GetToken (false);
-			strcpy( FAC, token );
+			V_strcpy( FAC, token );
 
 			GetToken( false );
 			float split = atof( token );
@@ -4520,30 +4519,30 @@ void Cmd_Model( )
 			{
 				// file
 				GetToken (false);
-				strcpy( vtafile, token );
+				V_strcpy( vtafile, token );
 			}
 			Option_Flex( FAC, vtafile, g_nummodels, split ); // FIXME: this needs to point to a model used, not loaded!!!
 		}
-		else if (stricmp("defaultflex", token ) == 0)
+		else if (V_stricmp("defaultflex", token ) == 0)
 		{
 			if (depth == 0)
 			{
 				// file
 				GetToken (false);
-				strcpy( vtafile, token );
+				V_strcpy( vtafile, token );
 			}
 
 			// g_flex
 			Option_Flex( "default", vtafile, g_nummodels, 0.0 ); // FIXME: this needs to point to a model used, not loaded!!!
 			g_defaultflexkey = &g_flexkey[g_numflexkeys-1];
 		}
-		else if (stricmp("flexfile", token ) == 0)
+		else if (V_stricmp("flexfile", token ) == 0)
 		{
 			// file
 			GetToken (false);
-			strcpy( vtafile, token );
+			V_strcpy( vtafile, token );
 		}
-		else if (stricmp("localvar", token ) == 0)
+		else if (V_stricmp("localvar", token ) == 0)
 		{
 			while (TokenAvailable())
 			{
@@ -4551,11 +4550,11 @@ void Cmd_Model( )
 				Add_Flexdesc( token );
 			}
 		}
-		else if (stricmp("mouth", token ) == 0)
+		else if (V_stricmp("mouth", token ) == 0)
 		{
 			Option_Mouth( g_model[g_nummodels] );
 		}
-		else if (stricmp("flexcontroller", token ) == 0)
+		else if (V_stricmp("flexcontroller", token ) == 0)
 		{
 			Option_Flexcontroller( g_model[g_nummodels] );
 		}
@@ -4563,11 +4562,11 @@ void Cmd_Model( )
 		{
 			Option_Flexrule( g_model[g_nummodels], &token[1] );
 		}
-		else if (stricmp("attachment", token ) == 0)
+		else if (V_stricmp("attachment", token ) == 0)
 		{
 		// 	Option_Attachment( g_model[g_nummodels] );
 		}
-		else if (stricmp( token, "spherenormals") == 0)
+		else if (V_stricmp( token, "spherenormals") == 0)
 		{
 			Option_Spherenormals( g_model[g_nummodels]->source );
 		}
@@ -4597,7 +4596,7 @@ void Cmd_FakeVTA(void)
 
 	s_source_t* psource = (s_source_t*)kalloc(1, sizeof(s_source_t));
 	g_source[g_numsources] = psource;
-	strcpyn(g_source[g_numsources]->filename, token);
+	V_V_strcpy_safe(g_source[g_numsources]->filename, token);
 	g_numsources++;
 
 	while (true)
@@ -4629,20 +4628,20 @@ void Cmd_FakeVTA(void)
 			}
 			return;
 		}
-		if (stricmp("{", token) == 0)
+		if (V_stricmp("{", token) == 0)
 		{
 			depth++;
 		}
-		else if (stricmp("}", token) == 0)
+		else if (V_stricmp("}", token) == 0)
 		{
 			depth--;
 		}
-		else if (stricmp("appendvta", token) == 0)
+		else if (V_stricmp("appendvta", token) == 0)
 		{
 			char filename[256];
 			// file
 			GetToken(false);
-			strcpy(filename, token);
+			V_strcpy(filename, token);
 
 			GetToken(false);
 			int frame = verify_atoi(token);
@@ -4664,7 +4663,7 @@ void Cmd_IKChain()
 	int i;
 	for (i = 0; i < g_numikchains; i++)
 	{
-		if (stricmp(token, g_ikchain[i].name) == 0)
+		if (V_stricmp(token, g_ikchain[i].name) == 0)
 		{
 			break;
 		}
@@ -4682,10 +4681,10 @@ void Cmd_IKChain()
 		return;
 	}
 
-	strcpyn(g_ikchain[g_numikchains].name, token);
+	V_V_strcpy_safe(g_ikchain[g_numikchains].name, token);
 
 	GetToken(false);
-	strcpyn(g_ikchain[g_numikchains].bonename, token);
+	V_V_strcpy_safe(g_ikchain[g_numikchains].bonename, token);
 
 	g_ikchain[g_numikchains].axis = STUDIO_Z;
 	g_ikchain[g_numikchains].value = 0.0;
@@ -4703,22 +4702,22 @@ void Cmd_IKChain()
 			GetToken(false);
 			g_ikchain[g_numikchains].value = verify_atof(token);
 		}
-		else if (stricmp("height", token) == 0)
+		else if (V_stricmp("height", token) == 0)
 		{
 			GetToken(false);
 			g_ikchain[g_numikchains].height = verify_atof(token);
 		}
-		else if (stricmp("pad", token) == 0)
+		else if (V_stricmp("pad", token) == 0)
 		{
 			GetToken(false);
 			g_ikchain[g_numikchains].radius = verify_atof(token) / 2.0;
 		}
-		else if (stricmp("floor", token) == 0)
+		else if (V_stricmp("floor", token) == 0)
 		{
 			GetToken(false);
 			g_ikchain[g_numikchains].floor = verify_atof(token);
 		}
-		else if (stricmp("knee", token) == 0)
+		else if (V_stricmp("knee", token) == 0)
 		{
 			GetToken(false);
 			g_ikchain[g_numikchains].link[0].kneeDir.x = verify_atof(token);
@@ -4727,7 +4726,7 @@ void Cmd_IKChain()
 			GetToken(false);
 			g_ikchain[g_numikchains].link[0].kneeDir.z = verify_atof(token);
 		}
-		else if (stricmp("center", token) == 0)
+		else if (V_stricmp("center", token) == 0)
 		{
 			GetToken(false);
 			g_ikchain[g_numikchains].center.x = verify_atof(token);
@@ -4747,7 +4746,7 @@ void Cmd_IKChain()
 void Cmd_IKAutoplayLock( )
 {
 	GetToken(false);
-	strcpyn( g_ikautoplaylock[g_numikautoplaylocks].name, token );
+	V_V_strcpy_safe( g_ikautoplaylock[g_numikautoplaylocks].name, token );
 
 	GetToken(false);
 	g_ikautoplaylock[g_numikautoplaylocks].flPosWeight = verify_atof( token );
@@ -4766,7 +4765,7 @@ void Cmd_Root ()
 {
 	if (GetToken (false))
 	{
-		strcpyn( rootname, token );
+		V_V_strcpy_safe( rootname, token );
 	}
 }
 
@@ -4778,7 +4777,7 @@ void Cmd_Controller(void)
 {
 	if (GetToken(false))
 	{
-		if (!stricmp("mouth", token))
+		if (!V_stricmp("mouth", token))
 		{
 			g_bonecontroller[g_numbonecontrollers].inputfield = 4;
 		}
@@ -4788,7 +4787,7 @@ void Cmd_Controller(void)
 		}
 		if (GetToken(false))
 		{
-			strcpyn(g_bonecontroller[g_numbonecontrollers].name, token);
+			V_V_strcpy_safe(g_bonecontroller[g_numbonecontrollers].name, token);
 			GetToken(false);
 			if ((g_bonecontroller[g_numbonecontrollers].type = lookupControl(token)) == -1)
 			{
@@ -4838,16 +4837,16 @@ void Cmd_ScreenAlign()
 
 		Assert(g_numscreenalignedbones < MAXSTUDIOSRCBONES);
 
-		strcpyn(g_screenalignedbone[g_numscreenalignedbones].name, token);
+		V_V_strcpy_safe(g_screenalignedbone[g_numscreenalignedbones].name, token);
 		g_screenalignedbone[g_numscreenalignedbones].flags = BONE_SCREEN_ALIGN_SPHERE;
 
 		if (GetToken(false))
 		{
-			if (!stricmp("sphere", token))
+			if (!V_stricmp("sphere", token))
 			{
 				g_screenalignedbone[g_numscreenalignedbones].flags = BONE_SCREEN_ALIGN_SPHERE;
 			}
-			else if (!stricmp("cylinder", token))
+			else if (!V_stricmp("cylinder", token))
 			{
 				g_screenalignedbone[g_numscreenalignedbones].flags = BONE_SCREEN_ALIGN_CYLINDER;
 			}
@@ -5003,7 +5002,7 @@ void Cmd_Hitgroup()
 	GetToken(false);
 	g_hitgroup[g_numhitgroups].group = verify_atoi(token);
 	GetToken(false);
-	strcpyn(g_hitgroup[g_numhitgroups].name, token);
+	V_V_strcpy_safe(g_hitgroup[g_numhitgroups].name, token);
 	g_numhitgroups++;
 }
 
@@ -5027,7 +5026,7 @@ void Cmd_Hitbox()
 		memset(set, 0, sizeof(*set));
 
 		// fill in name if it wasn't specified in the .qc
-		strcpy(set->hitboxsetname, "default");
+		V_strcpy(set->hitboxsetname, "default");
 	}
 
 	GetToken(false);
@@ -5035,7 +5034,7 @@ void Cmd_Hitbox()
 
 	// Grab the bone name:
 	GetToken(false);
-	strcpyn(set->hitbox[set->numhitboxes].name, token);
+	V_V_strcpy_safe(set->hitbox[set->numhitboxes].name, token);
 
 	GetToken(false);
 	set->hitbox[set->numhitboxes].bmin[0] = verify_atof(token);
@@ -5060,7 +5059,7 @@ void Cmd_Hitbox()
 	if (TokenAvailable())
 	{
 		GetToken(false);
-		strcpyn(set->hitbox[set->numhitboxes].hitboxname, token);
+		V_V_strcpy_safe(set->hitbox[set->numhitboxes].hitboxname, token);
 	}
 
 	set->numhitboxes++;
@@ -5076,7 +5075,7 @@ void Cmd_HitboxSet(void)
 	s_hitboxset* set = &g_hitboxsets[g_hitboxsets.AddToTail()];
 	GetToken(false);
 	memset(set, 0, sizeof(*set));
-	strcpy(set->hitboxsetname, token);
+	V_strcpy(set->hitboxsetname, token);
 }
 
 
@@ -5099,7 +5098,7 @@ static CUtlVector<SurfacePropName_t>	s_JointSurfaceProp;
 void Cmd_SurfaceProp ()
 {
 	GetToken (false);
-	strcpyn( s_pDefaultSurfaceProp, token );
+	V_V_strcpy_safe( s_pDefaultSurfaceProp, token );
 }	
 
 
@@ -5115,7 +5114,7 @@ void Cmd_JointSurfaceProp ()
 	int i;
 	for ( i = s_JointSurfaceProp.Count(); --i >= 0; )
 	{
-		if (!stricmp(s_JointSurfaceProp[i].m_pJointName, token))
+		if (!V_stricmp(s_JointSurfaceProp[i].m_pJointName, token))
 		{
 			break;
 		}
@@ -5125,12 +5124,12 @@ void Cmd_JointSurfaceProp ()
 	if (i < 0)
 	{
 		i = s_JointSurfaceProp.AddToTail();
-		strcpyn( s_JointSurfaceProp[i].m_pJointName, token );
+		V_V_strcpy_safe( s_JointSurfaceProp[i].m_pJointName, token );
 	}
 
 	// surface property name
 	GetToken(false);
-	strcpyn( s_JointSurfaceProp[i].m_pSurfaceProp, token );
+	V_V_strcpy_safe( s_JointSurfaceProp[i].m_pSurfaceProp, token );
 }
 
 
@@ -5150,7 +5149,7 @@ static char* FindSurfaceProp ( char const* pJointName )
 {
 	for ( int i = s_JointSurfaceProp.Count(); --i >= 0; )
 	{
-		if (!stricmp(s_JointSurfaceProp[i].m_pJointName, pJointName))
+		if (!V_stricmp(s_JointSurfaceProp[i].m_pJointName, pJointName))
 		{
 			return s_JointSurfaceProp[i].m_pSurfaceProp;
 		}
@@ -5236,24 +5235,24 @@ static void ParseContents( int *pAddFlags, int *pRemoveFlags )
 	{
 		GetToken (false);
 
-		if ( !stricmp( token, "grate" ) )
+		if ( !V_stricmp( token, "grate" ) )
 		{
 			*pAddFlags |= CONTENTS_GRATE;
 			*pRemoveFlags |= CONTENTS_SOLID;
 		}
-		else if ( !stricmp( token, "ladder" ) )
+		else if ( !V_stricmp( token, "ladder" ) )
 		{
 			*pAddFlags |= CONTENTS_LADDER;
 		}
-		else if ( !stricmp( token, "solid" ) )
+		else if ( !V_stricmp( token, "solid" ) )
 		{
 			*pAddFlags |= CONTENTS_SOLID;
 		}
-		else if ( !stricmp( token, "monster" ) )
+		else if ( !V_stricmp( token, "monster" ) )
 		{
 			*pAddFlags |= CONTENTS_MONSTER;
 		}
-		else if ( !stricmp( token, "notsolid" ) )
+		else if ( !V_stricmp( token, "notsolid" ) )
 		{
 			*pRemoveFlags |= CONTENTS_SOLID;
 		}
@@ -5285,7 +5284,7 @@ void Cmd_JointContents ()
 	int i;
 	for ( i = s_JointContents.Count(); --i >= 0; )
 	{
-		if (!stricmp(s_JointContents[i].m_pJointName, token))
+		if (!V_stricmp(s_JointContents[i].m_pJointName, token))
 		{
 			break;
 		}
@@ -5295,7 +5294,7 @@ void Cmd_JointContents ()
 	if (i < 0)
 	{
 		i = s_JointContents.AddToTail();
-		strcpyn( s_JointContents[i].m_pJointName, token );
+		V_V_strcpy_safe( s_JointContents[i].m_pJointName, token );
 	}
 
 	int nAddFlags, nRemoveFlags;
@@ -5322,7 +5321,7 @@ static int FindContents( char const* pJointName )
 {
 	for ( int i = s_JointContents.Count(); --i >= 0; )
 	{
-		if (!stricmp(s_JointContents[i].m_pJointName, pJointName))
+		if (!V_stricmp(s_JointContents[i].m_pJointName, pJointName))
 		{
 			return s_JointContents[i].m_nContents;
 		}
@@ -5395,7 +5394,7 @@ void Cmd_BoneMerge( )
 
 	// bone name
 	GetToken (false);
-	strcpyn( g_BoneMerge[nIndex].bonename, token );
+	V_V_strcpy_safe( g_BoneMerge[nIndex].bonename, token );
 }
 
 
@@ -5409,11 +5408,11 @@ void Cmd_Attachment( )
 
 	// name
 	GetToken (false);
-	strcpyn( g_attachment[g_numattachments].name, token );
+	V_V_strcpy_safe( g_attachment[g_numattachments].name, token );
 
 	// bone name
 	GetToken (false);
-	strcpyn( g_attachment[g_numattachments].bonename, token );
+	V_V_strcpy_safe( g_attachment[g_numattachments].bonename, token );
 
 	Vector tmp;
 
@@ -5433,21 +5432,21 @@ void Cmd_Attachment( )
 	{
 		GetToken (false);
 
-		if (stricmp(token,"absolute") == 0)
+		if (V_stricmp(token,"absolute") == 0)
 		{
 			g_attachment[g_numattachments].type |= IS_ABSOLUTE;
 			AngleIMatrix( g_defaultrotation, g_attachment[g_numattachments].local );
 			// AngleIMatrix( Vector( 0, 0, 0 ), g_attachment[g_numattachments].local );
 		}
-		else if (stricmp(token,"rigid") == 0)
+		else if (V_stricmp(token,"rigid") == 0)
 		{
 			g_attachment[g_numattachments].type |= IS_RIGID;
 		}
-		else if (stricmp(token,"world_align") == 0)
+		else if (V_stricmp(token,"world_align") == 0)
 		{
 			g_attachment[g_numattachments].flags |= ATTACHMENT_FLAG_WORLD_ALIGN;
 		}
-		else if (stricmp(token,"rotate") == 0)
+		else if (V_stricmp(token,"rotate") == 0)
 		{
 			QAngle angles;
 			for (int i = 0; i < 3; ++i)
@@ -5460,7 +5459,7 @@ void Cmd_Attachment( )
 			}
 			AngleMatrix( angles, g_attachment[g_numattachments].local );
 		}
-		else if (stricmp(token,"x_and_z_axes") == 0)
+		else if (V_stricmp(token,"x_and_z_axes") == 0)
 		{
 			int i;
 			Vector xaxis, yaxis, zaxis;
@@ -5511,7 +5510,7 @@ int LookupAttachment( char *name )
 	int i;
 	for (i = 0; i < g_numattachments; i++)
 	{
-		if (stricmp( g_attachment[i].name, name ) == 0)
+		if (V_stricmp( g_attachment[i].name, name ) == 0)
 		{
 			return i;
 		}
@@ -5527,11 +5526,11 @@ void Cmd_Renamebone( )
 {
 	// from
 	GetToken (false);
-	strcpyn( g_renamedbone[g_numrenamedbones].from, token );
+	V_V_strcpy_safe( g_renamedbone[g_numrenamedbones].from, token );
 
 	// to
 	GetToken (false);
-	strcpyn( g_renamedbone[g_numrenamedbones].to, token );
+	V_V_strcpy_safe( g_renamedbone[g_numrenamedbones].to, token );
 
 	g_numrenamedbones++;
 }
@@ -5604,7 +5603,7 @@ static void Cmd_ReplaceModel( LodScriptData_t& lodData )
 	bool reverse =  false;
 	if( TokenAvailable() && GetToken( false ) )
 	{
-		if( stricmp( "reverse", token ) == 0 )
+		if( V_stricmp( "reverse", token ) == 0 )
 		{
 			reverse = true;
 		}
@@ -5616,7 +5615,7 @@ static void Cmd_ReplaceModel( LodScriptData_t& lodData )
 
 	// If the LOD system tells us to replace "blank", let's forget
 	// we ever read this. Have to do it here so parsing works
-	if( !stricmp( newReplacement.GetSrcName(), "blank" ) )
+	if( !V_stricmp( newReplacement.GetSrcName(), "blank" ) )
 	{
 		lodData.modelReplacements.FastRemove( i );
 		return;
@@ -5651,7 +5650,7 @@ static void Cmd_RemoveModel( LodScriptData_t& lodData )
 
 	// If the LOD system tells us to replace "blank", let's forget
 	// we ever read this. Have to do it here so parsing works
-	if( !stricmp( newReplacement.GetSrcName(), "blank" ) )
+	if( !V_stricmp( newReplacement.GetSrcName(), "blank" ) )
 	{
 		lodData.modelReplacements.FastRemove( i );
 	}
@@ -5748,7 +5747,7 @@ static void Cmd_LOD( char const *cmdname )
 	// which uniquely identifies a shadow lod
 	newLOD.switchValue = -1.0f;
 
-	bool isShadowCall = ( !stricmp( cmdname, "$shadowlod" ) ) ? true : false;
+	bool isShadowCall = ( !V_stricmp( cmdname, "$shadowlod" ) ) ? true : false;
 
 	if ( isShadowCall )
 	{
@@ -5779,7 +5778,7 @@ static void Cmd_LOD( char const *cmdname )
 	}
 
 	GetToken( true );
-	if( stricmp( "{", token ) != 0 )
+	if( V_stricmp( "{", token ) != 0 )
 	{
 		MdlError( "\"{\" expected while processing %s (%d) : %s", cmdname, g_iLinecount, g_szLine );
 	}
@@ -5787,35 +5786,35 @@ static void Cmd_LOD( char const *cmdname )
 	while( 1 )
 	{
 		GetToken( true );
-		if( stricmp( "replacemodel", token ) == 0 )
+		if( V_stricmp( "replacemodel", token ) == 0 )
 		{
 			Cmd_ReplaceModel(newLOD);
 		}
-		else if( stricmp( "removemodel", token ) == 0 )
+		else if( V_stricmp( "removemodel", token ) == 0 )
 		{
 			Cmd_RemoveModel(newLOD);
 		}
-		else if( stricmp( "replacebone", token ) == 0 )
+		else if( V_stricmp( "replacebone", token ) == 0 )
 		{
 			Cmd_ReplaceBone( newLOD );
 		}
-		else if( stricmp( "bonetreecollapse", token ) == 0 )
+		else if( V_stricmp( "bonetreecollapse", token ) == 0 )
 		{
 			Cmd_BoneTreeCollapse( newLOD );
 		}
-		else if( stricmp( "replacematerial", token ) == 0 )
+		else if( V_stricmp( "replacematerial", token ) == 0 )
 		{
 			Cmd_ReplaceMaterial( newLOD );
 		}
-		else if( stricmp( "removemesh", token ) == 0 )
+		else if( V_stricmp( "removemesh", token ) == 0 )
 		{
 			Cmd_RemoveMesh( newLOD );
 		}
-		else if( stricmp( "nofacial", token ) == 0 )
+		else if( V_stricmp( "nofacial", token ) == 0 )
 		{
 			newLOD.EnableFacialAnimation( false );
 		}
-		else if( stricmp( "facial", token ) == 0 )
+		else if( V_stricmp( "facial", token ) == 0 )
 		{
 			if (isShadowCall)
 			{
@@ -5825,14 +5824,14 @@ static void Cmd_LOD( char const *cmdname )
 
 			newLOD.EnableFacialAnimation( true );
 		}
-		else if ( stricmp( "use_shadowlod_materials", token ) == 0 )
+		else if ( V_stricmp( "use_shadowlod_materials", token ) == 0 )
 		{
 			if (isShadowCall)
 			{
 				gflags |= STUDIOHDR_FLAGS_USE_SHADOWLOD_MATERIALS;
 			}
 		}
-		else if( stricmp( "}", token ) == 0 )
+		else if( V_stricmp( "}", token ) == 0 )
 		{
 			break;
 		}
@@ -5971,14 +5970,14 @@ void Option_KeyValues( CUtlVector< char > *pKeyValue )
 
 	while ( GetToken(true) )
 	{
-		if ( !stricmp( token, "}" ) )
+		if ( !V_stricmp( token, "}" ) )
 		{
 			nLevel--;
 			if ( nLevel <= 0 )
 				break;
 			AppendKeyValueText( pKeyValue, " }\n" );
 		}
-		else if ( !stricmp( token, "{" ) )
+		else if ( !V_stricmp( token, "{" ) )
 		{
 			AppendKeyValueText( pKeyValue, "{\n" );
 			nLevel++;
@@ -6016,11 +6015,11 @@ void Cmd_ForcedHierarchy( )
 {
 	// child name
 	GetToken (false);
-	strcpyn( g_forcedhierarchy[g_numforcedhierarchy].childname, token );
+	V_V_strcpy_safe( g_forcedhierarchy[g_numforcedhierarchy].childname, token );
 
 	// parent name
 	GetToken (false);
-	strcpyn( g_forcedhierarchy[g_numforcedhierarchy].parentname, token );
+	V_V_strcpy_safe( g_forcedhierarchy[g_numforcedhierarchy].parentname, token );
 
 	g_numforcedhierarchy++;
 }
@@ -6033,15 +6032,15 @@ void Cmd_InsertHierarchy( )
 {
 	// child name
 	GetToken (false);
-	strcpyn( g_forcedhierarchy[g_numforcedhierarchy].childname, token );
+	V_V_strcpy_safe( g_forcedhierarchy[g_numforcedhierarchy].childname, token );
 
 	// subparent name
 	GetToken (false);
-	strcpyn( g_forcedhierarchy[g_numforcedhierarchy].subparentname, token );
+	V_V_strcpy_safe( g_forcedhierarchy[g_numforcedhierarchy].subparentname, token );
 
 	// parent name
 	GetToken (false);
-	strcpyn( g_forcedhierarchy[g_numforcedhierarchy].parentname, token );
+	V_V_strcpy_safe( g_forcedhierarchy[g_numforcedhierarchy].parentname, token );
 
 	g_numforcedhierarchy++;
 }
@@ -6054,7 +6053,7 @@ void Cmd_ForceRealign( )
 {
 	// bone name
 	GetToken (false);
-	strcpyn( g_forcedrealign[g_numforcedrealign].name, token );
+	V_V_strcpy_safe( g_forcedrealign[g_numforcedrealign].name, token );
 
 	// skip
 	GetToken (false);
@@ -6082,13 +6081,13 @@ void Cmd_LimitRotation( )
 {
 	// bone name
 	GetToken (false);
-	strcpyn( g_limitrotation[g_numlimitrotation].name, token );
+	V_V_strcpy_safe( g_limitrotation[g_numlimitrotation].name, token );
 
 	while (TokenAvailable())
 	{
 		// sequence name
 		GetToken (false);
-		strcpyn( g_limitrotation[g_numlimitrotation].sequencename[g_limitrotation[g_numlimitrotation].numseq++], token );
+		V_strcpy( g_limitrotation[g_numlimitrotation].sequencename[g_limitrotation[g_numlimitrotation].numseq++], token); //  FIX THIS!
 	}
 
 	g_numlimitrotation++;
@@ -6102,11 +6101,11 @@ void Cmd_DefineBone( )
 {
 	// bone name
 	GetToken (false);
-	strcpyn( g_importbone[g_numimportbones].name, token );
+	V_V_strcpy_safe( g_importbone[g_numimportbones].name, token );
 
 	// parent name
 	GetToken (false);
-	strcpyn( g_importbone[g_numimportbones].parent, token );
+	V_V_strcpy_safe( g_importbone[g_numimportbones].parent, token );
 
 	Vector pos;
 	QAngle angles;
@@ -6160,7 +6159,7 @@ void Cmd_DefineBone( )
 void Cmd_IncludeModel( )
 {
 	GetToken( false );
-	strcpyn( g_includemodel[g_numincludemodels].name, "models/" );
+	V_V_strcpy_safe( g_includemodel[g_numincludemodels].name, "models/" );
 	strcat( g_includemodel[g_numincludemodels].name, token );
 	g_numincludemodels++;
 }
@@ -6222,7 +6221,7 @@ void Grab_Vertexanimation( s_source_t *psource )
 			// next command
 			if (sscanf( g_szLine, "%1023s %d", cmd, &index ))
 			{
-				if (stricmp( cmd, "time" ) == 0) 
+				if (V_stricmp( cmd, "time" ) == 0) 
 				{
 					t = index;
 					count = 0;
@@ -6238,7 +6237,7 @@ void Grab_Vertexanimation( s_source_t *psource )
 
 					t -= psource->startframe;
 				}
-				else if (stricmp( cmd, "end") == 0) 
+				else if (V_stricmp( cmd, "end") == 0) 
 				{
 					psource->numframes = psource->endframe - psource->startframe + 1;
 					return;
@@ -6267,7 +6266,7 @@ int OpenGlobalFile( char *src )
 	int		time1;
 	char	filename[1024];
 
-	strcpy( filename, ExpandPath( src ) );
+	V_strcpy( filename, ExpandPath( src ) );
 
 	int pathLength;
 	int numBasePaths = CmdLib_GetNumBasePaths();
@@ -6278,7 +6277,7 @@ int OpenGlobalFile( char *src )
 		int i;
 		for( i = 0; i < numBasePaths; i++ )
 		{
-			strcpy( tmp, CmdLib_GetBasePath( i ) );
+			V_strcpy( tmp, CmdLib_GetBasePath( i ) );
 			strcat( tmp, filename + pathLength );
 			if( g_bCreateMakefile )
 			{
@@ -6343,22 +6342,22 @@ int Load_VTA( s_source_t *psource )
 	{
 		g_iLinecount++;
 		sscanf( g_szLine, "%s %d", cmd, &option );
-		if (stricmp( cmd, "version" ) == 0) 
+		if (V_stricmp( cmd, "version" ) == 0) 
 		{
 			if (option != 1) 
 			{
 				MdlError("bad version\n");
 			}
 		}
-		else if (stricmp( cmd, "nodes" ) == 0) 
+		else if (V_stricmp( cmd, "nodes" ) == 0) 
 		{
 			psource->numbones = Grab_Nodes( psource->localBone );
 		}
-		else if (stricmp( cmd, "skeleton" ) == 0) 
+		else if (V_stricmp( cmd, "skeleton" ) == 0) 
 		{
 			Grab_Animation( psource );
 		}
-		else if (stricmp( cmd, "vertexanimation" ) == 0) 
+		else if (V_stricmp( cmd, "vertexanimation" ) == 0) 
 		{
 			Grab_Vertexanimation( psource );
 		}
@@ -6393,7 +6392,7 @@ void Grab_AxisInterpBones( )
 			return;
 		}
 		int i = sscanf( g_szLine, "%1023s \"%[^\"]\" \"%[^\"]\" \"%[^\"]\" \"%[^\"]\" %d", cmd, pBone->bonename, tmp, pBone->controlname, tmp, &pBone->axis );
-		if (i == 6 && stricmp( cmd, "bone") == 0)
+		if (i == 6 && V_stricmp( cmd, "bone") == 0)
 		{
 			// Msg( "\"%s\" \"%s\" \"%s\" \"%s\"\n", cmd, pBone->bonename, tmp, pBone->controlname );
 			pAxis = pBone;
@@ -6401,20 +6400,20 @@ void Grab_AxisInterpBones( )
 			g_numaxisinterpbones++;
 			pBone = &g_axisinterpbones[g_numaxisinterpbones];
 		}
-		else if (stricmp( cmd, "display" ) == 0)
+		else if (V_stricmp( cmd, "display" ) == 0)
 		{
 			// skip all display info
 		}
-		else if (stricmp( cmd, "type" ) == 0)
+		else if (V_stricmp( cmd, "type" ) == 0)
 		{
 			// skip all type info
 		}
-		else if (stricmp( cmd, "basepos" ) == 0)
+		else if (V_stricmp( cmd, "basepos" ) == 0)
 		{
 			i = sscanf( g_szLine, "basepos %f %f %f", &basepos.x, &basepos.y, &basepos.z );
 			// skip all type info
 		}
-		else if (stricmp( cmd, "axis" ) == 0)
+		else if (V_stricmp( cmd, "axis" ) == 0)
 		{
 			Vector pos;
 			QAngle rot;
@@ -6475,19 +6474,19 @@ bool Grab_AimAtBones( )
 				return true;
 			}
 
-			if ( stricmp( cmd, "<aimvector>" ) == 0)
+			if ( V_stricmp( cmd, "<aimvector>" ) == 0)
 			{
 				// Make sure these are unit length on read
 				VectorNormalize( vector );
 				pAimAtBone->aimvector = vector;
 			}
-			else if ( stricmp( cmd, "<upvector>" ) == 0)
+			else if ( V_stricmp( cmd, "<upvector>" ) == 0)
 			{
 				// Make sure these are unit length on read
 				VectorNormalize( vector );
 				pAimAtBone->upvector = vector;
 			}
-			else if ( stricmp( cmd, "<basepos>" ) == 0)
+			else if ( V_stricmp( cmd, "<basepos>" ) == 0)
 			{
 				pAimAtBone->basepos = vector;
 			}
@@ -6523,7 +6522,7 @@ void Grab_QuatInterpBones( )
 
 		int i = sscanf( g_szLine, "%s %s %s %s %s", cmd, pBone->bonename, pBone->parentname, pBone->controlparentname, pBone->controlname );
 
-		while ( i == 4 && stricmp( cmd, "<aimconstraint>" ) == 0 )
+		while ( i == 4 && V_stricmp( cmd, "<aimconstraint>" ) == 0 )
 		{
 			// If Grab_AimAtBones() returns false, there file is at EOF
 			if ( !Grab_AimAtBones() )
@@ -6538,7 +6537,7 @@ void Grab_QuatInterpBones( )
 			i = sscanf( g_szLine, "%s %s %s %s %s", cmd, pBone->bonename, pBone->parentname, pBone->controlparentname, pBone->controlname );
 		}
 
-		if (i == 5 && stricmp( cmd, "<helper>") == 0)
+		if (i == 5 && V_stricmp( cmd, "<helper>") == 0)
 		{
 			// Msg( "\"%s\" \"%s\" \"%s\" \"%s\"\n", cmd, pBone->bonename, tmp, pBone->controlname );
 			pAxis = pBone;
@@ -6551,11 +6550,11 @@ void Grab_QuatInterpBones( )
 			// because if the sscanf above completely fails, it will return 0 and not 
 			// change the contents of cmd, so i should be greater than 0 in order for
 			// any of these checks to be valid... Still kind of buggy as these checks
-			// do case insensitive stricmp but then the sscanf does case sensitive
+			// do case insensitive V_stricmp but then the sscanf does case sensitive
 			// matching afterwards... Should probably change those to
 			// sscanf( g_szLine, "%*s %f ... ) etc...
 
-			if ( stricmp( cmd, "<display>" ) == 0)
+			if ( V_stricmp( cmd, "<display>" ) == 0)
 			{
 				// skip all display info
 				Vector size;
@@ -6575,12 +6574,12 @@ void Grab_QuatInterpBones( )
 					MdlError( "Line %d: Unable to parse procedual <display> bone: %s", g_iLinecount, g_szLine );
 				}
 			}
-			else if ( stricmp( cmd, "<basepos>" ) == 0)
+			else if ( V_stricmp( cmd, "<basepos>" ) == 0)
 			{
 				i = sscanf( g_szLine, "<basepos> %f %f %f", &basepos.x, &basepos.y, &basepos.z );
 				// skip all type info
 			}
-			else if ( stricmp( cmd, "<trigger>" ) == 0)
+			else if ( V_stricmp( cmd, "<trigger>" ) == 0)
 			{
 				float tolerance;
 				RadianEuler trigger;
@@ -6652,7 +6651,7 @@ void Load_ProceduralBones( )
 	int		option;
 
 	GetToken( false );
-	strcpy( filename, token );
+	V_strcpy( filename, token );
 
 	if (!OpenGlobalFile( filename ))
 		return;
@@ -6662,7 +6661,7 @@ void Load_ProceduralBones( )
 	char ext[32];
 	Q_ExtractFileExtension( filename, ext, sizeof( ext ) );
 
-	if (stricmp( ext, "vrd") == 0)
+	if (V_stricmp( ext, "vrd") == 0)
 	{
 		Grab_QuatInterpBones( );
 	}
@@ -6672,14 +6671,14 @@ void Load_ProceduralBones( )
 		{
 			g_iLinecount++;
 			sscanf( g_szLine, "%s", cmd, &option );
-			if (stricmp( cmd, "version" ) == 0) 
+			if (V_stricmp( cmd, "version" ) == 0) 
 			{
 				if (option != 1) 
 				{
 					MdlError("bad version\n");
 				}
 			}
-			else if (stricmp( cmd, "proceduralbones" ) == 0) 
+			else if (V_stricmp( cmd, "proceduralbones" ) == 0) 
 			{
 				Grab_AxisInterpBones( );
 			}
@@ -6698,7 +6697,7 @@ void Cmd_CD()
 		MdlError ("Two $cd in one model");
 	cdset = true;
 	GetToken (false);
-	strcpy (cddir[0], token);
+	V_strcpy (cddir[0], token);
 	strcat (cddir[0], "/" );
 	numdirs = 0;
 }
@@ -6716,7 +6715,7 @@ void Cmd_CDMaterials()
 		char szPath[512];
 		Q_strncpy( szPath, token, sizeof( szPath ) );
 
-		int len = strlen( szPath );
+		int len = V_strlen( szPath );
 		if ( len > 0 && szPath[len-1] != '/' && szPath[len-1] != '\\' )
 		{
 			Q_strncat( szPath, "/", sizeof( szPath ), COPY_ALL_CHARACTERS );
@@ -6736,7 +6735,7 @@ void Cmd_Pushd()
 {
 	GetToken(false);
 
-	strcpy( cddir[numdirs+1], cddir[numdirs] );
+	V_strcpy( cddir[numdirs+1], cddir[numdirs] );
 	strcat( cddir[numdirs+1], token );
 	strcat( cddir[numdirs+1], "/" );
 	numdirs++;
@@ -6895,18 +6894,18 @@ void Cmd_BoneSaveFrame( )
 
 	// bone name
 	GetToken( false );
-	strcpyn( tmp.name, token );
+	V_V_strcpy_safe( tmp.name, token );
 
 	tmp.bSavePos = false;
 	tmp.bSaveRot = false;
 	while (TokenAvailable(  ))
 	{
 		GetToken( false );
-		if (stricmp( "position", token ) == 0)
+		if (V_stricmp( "position", token ) == 0)
 		{
 			tmp.bSavePos = true;
 		}
-		else if (stricmp( "rotation", token ) == 0)
+		else if (V_stricmp( "rotation", token ) == 0)
 		{
 			tmp.bSaveRot = true;
 		}
@@ -7031,7 +7030,7 @@ void ParseScript()
 		int i;
 		for (i = 0; i < ARRAYSIZE(g_Commands); i++)
 		{
-			if (!stricmp(g_Commands[i].m_pName, token))
+			if (!V_stricmp(g_Commands[i].m_pName, token))
 			{
 				g_Commands[i].m_pCmd();
 				break;
@@ -7208,103 +7207,103 @@ int main (int argc, char **argv)
 	{
 		if (argv[i][0] == '-') 
 		{
-			if (!stricmp(argv[i], "-allowdebug"))
+			if (!V_stricmp(argv[i], "-allowdebug"))
 			{
 				// Ignore, used by interface system to catch debug builds checked into release tree
 				continue;
 			}
 
-			if (!stricmp(argv[i], "-ihvtest"))
+			if (!V_stricmp(argv[i], "-ihvtest"))
 			{
 				++i;
 				g_IHVTest = true;
 				continue;
 			}
 
-			if (!stricmp(argv[i], "-quiet"))
+			if (!V_stricmp(argv[i], "-quiet"))
 			{
 				g_quiet = true;
 				g_verbose = false;
 				continue;
 			}
 
-			if (!stricmp(argv[i], "-verbose"))
+			if (!V_stricmp(argv[i], "-verbose"))
 			{
 				g_quiet = false;
 				g_verbose = true;
 				continue;
 			}
 
-			if (!stricmp(argv[i], "-fullcollide"))
+			if (!V_stricmp(argv[i], "-fullcollide"))
 			{
 				g_badCollide = true;
 				continue;
 			}
 
-			if (!stricmp(argv[i], "-checklengths"))
+			if (!V_stricmp(argv[i], "-checklengths"))
 			{
 				g_bCheckLengths = true;
 				continue;
 			}
 
-			if (!stricmp(argv[i], "-printbones"))
+			if (!V_stricmp(argv[i], "-printbones"))
 			{
 				g_bPrintBones = true;
 				continue;
 			}
 
-			if (!stricmp(argv[i], "-perf"))
+			if (!V_stricmp(argv[i], "-perf"))
 			{
 				g_bPerf = true;
 				continue;
 			}
 
-			if (!stricmp(argv[i], "-printgraph"))
+			if (!V_stricmp(argv[i], "-printgraph"))
 			{
 				g_bDumpGraph = true;
 				continue;
 			}
 
-			if (!stricmp(argv[i], "-definebones"))
+			if (!V_stricmp(argv[i], "-definebones"))
 			{
 				g_definebones = true;
 				continue;
 			}
 
-			if (!stricmp(argv[i], "-makefile"))
+			if (!V_stricmp(argv[i], "-makefile"))
 			{
 				g_bCreateMakefile = true;
 				g_quiet = true;
 				continue;
 			}
 
-			if (!stricmp(argv[i], "-verify"))
+			if (!V_stricmp(argv[i], "-verify"))
 			{
 				g_bVerifyOnly = true;
 				continue;
 			}
 
-			if (!stricmp(argv[i], "-minlod"))
+			if (!V_stricmp(argv[i], "-minlod"))
 			{
 				g_minLod = atoi( argv[++i] );
 				continue;
 			}
 
-			if (!stricmp(argv[i], "-xbox"))
+			if (!V_stricmp(argv[i], "-xbox"))
 			{
 				g_bXbox  = true;
 				g_minLod = 2;
 				continue;
 			}
 
-			if (!stricmp(argv[i], "-notxbox"))
+			if (!V_stricmp(argv[i], "-notxbox"))
 			{
 				g_bXbox  = false;
 				g_minLod = 0;
 				continue;
 			}
 
-			if (!stricmp(argv[i], "-nowarnings"))
+			if (!V_stricmp(argv[i], "-nowarnings"))
 			{
 				g_bNoWarnings = true;
 				continue;
@@ -7316,10 +7315,10 @@ int main (int argc, char **argv)
 				{
 				case 't':
 					i++;
-					strcpy ( defaulttexture[numrep], argv[i]);
+					V_strcpy ( defaulttexture[numrep], argv[i]);
 					if (i < argc - 2 && argv[i + 1][0] != '-') {
 						i++;
-						strcpy ( sourcetexture[numrep], argv[i]);
+						V_strcpy ( sourcetexture[numrep], argv[i]);
 						Msg ("Replacing %s with %s\n", sourcetexture[numrep], defaulttexture[numrep] );
 					}
 					Msg ("Using default texture: %s\n", defaulttexture);
@@ -7349,7 +7348,7 @@ int main (int argc, char **argv)
 					break;
 //				case 'p':
 //					i++;
-//					strcpy( qproject, argv[i] );
+//					V_strcpy( qproject, argv[i] );
 //					break;
 				}
 			}
@@ -7363,7 +7362,7 @@ int main (int argc, char **argv)
 		UsageAndExit();
 	}
 	
-	strcpy( g_path, argv[i] );
+	V_strcpy( g_path, argv[i] );
 
 	CmdLib_InitFileSystem( g_path );
 
@@ -7376,8 +7375,8 @@ int main (int argc, char **argv)
 	if (sp)
 	{
 		char temp[1024];
-		strncpy( temp, qdir, sp - qdir + strlen( match ) );
-		temp[sp - qdir + strlen( match )] = '\0';
+		strncpy( temp, qdir, sp - qdir + V_strlen( match ) );
+		temp[sp - qdir + V_strlen( match )] = '\0';
 		CmdLib_AddBasePath( temp );
 		strcat( temp, "..\\..\\..\\..\\main\\content\\hl2\\" );
 		CmdLib_AddBasePath( temp );
@@ -7398,9 +7397,9 @@ int main (int argc, char **argv)
 	}
 	LoadScriptFile(g_path);
 
-	strcpy( fullpath, g_path );
-	strcpy( fullpath, ExpandPath( fullpath ) );
-	strcpy( fullpath, ExpandArg( fullpath ) );
+	V_strcpy( fullpath, g_path );
+	V_strcpy( fullpath, ExpandPath( fullpath ) );
+	V_strcpy( fullpath, ExpandArg( fullpath ) );
 	CreateMakefile_AddDependency( fullpath );
 	
 	// default to having one entry in the LOD list that doesn't do anything so
@@ -7415,7 +7414,7 @@ int main (int argc, char **argv)
 	ClearModel();
 	Q_StripExtension( argv[i], outname, sizeof( outname ) );
 
-//	strcpy( g_pPlatformName, "" );
+//	V_strcpy( g_pPlatformName, "" );
 	
 	ParseScript();
 	

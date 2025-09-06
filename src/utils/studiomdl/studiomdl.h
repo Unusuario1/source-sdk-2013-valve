@@ -1150,7 +1150,6 @@ extern void clip_rotations( Vector& rot );
 extern void *kalloc( int num, int size );
 extern void kmemset( void *ptr, int value, int size );
 extern char *stristr( const char *string, const char *string2 );
-#define strcpyn( a, b ) strncpy( a, b, sizeof( a ) )
 
 void CalcBoneTransforms( s_animation_t *panimation, int frame, matrix3x4_t* pBoneToWorld );
 void CalcBoneTransforms( s_animation_t *panimation, s_animation_t *pbaseanimation, int frame, matrix3x4_t* pBoneToWorld );
@@ -1245,8 +1244,8 @@ public:
 		{
 			delete [] m_pSrcName;
 		}
-		m_pSrcName = new char[strlen( pSrcName ) + 1];
-		strcpy( m_pSrcName, pSrcName );
+		m_pSrcName = new char[V_strlen( pSrcName ) + 1];
+		V_strcpy( m_pSrcName, pSrcName );
 	}
 	void SetDstName( const char *pDstName )
 	{
@@ -1254,8 +1253,8 @@ public:
 		{
 			delete [] m_pDstName;
 		}
-		m_pDstName = new char[strlen( pDstName ) + 1];
-		strcpy( m_pDstName, pDstName );
+		m_pDstName = new char[V_strlen( pDstName ) + 1];
+		V_strcpy( m_pDstName, pDstName );
 	}
 
 	const char *GetSrcName( void ) const 

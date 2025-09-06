@@ -155,7 +155,7 @@ public:
 		int size = 0;
 		for( i = 0; i < m_Strings.Size(); i++ )
 		{
-			if( stricmp( m_Strings[i].Base(), string ) == 0 )
+			if( V_stricmp( m_Strings[i].Base(), string ) == 0 )
 			{
 				return size;
 			}
@@ -168,7 +168,7 @@ public:
 		int i;
 		for( i = 0; i < m_Strings.Size(); i++ )
 		{
-			if( stricmp( m_Strings[i].Base(), string ) == 0 )
+			if( V_stricmp( m_Strings[i].Base(), string ) == 0 )
 			{
 				return true;
 			}
@@ -182,9 +182,9 @@ public:
 			return;
 		}
 		CUtlVector<char> &s = m_Strings[m_Strings.AddToTail()];
-		int size = strlen( newString ) + 1;
+		int size = V_strlen( newString ) + 1;
 		s.AddMultipleToTail( size );
-		strcpy( s.Base(), newString );
+		V_strcpy( s.Base(), newString );
 	}
 	void Purge()
 	{
@@ -206,7 +206,7 @@ public:
 		int i;
 		for( i = 0; i < m_Strings.Size(); i++ )
 		{
-			int j = strlen( m_Strings[i].Base() ) + 1;
+			int j = V_strlen( m_Strings[i].Base() ) + 1;
 			int k = m_Strings[i].Size();
 			assert( j == k );
 			memcpy( pDst + size, m_Strings[i].Base(), m_Strings[i].Size() );
@@ -1713,8 +1713,8 @@ int COptimizedModel::GetTotalBoneStateChangesForMesh( Mesh_t *pMesh )
 /*
 static void WriteDebugFile( const char *fileName, const char *outFileName, float red, float grn, float blu )
 {
-	char *tmpName = ( char * )_alloca( strlen( fileName ) + 1 );
-	strcpy( tmpName, fileName );
+	char *tmpName = ( char * )_alloca( V_strlen( fileName ) + 1 );
+	V_strcpy( tmpName, fileName );
 	
 	s_source_t *pSrc = Load_Source( tmpName, "SMD" );
 	assert( pSrc );
@@ -1952,7 +1952,7 @@ void COptimizedModel::CreateLODTriangleList( int nLodID, s_source_t* pSrc,
 
 bool ComparePath( const char *a, const char *b )
 {
-	if ( strlen( a ) != strlen( b ) )
+	if ( V_strlen( a ) != V_strlen( b ) )
 	{
 		return false;
 	}
@@ -3143,7 +3143,7 @@ void COptimizedModel::DebugCrap( studiohdr_t *phdr )
 			for( int lodID = 0; lodID < model->numLODs; lodID++ )
 			{
 				char tmp[256];
-				sprintf( tmp, "crap.lod%d", lodID );
+				V_sprintf_safe( tmp, "crap.lod%d", lodID );
 				Msg( "writing %s\n", tmp );
 				FILE *fp = fopen( tmp, "w" );
 				if( !fp )
@@ -3207,7 +3207,7 @@ void COptimizedModel::WriteGLViewFile( studiohdr_t *phdr, const char *pFileName,
 			for( int lodID = 0; lodID < model->numLODs; lodID++ )
 			{
 				char tmp[256];
-				sprintf( tmp, "%s.lod%d", pFileName, lodID );
+				V_sprintf_safe( tmp, "%s.lod%d", pFileName, lodID );
 				Msg( "writing %s\n", tmp );
 				FILE *fp = fopen( tmp, "w" );
 				if( !fp )
@@ -3355,34 +3355,34 @@ void COptimizedModel::WriteGLViewFiles( studiohdr_t *pHdr, char const* glViewFil
 		return;
 
 	char tmpFileName[128];
-	strcpy( tmpFileName, glViewFileName );
+	V_strcpy( tmpFileName, glViewFileName );
 	strcat( tmpFileName, ".mesh" );
 	WriteGLViewFile( pHdr, tmpFileName, WRITEGLVIEW_SHOWMESH, .8f );
-	strcpy( tmpFileName, glViewFileName );
+	V_strcpy( tmpFileName, glViewFileName );
 	strcat( tmpFileName, ".stripgroup" );
 	WriteGLViewFile( pHdr, tmpFileName, WRITEGLVIEW_SHOWSTRIPGROUP, .8f );
-	strcpy( tmpFileName, glViewFileName );
+	V_strcpy( tmpFileName, glViewFileName );
 	strcat( tmpFileName, ".strip" );
 	WriteGLViewFile( pHdr, tmpFileName, WRITEGLVIEW_SHOWSTRIP, .8f );
-	strcpy( tmpFileName, glViewFileName );
+	V_strcpy( tmpFileName, glViewFileName );
 	strcat( tmpFileName, ".substrip" );
 	WriteGLViewFile( pHdr, tmpFileName, WRITEGLVIEW_SHOWSUBSTRIP, .97f );
-	strcpy( tmpFileName, glViewFileName );
+	V_strcpy( tmpFileName, glViewFileName );
 	strcat( tmpFileName, ".flexed" );
 	WriteGLViewFile( pHdr, tmpFileName, WRITEGLVIEW_SHOWFLEXED, .8f );
-	strcpy( tmpFileName, glViewFileName );
+	V_strcpy( tmpFileName, glViewFileName );
 	strcat( tmpFileName, ".sw" );
 	WriteGLViewFile( pHdr, tmpFileName, WRITEGLVIEW_SHOWSW, .8f );
-	strcpy( tmpFileName, glViewFileName );
+	V_strcpy( tmpFileName, glViewFileName );
 	strcat( tmpFileName, ".flexedandsw" );
 	WriteGLViewFile( pHdr, tmpFileName, WRITEGLVIEW_SHOWSW | WRITEGLVIEW_SHOWFLEXED, .8f );
-	strcpy( tmpFileName, glViewFileName );
+	V_strcpy( tmpFileName, glViewFileName );
 	strcat( tmpFileName, ".meshprops" );
 	WriteGLViewFile( pHdr, tmpFileName, WRITEGLVIEW_SHOWMESHPROPS, .8f );
-	strcpy( tmpFileName, glViewFileName );
+	V_strcpy( tmpFileName, glViewFileName );
 	strcat( tmpFileName, ".vertnumbones" );
 	WriteGLViewFile( pHdr, tmpFileName, WRITEGLVIEW_SHOWVERTNUMBONES, 1.0f );
-	strcpy( tmpFileName, glViewFileName );
+	V_strcpy( tmpFileName, glViewFileName );
 	strcat( tmpFileName, ".stripnumbones" );
 	WriteGLViewFile( pHdr, tmpFileName, WRITEGLVIEW_SHOWSTRIPNUMBONES, 1.0f );
 }
@@ -3916,7 +3916,7 @@ void WriteOptimizedFiles( studiohdr_t *phdr, s_bodypart_t *pSrcBodyParts )
 	// hack!  This should really go in the mdl file since it's common to all LODs.
 	AddMaterialReplacementsToStringTable();
 	
-	strcpy( filename, gamedir );
+	V_strcpy( filename, gamedir );
 //	if( *g_pPlatformName )
 //	{
 //		strcat( filename, "platform_" );
@@ -3929,9 +3929,9 @@ void WriteOptimizedFiles( studiohdr_t *phdr, s_bodypart_t *pSrcBodyParts )
 
 	// if ( !g_bXbox )
 	{
-		strcpy( tmpFileName, filename );
+		V_strcpy( tmpFileName, filename );
 		strcat( tmpFileName, ".sw.vtx" );
-		strcpy( glViewFilename, filename );
+		V_strcpy( glViewFilename, filename );
 		strcat( glViewFilename, ".sw.glview" );
 		bool bForceSoftwareSkinning = phdr->numbones > 0 && !g_staticprop;
 		s_OptimizedModel.OptimizeFromStudioHdr( phdr, pSrcBodyParts,
@@ -3944,9 +3944,9 @@ void WriteOptimizedFiles( studiohdr_t *phdr, s_bodypart_t *pSrcBodyParts )
 												512,	// bones/strip
 												tmpFileName, glViewFilename );
 
-		strcpy( tmpFileName, filename );
+		V_strcpy( tmpFileName, filename );
 		strcat( tmpFileName, ".dx80.vtx" );
-		strcpy( glViewFilename, filename );
+		V_strcpy( glViewFilename, filename );
 		strcat( glViewFilename, ".dx80.glview" );
 		s_OptimizedModel.OptimizeFromStudioHdr( phdr, pSrcBodyParts,
 												24 /* vert cache size (real size, not effective!)*/, 
@@ -3958,9 +3958,9 @@ void WriteOptimizedFiles( studiohdr_t *phdr, s_bodypart_t *pSrcBodyParts )
 												16  /* bones/strip */,
 												tmpFileName, glViewFilename );
 
-		strcpy( tmpFileName, filename );
+		V_strcpy( tmpFileName, filename );
 		strcat( tmpFileName, ".dx90.vtx" );
-		strcpy( glViewFilename, filename );
+		V_strcpy( glViewFilename, filename );
 		strcat( glViewFilename, ".dx90.glview" );
 		s_OptimizedModel.OptimizeFromStudioHdr( phdr, pSrcBodyParts,
 												24 /* vert cache size (real size, not effective!)*/, 
@@ -3974,9 +3974,9 @@ void WriteOptimizedFiles( studiohdr_t *phdr, s_bodypart_t *pSrcBodyParts )
 	}
 	// else
 	{
-		strcpy( tmpFileName, filename );
+		V_strcpy( tmpFileName, filename );
 		strcat( tmpFileName, ".xbox.vtx" );
-		strcpy( glViewFilename, filename );
+		V_strcpy( glViewFilename, filename );
 		strcat( glViewFilename, ".xbox.glview" );
 		s_OptimizedModel.OptimizeFromStudioHdr( phdr, pSrcBodyParts,
 												24 /* vert cache size (real size, not effective!)*/, 

@@ -737,72 +737,72 @@ int Load_VRM ( s_source_t *psource )
 	while (fgets(g_szLine, sizeof(g_szLine), g_fpInput) != NULL) {
 		g_iLinecount++;
 		sscanf(g_szLine, "%1023s %d", cmd, &option);
-		if (stricmp(cmd, "version") == 0) {
+		if (V_stricmp(cmd, "version") == 0) {
 			if (option != 2) {
 				MdlError("bad version\n");
 			}
 		}
-		else if (stricmp(cmd, "name") == 0) {
+		else if (V_stricmp(cmd, "name") == 0) {
 		}
-		else if (stricmp(cmd, "vertices") == 0) {
+		else if (V_stricmp(cmd, "vertices") == 0) {
 			g_numverts = option;
 		}
-		else if (stricmp(cmd, "faces") == 0) {
+		else if (V_stricmp(cmd, "faces") == 0) {
 			g_numfaces = option;
 		}
-		else if (stricmp(cmd, "materials") == 0) {
+		else if (V_stricmp(cmd, "materials") == 0) {
 			// doesn't matter;
 		}
-		else if (stricmp(cmd, "texcoords") == 0) {
+		else if (V_stricmp(cmd, "texcoords") == 0) {
 			g_numtexcoords = option;
 			if (option == 0)
 				MdlError("model has no texture coordinates\n");
 		}
-		else if (stricmp(cmd, "normals") == 0) {
+		else if (V_stricmp(cmd, "normals") == 0) {
 			g_numnormals = option;
 		}
-		else if (stricmp(cmd, "tristrips") == 0) {
+		else if (V_stricmp(cmd, "tristrips") == 0) {
 			// should be 0;
 		}
 
-		else if (stricmp(cmd, "vertexlist") == 0) {
+		else if (V_stricmp(cmd, "vertexlist") == 0) {
 			Grab_Vertexlist(psource);
 		}
-		else if (stricmp(cmd, "facelist") == 0) {
+		else if (V_stricmp(cmd, "facelist") == 0) {
 			Grab_Facelist(psource);
 		}
-		else if (stricmp(cmd, "materiallist") == 0) {
+		else if (V_stricmp(cmd, "materiallist") == 0) {
 			Grab_Materiallist(psource);
 		}
-		else if (stricmp(cmd, "texcoordlist") == 0) {
+		else if (V_stricmp(cmd, "texcoordlist") == 0) {
 			Grab_Texcoordlist(psource);
 		}
-		else if (stricmp(cmd, "normallist") == 0) {
+		else if (V_stricmp(cmd, "normallist") == 0) {
 			Grab_Normallist(psource);
 		}
-		else if (stricmp(cmd, "faceattriblist") == 0) {
+		else if (V_stricmp(cmd, "faceattriblist") == 0) {
 			Grab_Faceattriblist(psource);
 		}
 
-		else if (stricmp(cmd, "MRM") == 0) {
+		else if (V_stricmp(cmd, "MRM") == 0) {
 		}
-		else if (stricmp(cmd, "MRMvertices") == 0) {
+		else if (V_stricmp(cmd, "MRMvertices") == 0) {
 		}
-		else if (stricmp(cmd, "MRMfaces") == 0) {
+		else if (V_stricmp(cmd, "MRMfaces") == 0) {
 		}
-		else if (stricmp(cmd, "MRMfaceupdates") == 0)
+		else if (V_stricmp(cmd, "MRMfaceupdates") == 0)
 		{
 			Grab_MRMFaceupdates(psource);
 		}
 
-		else if (stricmp(cmd, "nodes") == 0) {
+		else if (V_stricmp(cmd, "nodes") == 0) {
 			psource->numbones = Grab_Nodes(psource->localBone);
 		}
-		else if (stricmp(cmd, "skeleton") == 0) {
+		else if (V_stricmp(cmd, "skeleton") == 0) {
 			Grab_Animation(psource);
 		}
 		/*
-				else if (stricmp( cmd, "triangles" ) == 0) {
+				else if (V_stricmp( cmd, "triangles" ) == 0) {
 					Grab_Triangles( psource );
 				}
 		*/

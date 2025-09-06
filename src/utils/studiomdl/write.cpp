@@ -135,8 +135,8 @@ static byte *WriteStringTable( byte *pData )
 			// keep track of address in case of duplication
 			strings[i].addr = pData;
 			// copy string data, add a terminating \0
-			strcpy( (char *)pData, strings[i].string );
-			pData += strlen( strings[i].string );
+			V_strcpy( (char *)pData, strings[i].string );
+			pData += V_strlen( strings[i].string );
 			*pData = '\0';
 			pData++;
 		}
@@ -512,7 +512,7 @@ static void WriteSequenceInfo( studiohdr_t *phdr )
 			
 			// Msg("%4d : %d %f\n", pevent[j].event, g_sequence[i].event[j].frame, pevent[j].cycle );
 			// AddToStringTable( &pevent[j], &pevent[j].szoptionindex, g_sequence[i].event[j].options );
-			strcpy( pevent[j].options, g_sequence[i].event[j].options );
+			V_strcpy( pevent[j].options, g_sequence[i].event[j].options );
 		}
 		ALIGN4( pData );
 
@@ -934,11 +934,11 @@ byte *WriteIkErrors( s_animation_t *srcanim, byte *pData )
 			pData += size;
 		}
 
-		if (strlen( srcanim->ikrule[j].attachment ) > 0)
+		if (V_strlen( srcanim->ikrule[j].attachment ) > 0)
 		{
 			// don't use string table, we're probably not in the same file.
-			int size = strlen( srcanim->ikrule[j].attachment ) + 1;
-			strcpy( (char *)pData, srcanim->ikrule[j].attachment );
+			int size = V_strlen( srcanim->ikrule[j].attachment ) + 1;
+			V_strcpy( (char *)pData, srcanim->ikrule[j].attachment );
 			pikrule->szattachmentindex = pData - (byte *)pikrule;
 			pData += size;
 		}
@@ -1311,7 +1311,7 @@ static void WriteVertices( studiohdr_t *phdr )
 	if (!g_nummodelsbeforeLOD)
 		return;
 
-	strcpy( fileName, gamedir );
+	V_strcpy( fileName, gamedir );
 //	if( *g_pPlatformName )
 //	{
 //		strcat( fileName, "platform_" );
@@ -1609,7 +1609,7 @@ static void WriteModel( studiohdr_t *phdr )
 
 		byte *pModelStart = (byte *)(&pmodel[i]);
 		
-		strcpy( pmodel[i].name, g_model[i]->filename );
+		V_strcpy( pmodel[i].name, g_model[i]->filename );
 		// AddToStringTable( &pmodel[i], &pmodel[i].sznameindex, g_model[i]->filename );
 
 		// pmodel[i].mrmbias = g_model[i]->mrmbias;
@@ -1886,7 +1886,7 @@ void LoadMaterials( studiohdr_t *phdr )
 			// search through all specified directories until a valid material is found
 			for( j = 0; j < phdr->numcdtextures && IsErrorMaterial( pMaterial ); j++ )
 			{
-				strcpy( szPath, phdr->pCdtexture( j ) );
+				V_strcpy( szPath, phdr->pCdtexture( j ) );
 				strcat( szPath, phdr->pTexture( i )->pszName( ) );
 
 				pMaterial = g_pMaterialSystem->FindMaterial( szPath, TEXTURE_GROUP_OTHER, false );
@@ -1897,7 +1897,7 @@ void LoadMaterials( studiohdr_t *phdr )
 				// so that the materialsystem will give an error.
 				for( j = 0; j < phdr->numcdtextures; j++ )
 				{
-					strcpy( szPath, phdr->pCdtexture( j ) );
+					V_strcpy( szPath, phdr->pCdtexture( j ) );
 					strcat( szPath, phdr->pTexture( i )->pszName( ) );
 					g_pMaterialSystem->FindMaterial( szPath, TEXTURE_GROUP_OTHER, true );
 				}
@@ -1910,7 +1910,7 @@ void LoadMaterials( studiohdr_t *phdr )
 			IMaterialVar *clientShaderVar = pMaterial->FindVar( "$clientShader", &found, false );
 			if( found )
 			{
-				if (stricmp( clientShaderVar->GetStringValue(), "MouthShader") == 0)
+				if (V_stricmp( clientShaderVar->GetStringValue(), "MouthShader") == 0)
 				{
 					phdr->pTexture( i )->flags = 1;
 				}
@@ -2002,9 +2002,9 @@ void WriteModelFiles(void)
 	if (g_animblocksize != 0)
 	{
 		// write the non-default g_sequence group data to separate files
-		sprintf( g_animblockname, "models/%s.ani", outname );
+		V_sprintf_safe( g_animblockname, "models/%s.ani", outname );
 
-		strcpy( filename, gamedir );
+		V_strcpy( filename, gamedir );
 		strcat( filename, g_animblockname );	
 
 		EnsureFileDirectoryExists( filename );
@@ -2032,9 +2032,9 @@ void WriteModelFiles(void)
 
 	strcat (outname, ".mdl");
 
-	// strcpy( outname, ExpandPath( outname ) );
+	// V_strcpy( outname, ExpandPath( outname ) );
 
-	strcpy( filename, gamedir );
+	V_strcpy( filename, gamedir );
 //	if( *g_pPlatformName )
 //	{
 //		strcat( filename, "platform_" );
@@ -2089,7 +2089,7 @@ void WriteModelFiles(void)
 
 	BeginStringTable( );
 
-	strcpy( phdr->name, outname );
+	V_strcpy( phdr->name, outname );
 	// AddToStringTable( phdr, &phdr->sznameindex, outname );
 
 	WriteBoneInfo( phdr );
@@ -2168,7 +2168,7 @@ void WriteModelFiles(void)
 	// Load materials for this model via the material system so that the
 	// optimizer can ask questions about the materials.
 	char materialDir[256];
-	strcpy( materialDir, gamedir );
+	V_strcpy( materialDir, gamedir );
 	strcat( materialDir, "materials" );	
 	InitMaterialSystem( materialDir );
 	LoadMaterials( phdr );
@@ -2255,7 +2255,7 @@ const mstudio_modelvertexdata_t *mstudiomodel_t::_GetVertexData()
 	}
 
 	// load and persist the vertex file
-	strcpy( filename, gamedir );
+	V_strcpy( filename, gamedir );
 //	if( *g_pPlatformName )
 //	{
 //		strcat( filename, "platform_" );
@@ -3128,7 +3128,7 @@ bool FixupToSortedLODVertexes(studiohdr_t *pStudioHdr)
 	int								i;
 	const char						*vtxPrefixes[] = {".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".xbox.vtx"};
 
-	strcpy( filename, gamedir );
+	V_strcpy( filename, gamedir );
 //	if( *g_pPlatformName )
 //	{
 //		strcat( filename, "platform_" );
@@ -3142,7 +3142,7 @@ bool FixupToSortedLODVertexes(studiohdr_t *pStudioHdr)
 	// determine lod usage per vertex
 	// all vtx files enumerate model's lod verts, but differ in their mesh makeup
 	// use xxx.dx80.vtx to establish which vertexes are used by each lod
-	strcpy( tmpFileName, filename );
+	V_strcpy( tmpFileName, filename );
 	if ( !g_bXbox )
 	{
 		strcat( tmpFileName, ".dx80.vtx" );
@@ -3162,7 +3162,7 @@ bool FixupToSortedLODVertexes(studiohdr_t *pStudioHdr)
 	}
 
 	// fixup ???.vvd
-	strcpy( tmpFileName, filename );
+	V_strcpy( tmpFileName, filename );
 	strcat( tmpFileName, ".vvd" );
 	if (!FixupVVDFile(tmpFileName, pStudioHdr, pVtxBuff, pVertexPools, numVertexPools, pVertexList, numVertexes))
 	{
@@ -3173,7 +3173,7 @@ bool FixupToSortedLODVertexes(studiohdr_t *pStudioHdr)
 	for (i=0; i<ARRAYSIZE(vtxPrefixes); i++)
 	{
 		// fixup ???.vtx
-		strcpy( tmpFileName, filename );
+		V_strcpy( tmpFileName, filename );
 		strcat( tmpFileName, vtxPrefixes[i] );
 		if (!FixupVTXFile(tmpFileName, pStudioHdr, pVertexPools, numVertexPools, pVertexList, numVertexes))
 		{
@@ -3183,7 +3183,7 @@ bool FixupToSortedLODVertexes(studiohdr_t *pStudioHdr)
 	}
 
 	// fixup ???.mdl
-	strcpy( tmpFileName, filename );
+	V_strcpy( tmpFileName, filename );
 	strcat( tmpFileName, ".mdl" );
 	if (!FixupMDLFile(tmpFileName, pStudioHdr, pVtxBuff, pVertexPools, numVertexPools, pVertexList, numVertexes))
 	{
@@ -3578,24 +3578,24 @@ bool Clamp_RootLOD( studiohdr_t *phdr )
 		return true;
 	}
 
-	strcpy( filename, gamedir );
+	V_strcpy( filename, gamedir );
 	strcat( filename, "models/" );	
 	strcat( filename, outname );
 	Q_StripExtension( filename, filename, sizeof( filename ) );
 
 	// shift the files so that g_minLod is the root LOD
-	strcpy( tmpFileName, filename );
+	V_strcpy( tmpFileName, filename );
 	strcat( tmpFileName, ".mdl" );
 	Clamp_MDL_LODS( tmpFileName, rootLOD );
 
-	strcpy( tmpFileName, filename );
+	V_strcpy( tmpFileName, filename );
 	strcat( tmpFileName, ".vvd" );
 	Clamp_VVD_LODS( tmpFileName, rootLOD );
 
 	for (i=0; i<ARRAYSIZE(vtxPrefixes); i++)
 	{
 		// fixup ???.vtx
-		strcpy( tmpFileName, filename );
+		V_strcpy( tmpFileName, filename );
 		strcat( tmpFileName, vtxPrefixes[i] );
 		Clamp_VTX_LODS( tmpFileName, rootLOD, phdr );
 	}

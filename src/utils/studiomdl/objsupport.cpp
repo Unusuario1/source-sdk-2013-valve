@@ -54,7 +54,7 @@ int Load_OBJ( s_source_t *psource )
 	g_iLinecount = 0;
 
 	psource->numbones = 1;
-	strcpy( psource->localBone[0].name, "default" );
+	V_strcpy( psource->localBone[0].name, "default" );
 	psource->localBone[0].parent = -1;
 
 	psource->numframes = 1;
@@ -246,7 +246,7 @@ int AppendVTAtoOBJ( s_source_t *psource, char *filename, int frame )
 	if (frame == 0)
 	{
 		psource->numbones = 1;
-		strcpy( psource->localBone[0].name, "default" );
+		V_strcpy( psource->localBone[0].name, "default" );
 		psource->localBone[0].parent = -1;
 
 		psource->numframes = 1;

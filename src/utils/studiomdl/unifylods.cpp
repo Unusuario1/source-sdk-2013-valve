@@ -218,10 +218,10 @@ s_source_t* GetModelLODSource( const char *pModelName,
 								const LodScriptData_t& scriptLOD, bool* pFound )
 {
 	// When doing LOD replacement, ignore all path + extension information
-	char* pTempBuf = (char*)_alloca( strlen(pModelName) + 1 );
+	char* pTempBuf = (char*)_alloca( V_strlen(pModelName) + 1 );
 
 	// Strip off extensions for the source...
-	strcpy( pTempBuf, pModelName ); 
+	V_strcpy( pTempBuf, pModelName ); 
 	char* pDot = strrchr( pTempBuf, '.' );
 	if (pDot)
 		*pDot = 0;
@@ -236,7 +236,7 @@ s_source_t* GetModelLODSource( const char *pModelName,
 //		if (!pSlash)
 //			pSlash = pTempBuf1;
 
-		if( !stricmp( pTempBuf, scriptLOD.modelReplacements[i].GetSrcName() ) )
+		if( !V_stricmp( pTempBuf, scriptLOD.modelReplacements[i].GetSrcName() ) )
 		{
 			*pFound = true;
 			return scriptLOD.modelReplacements[i].m_pSource;
@@ -411,13 +411,13 @@ bool CompareBoneWeightsFuzzy( const s_boneweight_t &b1, const s_boneweight_t &b2
 int FindMaterialByName( const char *pMaterialName )
 {
 	int i;
-	int allocLen = strlen( pMaterialName ) + 1;
+	int allocLen = V_strlen( pMaterialName ) + 1;
 	char *pBaseName = ( char * )_alloca( allocLen );
 	Q_FileBase( ( char * )pMaterialName, pBaseName, allocLen );
 
 	for( i = 0; i < g_numtextures; i++ )
 	{
-		if( stricmp( pBaseName, g_texture[i].name ) == 0 )
+		if( V_stricmp( pBaseName, g_texture[i].name ) == 0 )
 		{
 			return i;
 		}
@@ -493,7 +493,7 @@ static s_mesh_t *FindOrCullMesh( int nLodID, s_source_t *pSrc, int nMaterialID )
 		const char *pMeshRemovalName = g_ScriptLODs[nLodID].meshRemovals[i].GetSrcName();
 		Q_FileBase( pMeshRemovalName, baseRemovalName, sizeof(baseRemovalName)-1);
 
-		if (!stricmp( baseRemovalName, baseMeshName ))
+		if (!V_stricmp( baseRemovalName, baseMeshName ))
 		{
 			// mesh has been marked for removal
 			return NULL;
@@ -1395,7 +1395,7 @@ static void UnifyModelLODs( s_model_t *pSrcModel )
 	int nNumLODs = g_ScriptLODs.Count();
 	lods.AddMultipleToTail( nNumLODs );
 	
-	if( Q_stricmp( pSrcModel->name, "blank" ) == 0 )
+	if( Q_V_stricmp( pSrcModel->name, "blank" ) == 0 )
 		return;
 	
 	// lod source are not gauranteed to be unique
@@ -1611,7 +1611,7 @@ static void LoadModelLODSource( s_model_t *pSrcModel )
 	int numLODs = g_ScriptLODs.Size();
 	lods.AddMultipleToTail( numLODs );
 	
-	if( stricmp( pSrcModel->name, "blank" ) == 0 )
+	if( V_stricmp( pSrcModel->name, "blank" ) == 0 )
 	{
 		return;
 	}
@@ -1731,7 +1731,7 @@ void FixupReplacedBonesForLOD( LodScriptData_t &lod )
 				{
 					continue;
 				}
-				if( Q_stricmp( lod.boneReplacements[i].GetSrcName(), lod.boneReplacements[j].GetDstName() ) == 0 )
+				if( Q_V_stricmp( lod.boneReplacements[i].GetSrcName(), lod.boneReplacements[j].GetDstName() ) == 0 )
 				{
 					lod.boneReplacements[j].SetDstName( lod.boneReplacements[i].GetDstName() );
 					changed = true;
