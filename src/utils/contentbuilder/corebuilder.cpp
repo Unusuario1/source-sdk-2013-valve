@@ -597,7 +597,7 @@ void CCoreBuilder::GenerateAssetReport()
 //-----------------------------------------------------------------------------
 void CCoreBuilder::DeleteCompiledContents()
 {
-    if (!m_bDeleteCompiledAssets)
+    if (m_bDeleteCompiledAssets)
         return;
 
     Msg("AssetSystem%s -> Deleting compiled files\n", m_szKeyValue);
