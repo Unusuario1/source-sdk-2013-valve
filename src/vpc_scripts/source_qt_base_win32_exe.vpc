@@ -3,8 +3,10 @@
 //
 //	Project Script
 //-----------------------------------------------------------------------------
-$Macro 		QT_ROOT    "$SRCDIR\thirdparty\lgpl\qt"
-$Macro 		QT_MOC_DIR "$SRCDIR\moc"
+
+$Macro 		QT_ROOT    	"$SRCDIR\thirdparty\qt\lgpl"
+$Macro 		QT_MOC_DIR 	"$SRCDIR\moc"
+
 $Include 	"$SRCDIR\vpc_scripts\source_exe_con_base.vpc"
 
 $Configuration

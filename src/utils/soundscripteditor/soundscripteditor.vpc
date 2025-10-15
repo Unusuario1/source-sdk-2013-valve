@@ -3,10 +3,11 @@
 //
 //	Project Script
 //-----------------------------------------------------------------------------
+
 $Macro SRCDIR		".."
 $Macro OUTBINDIR	"$SRCDIR\..\game\bin"
 
-$Include "qt_base_win64_exe.vpc"
+$Include "source_qt_base_win32_exe.vpc"
 
 $Configuration
 {
