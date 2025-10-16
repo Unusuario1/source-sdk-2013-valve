@@ -1,4 +1,4 @@
-//= CoreSoundScriptEditor -> Written by Unusuario2, https://github.com/Unusuario2  =//
+//== CoreSoundScapeBase -> Written by Unusuario2, https://github.com/Unusuario2  =//
 //
 // Purpose: Use this .cpp file as a template for your custom util in the source engine.
 //
@@ -27,6 +27,13 @@
 //
 // $NoKeywords: $
 //==============================================================================//
+#ifndef CORESOUNDSCAPEBASE_HPP
+#define CORESOUNDSCAPEBASE_HPP
+
+#ifdef _WIN32
+#pragma once
+#endif // _WIN32
+
 #include <tier1/strtools.h>
 #include <tier0/icommandline.h>
 #include <tools_minidump.h>
@@ -36,76 +43,13 @@
 #include <filesystem_tools.h>
 #include <resourcecopy/cresourcecopy.hpp>
 #include <KeyValues.h>
-
-/*
-Example of a SoundScript:
-
-"swamp.water.slow"
-{
-	"dsp" "1"
-	"dsp_spatial" "20"
-	"dsp_volume"  "1.0"
-	"fadetime"  "1.0"
-	"soundmixer" "outside_swap_mixer"
-	"playlooping"
-	{
-		"volume"	"0.98"
-		"pitch"		"110"
-		"soundlevel"	"SNDLVL_85dB"
-
-		"position"	"0"
-
-		"wave"	"ambient/swamps/water_Lap_loop_st.wav"
-	}
-
-	"playrandom"
-	{
-		"time"		"1,4"
-		"volume"	"0.4,1"
-		"pitch"		"90,105"
-		"soundlevel"	"SNDLVL_85dB"
-		"origin"	"3424.676025, 381.604095, 152.927948"
-
-		"rndwave"
-		{
-			"wave"	"ambient/wind/wind_med1.wav"
-			"wave"	"ambient/wind/wind_hit1.wav"
-		}
-	}
-}
-
-*/
-
-//-----------------------------------------------------------------------------
-// Purpose: Creates the Base KV root 
-//-----------------------------------------------------------------------------
-class CSoundScapeBase
-{
-public:
-	KeyValues* KvRoot = nullptr;
-
-public:
-	CSoundScapeBase::CSoundScapeBase(const char* pSoundScapeName)
-	{
-		KeyValues* KvRoot = new KeyValues(pSoundScapeName);
-	}
-
-	CSoundScapeBase::~CSoundScapeBase()
-	{
-		KvRoot->deleteThis();
-	}
-
-	KeyValues* GetKvRoot()
-	{
-		return KvRoot;
-	}
-};
+#include "coresoundscaperootkv.hpp"
 
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-class CSoundScapeBase : private CSoundScapeBase
+class CSoundScapeBase
 {
 public:
 	KeyValues* m_KvRoot = nullptr;
@@ -117,7 +61,10 @@ public:
 	KeyValues* m_SoundMixer = nullptr;
 
 public:
-	inline CSoundScapeBase::CSoundScapeBase()
+	//-----------------------------------------------------------------------------
+	// Purpose: 
+	//-----------------------------------------------------------------------------
+	inline CSoundScapeBase::CSoundScapeBase(CSoundScapeRootKv* KvRoot)
 	{
 		m_Dsp			= new KeyValues("");
 		m_DspSpatial	= new KeyValues("");
@@ -125,6 +72,7 @@ public:
 		m_FadeTime		= new KeyValues("");
 		m_SoundMixer	= new KeyValues("");
 
+		m_KvRoot = KvRoot->GetKvRoot();
 		m_KvRoot->AddSubKey(m_Dsp);
 		m_KvRoot->AddSubKey(m_DspSpatial);
 		m_KvRoot->AddSubKey(m_DspVolume);
@@ -132,6 +80,10 @@ public:
 		m_KvRoot->AddSubKey(m_SoundMixer);
 	}
 
+
+	//-----------------------------------------------------------------------------
+	// Purpose: 
+	//-----------------------------------------------------------------------------
 	inline CSoundScapeBase::~CSoundScapeBase()
 	{
 		m_Dsp->deleteThis();
@@ -141,39 +93,27 @@ public:
 		m_SoundMixer->deleteThis();
 	}
 
-	// Seters...
+
+	//-----------------------------------------------------------------------------
+	// Purpose: Seters
+	//-----------------------------------------------------------------------------
 	inline void SetValueDsp(const bool bSet)			{ m_Dsp->SetBool("dsp", bSet); }
 	inline void SetValueDspSpatial(const int iSet)		{ m_DspSpatial->SetInt("dsp_spatial", iSet); }
 	inline void SetValueDspVolume(const float flSet)	{ m_DspVolume->SetFloat("dsp_volume", flSet); }
 	inline void SetValueFadeTime(const float flSet)		{ m_FadeTime->SetFloat("fadetime", flSet); }
 	inline void SetValueSoundMixer(const char* pString) { m_SoundMixer->SetString("soundmixer", pString); }
 
-	// Geters...
+
+	//-----------------------------------------------------------------------------
+	// Purpose: Geters
+	//-----------------------------------------------------------------------------
 	inline const bool GetValueDsp(const bool bSet) const			{ return m_Dsp->GetBool(); }
 	inline const int GetValueDspSpatial(const int iSet) const		{ return m_DspSpatial->GetInt(); }
 	inline const float GetValueDspVolume(const float flSet) const	{ return m_DspVolume->GetFloat(); }
 	inline const float GetValueFadeTime(const float flSet) const	{ return m_FadeTime->GetFloat(); }
-	inline const char* GetValueSoundMixer(const char* pString) const { return m_SoundMixer->GetString(); }
+	inline const char* GetValueSoundMixer(const char* pString) const{ return m_SoundMixer->GetString(); }
 };
 
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
-class CSoundScapeRule : private CSoundScapeBase
-{
-	
-};
+#endif // CORESOUNDSCAPEBASE_HPP
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
-class CSoundScapeWritter final : public CSoundScapeBase
-{
-private:
-
-
-public:
-
-
-};

@@ -1,4 +1,4 @@
-//= CoreSoundScriptEditor -> Written by Unusuario2, https://github.com/Unusuario2  =//
+//== CoreSoundScapeBase -> Written by Unusuario2, https://github.com/Unusuario2  =//
 //
 // Purpose: Use this .cpp file as a template for your custom util in the source engine.
 //
@@ -27,15 +27,46 @@
 //
 // $NoKeywords: $
 //==============================================================================//
+#ifndef CORESOUNDSCAPERULE_HPP
+#define CORESOUNDSCAPERULE_HPP
+
+#ifdef _WIN32
+#pragma once
+#endif // _WIN32
+
+#include <tier1/strtools.h>
 #include <tier0/icommandline.h>
 #include <tools_minidump.h>
 #include <loadcmdline.h>
 #include <cmdlib.h>
 #include <filesystem_init.h>
 #include <filesystem_tools.h>
-#include <colorschemetools.h>
-#include <pipeline_shareddefs.h>
+#include <resourcecopy/cresourcecopy.hpp>
+#include <KeyValues.h>
+#include "coresoundscaperootkv.hpp"
 
 
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+class CSoundScapeRule
+{
+private:
+	KeyValues* m_KvRoot = nullptr;
 
+
+public:
+	//-----------------------------------------------------------------------------
+	// Purpose:
+	//-----------------------------------------------------------------------------
+	inline CSoundScapeRule::CSoundScapeRule(CSoundScapeRootKv* KvRoot)
+	{
+			
+	}
+
+
+};
+
+
+#endif // CORESOUNDSCAPERULE_HPP
 

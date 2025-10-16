@@ -23,7 +23,7 @@ $Configuration
 	}
 }
 
-$Project "Sound Sacpe Editor"
+$Project "Sound Scape Editor"
 {
 	$Folder	"Qt UI Files"
 	{
@@ -34,7 +34,6 @@ $Project "Sound Sacpe Editor"
 	{
 		-$File	"$SRCDIR\public\tier0\memoverride.cpp"
 
-		$File "coresoundscapeeditor.cpp"
 
 		$Folder	"Common Files"
 		{
@@ -51,7 +50,10 @@ $Project "Sound Sacpe Editor"
 
 	$Folder	"Header Files"
 	{
-		$File "coresoundscapeeditor.hpp"
+		$File "coresoundscapewriter.hpp"
+		$File "coresoundscapebase.hpp"
+		$File "coresoundscaperule.hpp"
+		$File "coresoundscaperootkv.hpp"
 
 		$Folder	"Common header files"
 		{
