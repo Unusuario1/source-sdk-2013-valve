@@ -150,8 +150,8 @@ $Project "vvis_launcher"
 	"utils\vvis_launcher\vvis_launcher.vpc" [$WINDOWS]
 }
 
-$Project "soundscripteditor"
+$Project "soundscapeeditor"
 {
-	"utils/soundscripteditor/soundscripteditor.vpc" [$WINDOWS]
+	"utils/soundscapeeditor/soundscapeeditor.vpc" [$WINDOWS]
 }
 
