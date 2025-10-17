@@ -1,0 +1,55 @@
+//====== Copyright © 2025, Unusuario2, https://github.com/Unusuario2 =======
+//
+// Purpose: General game definition file for Sound Scape Editor
+//
+// License:
+//        MIT License
+//
+//        Copyright (c) 2025 [un usuario], https://github.com/Unusuario2
+//
+//        Permission is hereby granted, free of charge, to any person obtaining a copy
+//        of this software and associated documentation files (the "Software"), to deal
+//        in the Software without restriction, including without limitation the rights
+//        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//        copies of the Software, and to permit persons to whom the Software is
+//        furnished to do so, subject to the following conditions:
+//
+//        The above copyright notice and this permission notice shall be included in all
+//        copies or substantial portions of the Software.
+//
+//        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+//        SOFTWARE. 
+//=============================================================================
+
+
+//-----------------------------------------------------------------------------
+// Purpose: Base KV in the start of the soundscape file
+//-----------------------------------------------------------------------------
+@SoundScapeBaseClass = SoundScapeBase : "Defines a soundscape "
+[
+    dsp(bool)           : "Enable DSP effects"
+    dsp_volume(float)   : "DSP volume multiplier"
+    fadein(float)       : "Fade in time"
+    playlooping(sound)  : "Looping ambient sound"
+]
+
+
+//-----------------------------------------------------------------------------
+// Purpose: Common KV that the rules shares
+//-----------------------------------------------------------------------------
+@SoundScapeCommonKeyValuesClass = SoundScapeCommonKeyValues : "Defines common keyvalues"
+[
+    wave(string)        : "The path and filename of the sound to play, relative to game\sound\."
+    volume(normal)      : "1 is full power, 0 is silent."
+    pitch(integer)      : "Percentage value. 70-130 is the useful range."
+    position(0-7)       : "One of eight locations in the world (defined by the mapper) from which a sound can be emitted."
+    position(string)    : "As above, but the sound emits from a completely random location near the player. (e.g: random)"
+    attenuation(float)  : "How quickly the sound's volume drops as the camera moves away from it. Only relevant with a position specified. Default value is: "1.00". The lower the value is, greater the radius of the sound will be. And the opposite, higher the value is, smaller the radius of the sound will be."
+    soundlevel(string)  : "Can be used instead of attenuation. Accepts one of the engine's pre-set values. Warning: Remember to enclose any values with space characters in quote marks."
+    suppress_on_restore(bool) : "Prevents sound from restarting upon loading a saved game. It's intended for music played inside soundscape."
+]

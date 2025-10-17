@@ -44,74 +44,44 @@
 #include <resourcecopy/cresourcecopy.hpp>
 #include <KeyValues.h>
 #include "coresoundscaperootkv.hpp"
+#include "corefgdparser.hpp"
+#include "coresoundscapesetget.hpp"
 
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-class CSoundScapeBase
+class CSoundScapeBase : CSoundScapeGetSetKeyValues
 {
 public:
-	KeyValues* m_KvRoot = nullptr;
+	std::vector<KeyValues>*	m_pObjFgd = nullptr;
+	KeyValues*				m_KvRoot = nullptr;
 
-	KeyValues* m_Dsp = nullptr;
-	KeyValues* m_DspSpatial = nullptr;
-	KeyValues* m_DspVolume = nullptr;
-	KeyValues* m_FadeTime = nullptr;
-	KeyValues* m_SoundMixer = nullptr;
+
+protected:
+	//-----------------------------------------------------------------------------
+	// Purpose: 
+	//-----------------------------------------------------------------------------
+	inline CSoundScapeBase::CSoundScapeBase(CSoundScapeRootKv* KvRoot, CSoundScapeFgdParser* ObjFgd) : CSoundScapeGetSetKeyValues(ObjFgd)
+	{
+		m_KvRoot = KvRoot->GetKvRoot();
+		m_pObjFgd = ObjFgd->GetSoundScapeBaseValues();
+	}
+
+
+	//-----------------------------------------------------------------------------
+	// Purpose: 
+	//-----------------------------------------------------------------------------
+	inline CSoundScapeBase::~CSoundScapeBase() {}
+
 
 public:
 	//-----------------------------------------------------------------------------
 	// Purpose: 
 	//-----------------------------------------------------------------------------
-	inline CSoundScapeBase::CSoundScapeBase(CSoundScapeRootKv* KvRoot)
-	{
-		m_Dsp			= new KeyValues("");
-		m_DspSpatial	= new KeyValues("");
-		m_DspVolume		= new KeyValues("");
-		m_FadeTime		= new KeyValues("");
-		m_SoundMixer	= new KeyValues("");
-
-		m_KvRoot = KvRoot->GetKvRoot();
-		m_KvRoot->AddSubKey(m_Dsp);
-		m_KvRoot->AddSubKey(m_DspSpatial);
-		m_KvRoot->AddSubKey(m_DspVolume);
-		m_KvRoot->AddSubKey(m_FadeTime);
-		m_KvRoot->AddSubKey(m_SoundMixer);
-	}
-
-
-	//-----------------------------------------------------------------------------
-	// Purpose: 
-	//-----------------------------------------------------------------------------
-	inline CSoundScapeBase::~CSoundScapeBase()
-	{
-		m_Dsp->deleteThis();
-		m_DspSpatial->deleteThis();
-		m_DspVolume->deleteThis();
-		m_FadeTime->deleteThis();
-		m_SoundMixer->deleteThis();
-	}
-
-
-	//-----------------------------------------------------------------------------
-	// Purpose: Seters
-	//-----------------------------------------------------------------------------
-	inline void SetValueDsp(const bool bSet)			{ m_Dsp->SetBool("dsp", bSet); }
-	inline void SetValueDspSpatial(const int iSet)		{ m_DspSpatial->SetInt("dsp_spatial", iSet); }
-	inline void SetValueDspVolume(const float flSet)	{ m_DspVolume->SetFloat("dsp_volume", flSet); }
-	inline void SetValueFadeTime(const float flSet)		{ m_FadeTime->SetFloat("fadetime", flSet); }
-	inline void SetValueSoundMixer(const char* pString) { m_SoundMixer->SetString("soundmixer", pString); }
-
-
-	//-----------------------------------------------------------------------------
-	// Purpose: Geters
-	//-----------------------------------------------------------------------------
-	inline const bool GetValueDsp(const bool bSet) const			{ return m_Dsp->GetBool(); }
-	inline const int GetValueDspSpatial(const int iSet) const		{ return m_DspSpatial->GetInt(); }
-	inline const float GetValueDspVolume(const float flSet) const	{ return m_DspVolume->GetFloat(); }
-	inline const float GetValueFadeTime(const float flSet) const	{ return m_FadeTime->GetFloat(); }
-	inline const char* GetValueSoundMixer(const char* pString) const{ return m_SoundMixer->GetString(); }
+	inline std::size_t GetKeyValueContainerCount() override { return m_pObjFgd->size(); }
+	inline void* GetKeyValueValue(KeyValues::types_t TypeKv, void* pData, std::size_t uiPosition) override { return CSoundScapeGetSetKeyValues::GetKeyValueValue(TypeKv, pData, uiPosition); }
+	inline void SetKeyValueValue(KeyValues::types_t TypeKv, void* pData, std::size_t uiPosition) override { return CSoundScapeGetSetKeyValues::SetKeyValueValue(TypeKv, pData, uiPosition); }
 };
 
 

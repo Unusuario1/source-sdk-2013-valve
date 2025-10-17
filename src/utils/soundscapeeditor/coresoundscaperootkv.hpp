@@ -53,10 +53,23 @@ class CSoundScapeRootKv
 private:
 	KeyValues* KvRoot = nullptr;
 
-public:
+protected:
+	//-----------------------------------------------------------------------------
+	// Purpose: 
+	//-----------------------------------------------------------------------------
 	inline CSoundScapeRootKv::CSoundScapeRootKv(const char* pSoundScapeName) { KeyValues* KvRoot = new KeyValues(pSoundScapeName); }
+
+
+	//-----------------------------------------------------------------------------
+	// Purpose: 
+	//-----------------------------------------------------------------------------
 	inline CSoundScapeRootKv::~CSoundScapeRootKv() { KvRoot->deleteThis(); }
-	
+
+
+public:
+	//-----------------------------------------------------------------------------
+	// Purpose: 
+	//-----------------------------------------------------------------------------
 	inline KeyValues* GetKvRoot() { return KvRoot; }
 };
 
