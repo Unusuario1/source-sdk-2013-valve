@@ -331,7 +331,6 @@ static void PrintUsage(int argc, char* argv[])
     Msg("\nUsage: audioprocess.exe [options] <file> <path>\n\n");
     ColorSpewMessage(SPEW_MESSAGE, &ColorHeader, " General Options:\n");
     Msg("   -help or -?:           Print usage.\n"
-        "   -s:                    If path mode is activaded, make a shallow scan.\n"
         "   -skip <substring>:     If a path has this substring skip the process. (Note: This can be use to exclude certain types of files like '.mp3')\n"
         "\n");
     ColorSpewMessage(SPEW_MESSAGE, &ColorHeader, " Spew Options:\n");
@@ -591,10 +590,28 @@ int main(int argc, char* argv[])
             Destroy(argc, argv);
             return 0;
         }
-        else
+
+        auto it = VAudioFilesToConvert->begin();
+        while (it != VAudioFilesToConvert->end())
         {
-            Msg("AudioProcess -> Files to convert: %llu\n\n", VAudioFilesToConvert->size());
+            bool shouldErase = false;
+
+            for (const auto& sub : *g_pContainerSubStrings)
+            {
+                if (V_strstr(it->data(), sub.data()))
+                {
+                    shouldErase = true;
+                    break;
+                }
+            }
+
+            if (shouldErase)
+                it = VAudioFilesToConvert->erase(it);
+            else
+                ++it;
         }
+
+        Msg("AudioProcess -> Files to convert: %llu\n\n", VAudioFilesToConvert->size());
 
         for (int i = 0; i < VAudioFilesToConvert->size(); ++i) 
         {
