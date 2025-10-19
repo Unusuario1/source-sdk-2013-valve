@@ -1,6 +1,6 @@
-//= CoreSoundScapeRootKv -> Written by Unusuario2, https://github.com/Unusuario2  =//
+//= CoreSubRectEditor -> Written by Unusuario2, https://github.com/Unusuario2  =//
 //
-// Purpose: 
+// Purpose: Use this .cpp file as a template for your custom util in the source engine.
 //
 // License:
 //        MIT License
@@ -27,13 +27,6 @@
 //
 // $NoKeywords: $
 //==============================================================================//
-#ifndef CORESOUNDSCAPEROOTKV_HPP
-#define CORESOUNDSCAPEROOTKV_HPP
-
-#ifdef _WIN32
-#pragma once
-#endif // _WIN32
-
 #include <tier1/strtools.h>
 #include <tier0/icommandline.h>
 #include <tools_minidump.h>
@@ -43,36 +36,20 @@
 #include <filesystem_tools.h>
 #include <resourcecopy/cresourcecopy.hpp>
 #include <KeyValues.h>
+#include "coresoundscapebase.hpp"
+#include "coresoundscaperule.hpp"
+#include "coresoundscaperootkv.hpp"
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Creates the Base KV root 
+// Purpose:
 //-----------------------------------------------------------------------------
-class CSoundScapeRootKv
+class CCoreSubRectEditor
 {
 private:
-	KeyValues* KvRoot = nullptr;
-
-protected:
-	//-----------------------------------------------------------------------------
-	// Purpose: 
-	//-----------------------------------------------------------------------------
-	inline CSoundScapeRootKv::CSoundScapeRootKv(const char* pSoundScapeName) { KeyValues* KvRoot = new KeyValues(pSoundScapeName); }
-
-
-	//-----------------------------------------------------------------------------
-	// Purpose: 
-	//-----------------------------------------------------------------------------
-	inline CSoundScapeRootKv::~CSoundScapeRootKv() { KvRoot->deleteThis(); }
 
 
 public:
-	//-----------------------------------------------------------------------------
-	// Purpose: 
-	//-----------------------------------------------------------------------------
-	inline KeyValues* GetKvRoot() { return KvRoot; }
+
+
 };
-
-
-#endif // CORESOUNDSCAPEROOTKV_HPP
-

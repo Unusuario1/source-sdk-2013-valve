@@ -1,3 +1,0 @@
-- Add a fgd parser like source 2 
-- Finish the core parser
-- Add load soundmixer stuff

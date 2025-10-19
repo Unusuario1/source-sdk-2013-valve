@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-//	SOUNDSCAPEEDITOR.VPC
+//	SUBRECTEDITOR.VPC
 //
 //	Project Script
 //-----------------------------------------------------------------------------
@@ -23,7 +23,7 @@ $Configuration
 	}
 }
 
-$Project "Sound Scape Editor"
+$Project "subrecteditor"
 {
 	$Folder	"Qt UI Files"
 	{
@@ -50,10 +50,7 @@ $Project "Sound Scape Editor"
 
 	$Folder	"Header Files"
 	{
-		$File "coresoundscapewriter.hpp"
-		$File "coresoundscapebase.hpp"
-		$File "coresoundscaperule.hpp"
-		$File "coresoundscaperootkv.hpp"
+		$File "coresubrecteditor.hpp"
 
 		$Folder	"Common header files"
 		{
