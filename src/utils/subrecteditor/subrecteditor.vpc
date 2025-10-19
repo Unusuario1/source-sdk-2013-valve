@@ -7,6 +7,7 @@
 $Macro SRCDIR		"..\.."
 $Macro OUTBINDIR	"$SRCDIR\..\game\bin"
 
+$Include "$SRCDIR\vpc_scripts\source_exe_con_base.vpc"
 //$Include "$SRCDIR\vpc_scripts\source_qt_base_win32_exe.vpc"
 
 $Configuration
@@ -34,6 +35,7 @@ $Project "subrecteditor"
 	{
 		-$File	"$SRCDIR\public\tier0\memoverride.cpp"
 
+		&File "subrecteditor.cpp"
 
 		$Folder	"Common Files"
 		{
