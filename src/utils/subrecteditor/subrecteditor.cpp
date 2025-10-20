@@ -61,12 +61,10 @@ static void Destroy(int argc, char* argv[])
 
 
 int main(int argc, char* argv[])
-
 {
     Init(argc, argv);
 
     CCoreSubRectEditor* aa = new CCoreSubRectEditor("test");
-
 
     int pos = aa->AddChildRectangle();
     aa->SetMinKvValues(0, pos);
@@ -77,7 +75,6 @@ int main(int argc, char* argv[])
     aa->SetMaxKvValues(256, pos);
     aa->RemoveChildRectangle(pos);
     aa->WriteRectFile();
-
 
     Destroy(argc, argv);
 }

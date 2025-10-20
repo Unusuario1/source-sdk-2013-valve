@@ -58,6 +58,9 @@ private:
 
 
 private:
+	//-----------------------------------------------------------------------------
+	// Purpose:
+	//-----------------------------------------------------------------------------
 	const int GetRectKvValues(const std::size_t uiPos, const char* pKeyName) const { m_pChildKvRentangle->at(uiPos)->GetInt(pKeyName); }
 	void SetRectKvValues(const uint16_t uiValue, const std::size_t uiPos, const char* pKeyName) const { m_pChildKvRentangle->at(uiPos)->SetInt(pKeyName, uiValue); }
 
@@ -90,7 +93,7 @@ public:
 	//-----------------------------------------------------------------------------
 	// Purpose:
 	//-----------------------------------------------------------------------------
-	inline int AddChildRectangle()
+	inline std::size_t AddChildRectangle() const
 	{
 		KeyValues* pChildKv = new KeyValues("rectangle");
 		pChildKv->CreateKey("min");
@@ -103,27 +106,27 @@ public:
 
 		// Add the last child as a subkey
 		m_pRootKv->AddSubKey(m_pChildKvRentangle->back());
-		return static_cast<int>(m_pChildKvRentangle->size() - 1);
+		return static_cast<std::size_t>(m_pChildKvRentangle->size() - 1);
 	}
 
 
 	//-----------------------------------------------------------------------------
 	// Purpose:
 	//-----------------------------------------------------------------------------
-	inline void RemoveChildRectangle(const std::size_t uiPos) { m_pRootKv->RemoveSubKey(m_pChildKvRentangle->at(uiPos)); }
+	inline void RemoveChildRectangle(const std::size_t uiPos) { m_pRootKv->RemoveSubKey(m_pChildKvRentangle->at(uiPos)); m_pChildKvRentangle->at(uiPos)->deleteThis(); }
 
 
 	//-----------------------------------------------------------------------------
 	// Purpose:
 	//-----------------------------------------------------------------------------
-	inline const std::size_t SizeOfChildKvList() { return m_pChildKvRentangle->size(); }
-	inline const std::size_t EndOfChildKvList() { return static_cast<int>(m_pChildKvRentangle->size() - 1); }
+	inline const std::size_t SizeOfChildKvList() const { return m_pChildKvRentangle->size(); }
+	inline const std::size_t EndOfChildKvList() const { return static_cast<std::size_t>(m_pChildKvRentangle->size() - 1); }
 
 
 	//-----------------------------------------------------------------------------
 	// Purpose:
 	//-----------------------------------------------------------------------------
-	inline const bool WriteRectFile() { return m_pRootKv->SaveToFile(g_pFileSystem, m_szFileName, "MOD"); }
+	inline const bool WriteRectFile() const { return m_pRootKv->SaveToFile(g_pFileSystem, m_szFileName, "MOD"); }
 
 
 	//-----------------------------------------------------------------------------
