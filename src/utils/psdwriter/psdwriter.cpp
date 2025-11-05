@@ -110,7 +110,6 @@ static void GenerateVtexConfigFile(const char* pFileName)
 		return;
 
 	float start = Plat_FloatTime();
-
 	{
 		char* pPsdFile = V_strdup(pFileName);
 		V_StripExtension(pPsdFile, pPsdFile, V_strlen(pPsdFile));
@@ -206,6 +205,8 @@ static void GenerateVtexConfigFile(const char* pFileName)
 			return;
 		}
 	
+		// TODO: FIX THIS!!
+		// This causes a memory leak!!
 		// delete utlbuffer;
 		Msg("done(%.2fs)\n", Plat_FloatTime() - start);
 	}
@@ -270,22 +271,14 @@ static T* AllocVectorImageData(const char* pFileName)
 	qprintf("Allocating image vector data... %s", verbose ? "\n" : "");
 
 	if constexpr (std::is_same<T, uint8_t>::value) 
-	{
 		stb_array = stbi_load(pFileName, &g_iImageWidth, &g_iImageHeight, &g_iChannels, 0);
-	}
 	else if constexpr (std::is_same<T, uint16_t>::value)
-	{
 		stb_array = stbi_load_16(pFileName, &g_iImageWidth, &g_iImageHeight, &g_iChannels, 0);
 
-	}
 	else if constexpr (std::is_same<T, float32_t>::value)
-	{
 		stb_array = stbi_loadf(pFileName, &g_iImageWidth, &g_iImageHeight, &g_iChannels, 0);
-	}
 	else 
-	{
 		static_assert(std::is_same<T, void>::value, "Unsupported type. Use uint8_t, uint16_t or float32_t.");
-	}
 
 	if (stb_array)
 	{
@@ -313,11 +306,8 @@ static T* AllocVectorImageData(const char* pFileName)
 				"This will cause an error in vtex.exe when compiling the texture!\n"
 			   );
 	}
-	
 	delete[] pTemp;
-
 	qprintf("done(%.2fs)\n%s", Plat_FloatTime() - start, verbose ? "\n" : "");
-
 	return stb_array;
 }
 
@@ -348,13 +338,9 @@ static std::vector<T> SeparateRGBALayersFromSTB(const T* CompleteArray, const ps
 
 	int ratio = 0;
 	if (uiChannels == 3) 
-	{
 		ratio = 3;
-	}
 	else if (uiChannels == 4) 
-	{
 		ratio = 4;
-	}
 
 	int iIndex = 0; // default Red.
 	for (const psd::exportChannel::Enum Temp : Channels)
@@ -365,9 +351,7 @@ static std::vector<T> SeparateRGBALayersFromSTB(const T* CompleteArray, const ps
 
 	int iArraySize = g_iImageWidth * g_iImageHeight * uiChannels;
 	for (int i = iIndex; i < iArraySize; i += ratio) 
-	{
 		pTemp.push_back(CompleteArray[i]);
-	}
 
 	return pTemp;
 }
@@ -560,3 +544,4 @@ void CheckAndExportToPsd(const char* pFileName)
 
 	GenerateVtexConfigFile(pFileName);
 }
+
