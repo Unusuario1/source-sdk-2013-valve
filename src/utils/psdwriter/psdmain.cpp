@@ -81,7 +81,7 @@ static void ProcessDirAndConvertContents(const char* directory, int &files)
     WIN32_FIND_DATAA findData;
     HANDLE hFind;
 
-    V_snprintf(searchPath, sizeof(searchPath), "%s\\*.*", directory);
+    V_sprintf_safe(searchPath, "%s\\*.*", directory);
 
     hFind = FindFirstFileA(searchPath, &findData);
 
@@ -100,7 +100,7 @@ static void ProcessDirAndConvertContents(const char* directory, int &files)
 
         // Build full path
         char fullPath[MAX_PATH];
-        V_snprintf(fullPath, MAX_PATH, "%s\\%s", directory, name);
+        V_sprintf_safe(fullPath, "%s\\%s", directory, name);
 
         if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
         {
@@ -142,9 +142,7 @@ static void Init()
     g_pFileSystem = (IFileSystem*)factory(FILESYSTEM_INTERFACE_VERSION, NULL);
 
     if (!g_bIsSingleFile && !g_bUseDir)
-    {
-        V_snprintf(g_szGameMaterialSrcDir, sizeof(g_szGameMaterialSrcDir), "%s\\%s", gamedir, MATERIALSRC_DIR);
-    }
+        V_sprintf_safe(g_szGameMaterialSrcDir, "%s\\%s", gamedir, MATERIALSRC_DIR);
 
     qprintf("Gamedir path:          %s\n", gamedir);
     qprintf("Material Source path:  %s\n", g_szGameMaterialSrcDir);
@@ -238,7 +236,7 @@ static void ParseCommandline(int argc, char* argv[])
 		}
         else if (!V_stricmp(argv[i], "-psdcompresion"))
         {
-            const int iValue = atoi(argv[i]);
+            const int iValue = V_atoi(argv[i]);
 
             // Note: This values need to be in sync with psd::compressionType in PsdCompressionType.h
             if ((iValue >= 0) && (iValue <= 3))
@@ -257,8 +255,8 @@ static void ParseCommandline(int argc, char* argv[])
 
             if (pStrTemp1 && pStrTemp2)
             {
-                V_strcpy_safe_safe(g_szSignature[0], pStrTemp1);
-                V_strcpy_safe_safe(g_szSignature[1], pStrTemp2);
+                V_strcpy_safe(g_szSignature[0], pStrTemp1);
+                V_strcpy_safe(g_szSignature[1], pStrTemp2);
             }
             else
             {
@@ -270,11 +268,8 @@ static void ParseCommandline(int argc, char* argv[])
             if (++i < argc && argv[i][0] != '-')
             {
                 char* pInputPath = argv[i];
-
                 if (!pInputPath)
-                {
                     Error("Error: \'-i\' requires a valid path argument. NULL path\n");
-                }
 
                 g_bIsSingleFile = true;
                 V_strcpy_safe(g_szSingleInputFile, pInputPath);
@@ -289,11 +284,8 @@ static void ParseCommandline(int argc, char* argv[])
             if (++i < argc && argv[i][0] != '-')
             {
                 char* pInputPath = argv[i];
-
                 if (!pInputPath)
-                {
                     Error("Error: \'-dir\' requires a valid path argument. NULL path\n");
-                }
 
                 V_strcpy_safe(g_szGameMaterialSrcDir, pInputPath);
             }

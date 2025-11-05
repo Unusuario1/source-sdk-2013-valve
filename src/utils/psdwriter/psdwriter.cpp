@@ -83,14 +83,9 @@ FORCEINLINE static bool IsPowerOfTwo(const int n)
 static void CheckExtensionImageFileConvert(const char* pFileName)
 {
 	bool bTemp = false;
-
 	for (const char* pExt : g_rgpAssetConvertList)
-	{
 		if (V_strstr(pFileName, pExt))
-		{
 			bTemp = true;
-		}
-	}
 
 	if (!bTemp)
 	{
@@ -98,9 +93,7 @@ static void CheckExtensionImageFileConvert(const char* pFileName)
 		Warning("Supported extension are:\n");
 
 		for (const char* pExt2 : g_rgpAssetConvertList)
-		{
 			Warning("\t%s\n", pExt2);
-		}
 
 		exit(-1);
 	}
@@ -173,7 +166,7 @@ static void GenerateVtexConfigFile(const char* pFileName)
 
 	// The path where we expect the template config files to be game/materialsrc/template/template_endname.txt
 	char szSrcTemplateConfigFile[MAX_PATH];
-	V_snprintf(szSrcTemplateConfigFile, sizeof(szSrcTemplateConfigFile), "%s\\%s\\%s%s.txt", g_szGameMaterialSrcDir, TEMAPLATE_COFIG_NAME_BASE, TEMAPLATE_COFIG_NAME_BASE, szNameEnding);
+	V_sprintf_safe(szSrcTemplateConfigFile, "%s\\%s\\%s%s.txt", g_szGameMaterialSrcDir, TEMAPLATE_COFIG_NAME_BASE, TEMAPLATE_COFIG_NAME_BASE, szNameEnding);
 	qprintf("Source template config file:    %s\n", szSrcTemplateConfigFile);
 
 	// Setup the template config to copy.
@@ -195,8 +188,8 @@ static void GenerateVtexConfigFile(const char* pFileName)
 	else
 	{
 		// Copy the config file to the .psd dir!
-		CUtlBuffer utlbuffer;
-		if (!g_pFileSystem->ReadFile(szSrcTemplateConfigFile, NULL, utlbuffer)) 
+		CUtlBuffer* utlbuffer = new CUtlBuffer();
+		if (!g_pFileSystem->ReadFile(szSrcTemplateConfigFile, NULL, *utlbuffer)) 
 		{
 			Warning("Failed to read template file: %s\n"
 					"Skipping vtex template generation!\n", szSrcTemplateConfigFile);
@@ -204,7 +197,7 @@ static void GenerateVtexConfigFile(const char* pFileName)
 			delete[] pImageFileConfig;
 			return;
 		}
-		if(!g_pFileSystem->WriteFile(pImageFileConfig, NULL, utlbuffer))
+		if(!g_pFileSystem->WriteFile(pImageFileConfig, NULL, *utlbuffer))
 		{
 			Warning("Failed to write template file: %s\n"
 					"Skipping vtex template generation!\n", pImageFileConfig);
@@ -212,7 +205,8 @@ static void GenerateVtexConfigFile(const char* pFileName)
 			delete[] pImageFileConfig;
 			return;
 		}
-		
+	
+		// delete utlbuffer;
 		Msg("done(%.2fs)\n", Plat_FloatTime() - start);
 	}
 
@@ -226,7 +220,7 @@ static void GenerateVtexConfigFile(const char* pFileName)
 static bool IsPsdOK(const char* pFileName)
 {
 	char szFile[MAX_PATH];
-	V_snprintf(szFile, sizeof(szFile), "%s.psd", pFileName);
+	V_sprintf_safe(szFile, "%s.psd", pFileName);
 
 	if (_access(szFile, 0))
 	{
@@ -250,9 +244,7 @@ static void SetMetaData(psd::ExportDocument* pDocument, psd::MallocAllocator* al
 	char szPsdWriterDateBuild[64];
 
 	Msg("Adding meta data to the .psd file... ");
-
-	V_snprintf(szPsdWriterDateBuild, sizeof(szPsdWriterDateBuild), "Build date: %s %s", __DATE__, __TIME__);
-
+	V_sprintf_safe(szPsdWriterDateBuild, "Build date: %s %s", __DATE__, __TIME__);
 	AddMetaData(pDocument, allocator, "Auto - generated with psdwriter.exe", szPsdWriterDateBuild);
 	AddMetaData(pDocument, allocator, "Resolution [x, y]:", ""); // TODO, put here the res!
 
