@@ -7,8 +7,7 @@
 $Macro SRCDIR		"..\.."
 $Macro OUTBINDIR	"$SRCDIR\..\game\bin"
 
-$Include "$SRCDIR\vpc_scripts\source_exe_con_base.vpc"
-//$Include "$SRCDIR\vpc_scripts\source_qt_base_win32_exe.vpc"
+$Include "$SRCDIR\vpc_scripts\source_exe_qt_win32.vpc"
 
 $Configuration
 {
@@ -20,7 +19,7 @@ $Configuration
 
 	$Linker
 	{
-		$AdditionalDependencies				"$BASE;comctl32.lib;legacy_stdio_definitions.lib"
+		$AdditionalDependencies			"$BASE;comctl32.lib;legacy_stdio_definitions.lib"
 	}
 }
 
@@ -28,14 +27,22 @@ $Project "subrecteditor"
 {
 	$Folder	"Qt UI Files"
 	{
-		
+		$File 	"mainwindow.ui"
 	}
 
 	$Folder	"Source Files"
 	{
 		-$File	"$SRCDIR\public\tier0\memoverride.cpp"
 
-		&File "subrecteditor.cpp"
+		$Folder "Core"
+		{
+			$File "subrecteditor.cpp"
+		}
+
+		$Folder "UI"
+		{
+			$File "mainwindow.cpp"
+		}
 
 		$Folder	"Common Files"
 		{
@@ -52,7 +59,17 @@ $Project "subrecteditor"
 
 	$Folder	"Header Files"
 	{
-		$File "coresubrecteditor.hpp"
+		$Folder "Core"
+		{
+			$File "coresubrecteditor.hpp"
+			$File "subrecteditor.hpp"
+		}
+
+		$Folder "UI"
+		{
+			$File		 "mainwindow.hpp"
+			$DynamicFile "$QT_MOC_DIR\ui_mainwindow.h"
+		}
 
 		$Folder	"Common header files"
 		{

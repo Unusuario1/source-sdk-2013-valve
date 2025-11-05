@@ -38,16 +38,16 @@
 #include "color.h"
 
 
-#define ColorWhite			Color(255, 255, 255, 255)
-#define ColorMagenta		Color(255, 0, 255, 255)
-#define ColorBlue			Color(0, 0, 255, 255)
-#define ColorCyan			Color(0,255,255,255)
-#define ColorGreen			Color(0,255,0,255)
-#define ColorRed			Color(255,0,0,255)
-#define ColorBlack			Color(0, 0, 0, 255)
-#define ColorGrey			Color(0, 0, 0, 128)
-#define ColorYellow			Color(255, 255, 0, 255)
-#define ColorYellowDark		Color(255, 255, 0)
+#define ColorWhite			static_cast<const Color>(Color(255, 255, 255, 255))
+#define ColorMagenta		static_cast<const Color>(Color(255, 0, 255, 255))
+#define ColorBlue			static_cast<const Color>(Color(0, 0, 255, 255))
+#define ColorCyan			static_cast<const Color>(Color(0,255,255,255))
+#define ColorGreen			static_cast<const Color>(Color(0,255,0,255))
+#define ColorRed			static_cast<const Color>(Color(255,0,0,255))
+#define ColorBlack			static_cast<const Color>(Color(0, 0, 0, 255))
+#define ColorGrey			static_cast<const Color>(Color(0, 0, 0, 128))
+#define ColorYellow			static_cast<const Color>(Color(255, 255, 0, 255))
+#define ColorYellowDark		static_cast<const Color>(Color(255, 255, 0))
 
 #define ColorHeader			ColorCyan
 #define ColorPath			ColorYellowDark
@@ -58,3 +58,4 @@
 
 
 #endif // COLORSCHEMETOOLS_H
+

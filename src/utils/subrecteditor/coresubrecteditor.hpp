@@ -40,6 +40,22 @@
 #include <vector>
 
 
+// Small unit test
+	/*
+	CCoreSubRectEditor* aa = new CCoreSubRectEditor("test");
+
+	int pos = aa->AddChildRectangle();
+	aa->SetMinKvValues(0, pos);
+	aa->SetMaxKvValues(256, pos);
+
+	pos = aa->AddChildRectangle();
+	aa->SetMinKvValues(0, pos);
+	aa->SetMaxKvValues(256, pos);
+	aa->RemoveChildRectangle(pos);
+	aa->WriteRectFile();
+	*/
+
+
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------

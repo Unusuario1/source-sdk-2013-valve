@@ -1,6 +1,6 @@
+#include "mainwindow.hpp"
+#include <QApplication>
 #include "coresubrecteditor.hpp"
-#include <iostream>
-
 
 
 //-----------------------------------------------------------------------------
@@ -34,7 +34,6 @@ static void ParseCommandline(int argc, char* argv[])
 }
 
 
-
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
@@ -60,21 +59,20 @@ static void Destroy(int argc, char* argv[])
 }
 
 
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
     Init(argc, argv);
 
-    CCoreSubRectEditor* aa = new CCoreSubRectEditor("test");
+    QApplication App(argc, argv);
+    MainWindow Window;
+    Window.setWindowTitle("Sub Rect Editor");
+    Window.show();
 
-    int pos = aa->AddChildRectangle();
-    aa->SetMinKvValues(0, pos);
-    aa->SetMaxKvValues(256, pos);
-    
-    pos = aa->AddChildRectangle();
-    aa->SetMinKvValues(0, pos);
-    aa->SetMaxKvValues(256, pos);
-    aa->RemoveChildRectangle(pos);
-    aa->WriteRectFile();
-
+    const int iRet = App.exec();
     Destroy(argc, argv);
+    return iRet;
 }
+

@@ -1,0 +1,8 @@
+//-----------------------------------------------------------------------------
+//	SOURCE_EXE_QT_WIN32.VPC
+//
+//	Project Script
+//-----------------------------------------------------------------------------
+$Include 	"$SRCDIR\vpc_scripts\source_exe_con_base.vpc"
+$Include 	"$SRCDIR\vpc_scripts\source_base_qt.vpc"
+
