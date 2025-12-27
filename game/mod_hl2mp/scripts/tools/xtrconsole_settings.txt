@@ -1,0 +1,9 @@
+ExternalConsole
+{
+    Version 1.0
+
+    Configuration
+    {
+        KernelPipeLineName  "generic_game"
+    }
+}

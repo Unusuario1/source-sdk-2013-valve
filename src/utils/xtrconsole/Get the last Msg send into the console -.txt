@@ -1,0 +1,7 @@
+Read the info:
+    Get the last Msg send into the console -> write it in the kernel pipeline -> xtrconsole reads the kernel pipleline
+
+
+
+Set the info:
+    Create a kernel pipeline that sends msg -> Client reads the kernel pipeline.
