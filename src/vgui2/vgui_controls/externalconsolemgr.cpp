@@ -4,41 +4,60 @@
 #pragma once
 #endif // _WIN32
 
-
 #include <windows.h>
 #include "tier0/icommandline.h"
 #include "tier0/dbg.h"
-#include "../../public/vgui_controls/consoledialog.h" // TODO: Fix the path??
-#include "../../public/filesystem.h" // TODO: Fix the path??
-#include "../../utils/common/colorschemetools.h"
-#include "../../utils/common/pipeline_shareddefs.h"
+#include "tier1/convar.h"
+#include "utlbuffer.h"
+#include "tier1/KeyValues.h"
+#include "vgui_controls/consoledialog.h" 
+#include "filesystem.h" 
+#include "common/colorschemetools.h"
+#include "common/pipeline_shareddefs.h"
 
-class CConsolePanel;
+
+// TODO: Move this to the game/shared dir
+//	Also to make it rembender 	g_GameConsole.m_pConsole->DumpConsoleTextToFile();
+// and the condump convar
+
+#define EXTERNAL_CONSOLE_SETTINGS	"scripts/tools/xtrconsole_settings.txt"
+#define EXTERNAL_CONSOLE_VERSION	1.0f
+
 
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-class CExternalConsoleMgr : CConsolePanel
+class CExternalConsoleMgr
 {
 private:
 	bool m_bEnableExternalConsole = false;
 
-
 private:
 	inline void LaunchExternalConsole();
 	inline void CreateKernelPipeline();
+	inline const char* CreateDefaultConfiguration();
 
 public:
-	inline CExternalConsoleMgr(const char* pszKernelPipelineName);
+	inline CExternalConsoleMgr();
 	inline ~CExternalConsoleMgr();
-};
 
+	inline void Init();
+};
 
 
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-inline CExternalConsoleMgr::CExternalConsoleMgr(const char* pszKernelPipelineName)
+inline void CExternalConsoleMgr::Init()
+{
+	this->CreateKernelPipeline();
+}
+
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+inline CExternalConsoleMgr::CExternalConsoleMgr()
 {
 	// check if we are in the right mode.
 	const char* rgpCmmd[] = { "-dev", "-tools", "-allowdebug", "-makedevshots" };
@@ -47,7 +66,7 @@ inline CExternalConsoleMgr::CExternalConsoleMgr(const char* pszKernelPipelineNam
 		if (CommandLine()->FindParm(Cmmd))
 		{
 			this->m_bEnableExternalConsole = true;
-			break;
+			return;
 		}
 	}
 }
@@ -63,6 +82,33 @@ inline CExternalConsoleMgr::~CExternalConsoleMgr()
 
 
 //-----------------------------------------------------------------------------
+// Purpose:	Create the default configuration or load the existing one.
+//-----------------------------------------------------------------------------
+inline const char* CExternalConsoleMgr::CreateDefaultConfiguration()
+{
+	if (g_pFullFileSystem->FileExists(EXTERNAL_CONSOLE_SETTINGS, "MOD"))
+	{
+		KeyValues* pKvCfg = new KeyValues("");
+		pKvCfg->LoadFromFile(g_pFullFileSystem, EXTERNAL_CONSOLE_SETTINGS, "MOD", true);
+	}
+	else
+	{
+		// Create the file.
+		KeyValues* pKvCfg = new KeyValues("ExternalConsole");
+		pKvCfg->CreateKey("Version");
+		pKvCfg->SetInt("Version", EXTERNAL_CONSOLE_VERSION);
+
+		KeyValues* pKvSubCfg = new KeyValues("Configuration");
+		pKvSubCfg->CreateKey("KernelPipeLineName");
+		pKvSubCfg->SetString("KernelPipeLineName", "generic_game");
+		pKvCfg->AddSubKey(pKvSubCfg);
+		pKvCfg->SaveToFile(g_pFullFileSystem, EXTERNAL_CONSOLE_SETTINGS);
+
+		return "generic_game";
+	}
+}
+
+//-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
 inline void CExternalConsoleMgr::CreateKernelPipeline()
@@ -72,7 +118,7 @@ inline void CExternalConsoleMgr::CreateKernelPipeline()
 
 	DevMsg("[ExternalConsole] Creating kernel pipeline...");
 	char szPipeLineName[MAX_PATH];
-	V_sprintf_safe(szPipeLineName, "\\\\.\\pipe\\");
+	V_sprintf_safe(szPipeLineName, "\\\\.\\pipe\\%s", this->CreateDefaultConfiguration());
 	HANDLE hPipe = CreateNamedPipeA(
 		szPipeLineName,
 		PIPE_ACCESS_OUTBOUND,               // server writes
@@ -109,7 +155,7 @@ inline void CExternalConsoleMgr::CreateKernelPipeline()
 //-----------------------------------------------------------------------------
 void CExternalConsoleMgr::LaunchExternalConsole()
 {
-	char* szExternalConsolePath[MAX_PATH];
+	char szExternalConsolePath[MAX_PATH];
 	g_pFullFileSystem->GetSearchPath_safe("BIN", false, szExternalConsolePath);
 	V_sprintf_safe(szExternalConsolePath, "%s\\%s", szExternalConsolePath, EXTERNAL_CONSOLE);
 
@@ -128,5 +174,14 @@ void CExternalConsoleMgr::LaunchExternalConsole()
 
 CExternalConsoleMgr* g_ExternalConsoleMgr = nullptr;
 
+
+
+CON_COMMAND_F(connect_external_console, "Connect to the external console.", FCVAR_NONE)
+{
+	if (!g_ExternalConsoleMgr)
+		g_ExternalConsoleMgr = new CExternalConsoleMgr();
+
+	g_ExternalConsoleMgr->Init();
+}
 
 #endif // EXTERNALCONSOLESNDMSG_HPP
